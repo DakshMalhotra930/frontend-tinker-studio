@@ -20,9 +20,12 @@ const Index = () => {
       <header className="border-b border-border bg-card">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-primary">PraxisAI</h1>
-              <p className="text-sm text-muted-foreground">Your Personal AI Tutor for JEE Prep</p>
+            <div className="flex items-center space-x-4">
+              {/* --- THIS IS THE UPDATED LINE --- */}
+              <img src="/praxis-logo-transparent.png" alt="PraxisAI Logo" className="h-10" />
+              <div>
+                <p className="text-sm text-muted-foreground">Your Personal AI Tutor for JEE Prep</p>
+              </div>
             </div>
             <div className="text-right">
               <p className="text-sm text-muted-foreground">Target: JEE Main & Advanced</p>

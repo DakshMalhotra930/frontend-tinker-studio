@@ -1,38 +1,55 @@
 import { useState, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Subject, Chapter, Topic, syllabusData } from '@/data/syllabus';
+import { Subject, Chapter, Topic } from '@/data/syllabus';
 
 interface SyllabusExplorerProps {
   onTopicSelect: (topic: Topic, chapter: Chapter, subject: Subject) => void;
 }
 
 export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
+  const [syllabus, setSyllabus] = useState<Subject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+
+  useEffect(() => {
+    const fetchSyllabus = async () => {
+      try {
+        setIsLoading(true);
+        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/syllabus`;
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data: Subject[] = await response.json();
+        setSyllabus(data);
+        if (data && data.length > 0) {
+            setSelectedSubject(data[0]);
+        }
+      } catch (err: any) {
+        setError(err.message);
+        console.error("Failed to fetch syllabus:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSyllabus();
+  }, []);
 
   const handleSubjectClick = (subject: Subject) => {
     setSelectedSubject(subject);
     setSelectedChapter(null);
     setSelectedTopic(null);
-    
-    // Smooth scroll to chapters pane
-    setTimeout(() => {
-      const chaptersPane = document.getElementById('chapters-pane');
-      chaptersPane?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
   };
 
   const handleChapterClick = (chapter: Chapter) => {
     setSelectedChapter(chapter);
     setSelectedTopic(null);
-    
-    // Smooth scroll to topics pane
-    setTimeout(() => {
-      const topicsPane = document.getElementById('topics-pane');
-      topicsPane?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 100);
   };
 
   const handleTopicClick = (topic: Topic) => {
@@ -42,14 +59,21 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
     }
   };
 
-  // Group chapters by class
   const groupedChapters = selectedSubject ? 
     selectedSubject.chapters.reduce((acc, chapter) => {
-      const classKey = `Class ${chapter.class}`;
+      const classKey = `Class ${chapter.class_level}`;
       if (!acc[classKey]) acc[classKey] = [];
       acc[classKey].push(chapter);
       return acc;
     }, {} as Record<string, Chapter[]>) : {};
+
+  if (isLoading) {
+    return <div className="p-4 text-center text-muted-foreground">Loading syllabus...</div>;
+  }
+
+  if (error) {
+    return <div className="p-4 text-center text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -58,9 +82,9 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
         <div className="p-4 border-b border-border bg-card">
           <h2 className="font-semibold text-lg">Subjects</h2>
         </div>
-        <ScrollArea className="h-[300px]">
+        <ScrollArea className="h-[calc(33.33vh-50px)]">
           <div className="p-2">
-            {syllabusData.map((subject) => (
+            {syllabus.map((subject) => (
               <Button
                 key={subject.id}
                 variant="ghost"
@@ -83,7 +107,7 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
         <div className="p-4 border-b border-border bg-card">
           <h2 className="font-semibold text-lg">Chapters</h2>
         </div>
-        <ScrollArea className="h-[300px]">
+        <ScrollArea className="h-[calc(33.33vh-50px)]">
           <div className="p-2">
             {selectedSubject ? (
               Object.entries(groupedChapters).map(([className, chapters]) => (
@@ -102,7 +126,7 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
                       }`}
                       onClick={() => handleChapterClick(chapter)}
                     >
-                      {chapter.name}
+                      Ch. {chapter.number}: {chapter.name}
                     </Button>
                   ))}
                 </div>
@@ -121,7 +145,7 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
         <div className="p-4 border-b border-border bg-card">
           <h2 className="font-semibold text-lg">Topics</h2>
         </div>
-        <ScrollArea className="h-[300px]">
+        <ScrollArea className="h-[calc(33.33vh-50px)]">
           <div className="p-2">
             {selectedChapter ? (
               selectedChapter.topics.map((topic) => (
@@ -135,7 +159,7 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
                   }`}
                   onClick={() => handleTopicClick(topic)}
                 >
-                  {topic.name}
+                  {topic.number} {topic.name}
                 </Button>
               ))
             ) : (

@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { getQuestionBank } from '@/data/syllabus';
 import { MarkdownRenderer } from './MarkdownRenderer';
 
-interface Question {
+interface QuizData {
   id: string;
   question: string;
   options: string[];
@@ -13,24 +12,13 @@ interface Question {
 }
 
 interface QuizComponentProps {
-  topicId: string;
+  quizData: QuizData;
+  onNext?: () => void;
 }
 
-export function QuizComponent({ topicId }: QuizComponentProps) {
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+export function QuizComponent({ quizData, onNext }: QuizComponentProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [questionBank, setQuestionBank] = useState<Question[]>([]);
-
-  useEffect(() => {
-    const bank = getQuestionBank();
-    const topicQuestions = bank.find(item => item.topicId === topicId)?.questions || [];
-    setQuestionBank(topicQuestions);
-    
-    if (topicQuestions.length > 0) {
-      setCurrentQuestion(topicQuestions[0]);
-    }
-  }, [topicId]);
 
   const handleOptionSelect = (optionIndex: number) => {
     if (!showAnswer) {
@@ -45,70 +33,11 @@ export function QuizComponent({ topicId }: QuizComponentProps) {
   };
 
   const handleNextQuestion = () => {
-    if (questionBank.length > 0) {
-      const currentIndex = questionBank.findIndex(q => q.id === currentQuestion?.id);
-      const nextIndex = (currentIndex + 1) % questionBank.length;
-      setCurrentQuestion(questionBank[nextIndex]);
-      setSelectedOption(null);
-      setShowAnswer(false);
+    setSelectedOption(null);
+    setShowAnswer(false);
+    if (onNext) {
+      onNext();
     }
-  };
-
-  if (questionBank.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Practice Questions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-8">
-            No practice questions available for this topic yet.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!currentQuestion) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Loading...</CardTitle>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  const getOptionButtonVariant = (optionIndex: number) => {
-    if (!showAnswer) {
-      return selectedOption === optionIndex ? 'default' : 'outline';
-    }
-    
-    if (optionIndex === currentQuestion.correctAnswer) {
-      return 'default';
-    }
-    
-    if (selectedOption === optionIndex && optionIndex !== currentQuestion.correctAnswer) {
-      return 'destructive';
-    }
-    
-    return 'outline';
-  };
-
-  const getOptionButtonClass = (optionIndex: number) => {
-    if (!showAnswer) {
-      return selectedOption === optionIndex ? 'bg-primary text-primary-foreground' : '';
-    }
-    
-    if (optionIndex === currentQuestion.correctAnswer) {
-      return 'bg-success text-success-foreground hover:bg-success';
-    }
-    
-    if (selectedOption === optionIndex && optionIndex !== currentQuestion.correctAnswer) {
-      return 'bg-destructive text-destructive-foreground hover:bg-destructive';
-    }
-    
-    return '';
   };
 
   return (
@@ -120,16 +49,36 @@ export function QuizComponent({ topicId }: QuizComponentProps) {
         <CardContent className="space-y-6">
           {/* Question */}
           <div className="text-lg font-medium">
-            <MarkdownRenderer content={currentQuestion.question} />
+            <MarkdownRenderer content={quizData.question} />
           </div>
 
           {/* Options */}
           <div className="grid grid-cols-1 gap-3">
-            {currentQuestion.options.map((option, index) => (
+            {quizData.options.map((option, index) => (
               <Button
                 key={index}
-                variant={getOptionButtonVariant(index)}
-                className={`justify-start h-auto p-4 text-left whitespace-normal ${getOptionButtonClass(index)}`}
+                variant={
+                  showAnswer
+                    ? index === quizData.correctAnswer
+                      ? 'default'
+                      : selectedOption === index
+                        ? 'destructive'
+                        : 'outline'
+                    : selectedOption === index
+                      ? 'default'
+                      : 'outline'
+                }
+                className={`justify-start h-auto p-4 text-left whitespace-normal ${
+                  showAnswer
+                    ? index === quizData.correctAnswer
+                      ? 'bg-success text-success-foreground hover:bg-success'
+                      : selectedOption === index
+                        ? 'bg-destructive text-destructive-foreground hover:bg-destructive'
+                        : ''
+                    : selectedOption === index
+                      ? 'bg-primary text-primary-foreground'
+                      : ''
+                }`}
                 onClick={() => handleOptionSelect(index)}
                 disabled={showAnswer}
               >
@@ -157,13 +106,13 @@ export function QuizComponent({ topicId }: QuizComponentProps) {
                 <CardTitle className="text-lg">Explanation</CardTitle>
               </CardHeader>
               <CardContent>
-                <MarkdownRenderer content={currentQuestion.explanation} />
+                <MarkdownRenderer content={quizData.explanation} />
               </CardContent>
             </Card>
           )}
 
           {/* Next Question Button */}
-          {showAnswer && (
+          {showAnswer && onNext && (
             <Button
               onClick={handleNextQuestion}
               className="w-full"
