@@ -1,6 +1,6 @@
 $projectPath = "C:\Users\daksh\dev\frontend-tinker-studio"
 $logPath = "$projectPath\sync.log"
-$git = "git"  # Use full path to git.exe if necessary, e.g. "C:\Program Files\Git\bin\git.exe"
+$git = "C:\Program Files\Git\cmd\git.exe"  # Full path to git.exe
 
 "Starting sync at $(Get-Date)" | Out-File $logPath -Force
 
