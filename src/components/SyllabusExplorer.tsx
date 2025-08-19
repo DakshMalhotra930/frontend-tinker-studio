@@ -1,34 +1,38 @@
 import { useState, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Subject, Chapter, Topic } from '@/data/syllabus';
+import { Subject, Chapter, Topic } from '@/data/syllabus'; // We still need the types
 
 interface SyllabusExplorerProps {
   onTopicSelect: (topic: Topic, chapter: Chapter, subject: Subject) => void;
 }
 
 export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
+  // --- NEW: State for live syllabus data, loading, and errors ---
   const [syllabus, setSyllabus] = useState<Subject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null);
   const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
 
+  // --- NEW: useEffect to fetch data from your backend ---
   useEffect(() => {
     const fetchSyllabus = async () => {
       try {
         setIsLoading(true);
+        // Use environment variable for backend URL
         const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/syllabus`;
         const response = await fetch(apiUrl);
-        
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data: Subject[] = await response.json();
         setSyllabus(data);
+        // Automatically select the first subject once loaded
         if (data && data.length > 0) {
-            setSelectedSubject(data[0]);
+          setSelectedSubject(data[0]);
         }
       } catch (err: any) {
         setError(err.message);
@@ -39,7 +43,7 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
     };
 
     fetchSyllabus();
-  }, []);
+  }, []); // The empty array [] ensures this runs only once when the component mounts.
 
   const handleSubjectClick = (subject: Subject) => {
     setSelectedSubject(subject);
@@ -59,14 +63,17 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
     }
   };
 
-  const groupedChapters = selectedSubject ? 
+  const groupedChapters = selectedSubject ?
     selectedSubject.chapters.reduce((acc, chapter) => {
+      // Use the correct property name from your backend: class_level
       const classKey = `Class ${chapter.class_level}`;
       if (!acc[classKey]) acc[classKey] = [];
       acc[classKey].push(chapter);
       return acc;
     }, {} as Record<string, Chapter[]>) : {};
 
+  
+  // --- NEW: Render loading and error states ---
   if (isLoading) {
     return <div className="p-4 text-center text-muted-foreground">Loading syllabus...</div>;
   }
@@ -84,6 +91,7 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
         </div>
         <ScrollArea className="h-[calc(33.33vh-50px)]">
           <div className="p-2">
+            {/* --- Use the 'syllabus' state variable --- */}
             {syllabus.map((subject) => (
               <Button
                 key={subject.id}
