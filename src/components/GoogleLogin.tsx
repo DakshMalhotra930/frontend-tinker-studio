@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 
 // Use your Google Client ID
 const GOOGLE_CLIENT_ID = "621306164868-21bamnrurup0nk6f836fss6q92s04aav.apps.googleusercontent.com";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://praxisai-rho.vercel.app/"; 
 
 const GoogleLogin = ({ onLogin }) => {
   useEffect(() => {
