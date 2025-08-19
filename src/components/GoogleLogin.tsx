@@ -24,6 +24,7 @@ const GoogleLogin = ({ onLogin }) => {
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
       script.defer = true;
+      console.log("Loading Google Sign-In script...");
       script.onload = initializeGoogleSignIn;
       document.body.appendChild(script);
     }
@@ -41,8 +42,10 @@ const GoogleLogin = ({ onLogin }) => {
       })
       .then((data) => {
         onLogin(data); // Pass user info to parent
+        console.log("Login successful:", data);
       })
       .catch(() => alert("Login failed"));
+      console.log("Google Sign-In response:", response);
   };
 
   return <div id="google-signin-button"></div>;
