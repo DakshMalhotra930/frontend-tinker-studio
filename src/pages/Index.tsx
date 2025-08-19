@@ -57,6 +57,24 @@ const Index = ({ user, onLogout }) => {
           />
           {/* Feature Request Form at bottom */}
           <FeatureRequestForm userEmail={user.email} />
+
+          {/* What’s Next Section */}
+          <section className="mt-8 p-6 bg-card rounded-lg shadow-md text-foreground max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold mb-4">What’s Next?</h2>
+            <p className="mb-3">
+              We are actively improving PraxisAI! Here are some exciting features coming soon:
+            </p>
+            <ul className="list-disc list-inside space-y-2">
+              <li>Expanded syllabus coverage across all JEE subjects</li>
+              <li>Personalized study plans based on your progress</li>
+              <li>Advanced AI tutor with natural language Q&A support</li>
+              <li>Interactive quizzes and practice tests</li>
+              <li>Mobile app for on-the-go learning</li>
+            </ul>
+            <p className="mt-4">
+              We’d love your feedback and feature requests—keep them coming!
+            </p>
+          </section>
         </div>
       </div>
     </div>
