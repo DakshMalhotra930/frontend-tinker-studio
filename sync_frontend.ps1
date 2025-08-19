@@ -1,4 +1,4 @@
-$projectPath = "C:\Users\daksh\OneDrive\Dokumen\ai-tutor"
+$projectPath = "C:\Users\daksh\dev\frontend-tinker-studio"
 $logPath = "$projectPath\sync.log"
 
 "Starting sync at $(Get-Date)" | Out-File $logPath -Force
