@@ -72,7 +72,6 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
       return acc;
     }, {} as Record<string, Chapter[]>) : {};
 
-  
   // --- NEW: Render loading and error states ---
   if (isLoading) {
     return <div className="p-4 text-center text-muted-foreground">Loading syllabus...</div>;
@@ -83,13 +82,13 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col md:flex-row md:space-x-4">
       {/* Subjects Pane */}
-      <div className="flex-1 border-b border-border">
+      <div className="flex-1 border-b border-border md:border-b-0 md:border-r md:border-border">
         <div className="p-4 border-b border-border bg-card">
           <h2 className="font-semibold text-lg">Subjects</h2>
         </div>
-        <ScrollArea className="h-[calc(33.33vh-50px)]">
+        <ScrollArea className="h-[calc(33.33vh-50px)] md:h-full">
           <div className="p-2">
             {/* --- Use the 'syllabus' state variable --- */}
             {syllabus.map((subject) => (
@@ -111,11 +110,11 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
       </div>
 
       {/* Chapters Pane */}
-      <div id="chapters-pane" className="flex-1 border-b border-border">
+      <div id="chapters-pane" className="flex-1 border-b border-border md:border-b-0 md:border-r md:border-border">
         <div className="p-4 border-b border-border bg-card">
           <h2 className="font-semibold text-lg">Chapters</h2>
         </div>
-        <ScrollArea className="h-[calc(33.33vh-50px)]">
+        <ScrollArea className="h-[calc(33.33vh-50px)] md:h-full">
           <div className="p-2">
             {selectedSubject ? (
               Object.entries(groupedChapters).map(([className, chapters]) => (
@@ -153,7 +152,7 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
         <div className="p-4 border-b border-border bg-card">
           <h2 className="font-semibold text-lg">Topics</h2>
         </div>
-        <ScrollArea className="h-[calc(33.33vh-50px)]">
+        <ScrollArea className="h-[calc(33.33vh-50px)] md:h-full">
           <div className="p-2">
             {selectedChapter ? (
               selectedChapter.topics.map((topic) => (
