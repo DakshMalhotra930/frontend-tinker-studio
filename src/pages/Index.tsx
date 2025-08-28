@@ -3,6 +3,7 @@ import { Subject, Chapter, Topic } from '@/data/syllabus';
 import { SyllabusExplorer } from '@/components/SyllabusExplorer';
 import { ContentViewer } from '@/components/ContentViewer';
 import { FeatureRequestForm } from '@/components/ui/FeatureRequestForm';
+import { AgenticSidebar } from '@/components/AgenticSidebar';
 
 const Index = ({ user, onLogout }) => {
   const [selectedTopic, setSelectedTopic] = useState(null);
@@ -77,6 +78,9 @@ const Index = ({ user, onLogout }) => {
           </section>
         </div>
       </div>
+
+      {/* Quick AI Help Sidebar */}
+      <AgenticSidebar />
     </div>
   );
 };
