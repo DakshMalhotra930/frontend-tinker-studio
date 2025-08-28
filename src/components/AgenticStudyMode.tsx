@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Loader2, MessageSquare, BookOpen, Calculator, Zap, AlertCircle } from 'lucide-react';
+import { Send, Loader2, MessageSquare, BookOpen, Calculator, AlertCircle } from 'lucide-react';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ImageUpload } from './ImageUpload';
 import { useDeepStudySession } from '@/hooks/useDeepStudySession';
@@ -25,16 +25,11 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
     currentSession,
     chatMessages,
     studyPlans,
-    quizQuestions,
     isLoading,
-    isGeneratingQuiz,
     error,
     sendMessage,
-    solveProblem,
-    generateQuiz,
     createStudyPlan,
     clearError,
-    resetQuiz,
   } = useDeepStudySession({ subject, topic });
 
   const handleSendMessage = async () => {
@@ -45,7 +40,8 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
 
   const handleSolveProblem = async () => {
     if (!problem.trim()) return;
-    await solveProblem(problem);
+    // Use the chat API for problem solving
+    await sendMessage(`Please help me solve this problem: ${problem}`);
     setProblem('');
     setSelectedImage(null);
   };
@@ -107,7 +103,7 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
       {/* Main Content */}
       <div className="flex-1 overflow-hidden">
         <Tabs defaultValue="chat" className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="chat" className="flex items-center space-x-2">
               <MessageSquare className="w-4 h-4" />
               <span>AI Chat</span>
@@ -119,10 +115,6 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
             <TabsTrigger value="plans" className="flex items-center space-x-2">
               <BookOpen className="w-4 h-4" />
               <span>Study Plans</span>
-            </TabsTrigger>
-            <TabsTrigger value="quiz" className="flex items-center space-x-2">
-              <Zap className="w-4 h-4" />
-              <span>Quiz</span>
             </TabsTrigger>
           </TabsList>
 
@@ -299,75 +291,6 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                     <div className="text-center py-8">
                       <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">No study plans yet. Create your first one!</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
-          </TabsContent>
-
-          {/* Quiz Tab */}
-          <TabsContent value="quiz" className="flex-1 mt-0">
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Interactive Quiz</h3>
-                <div className="space-x-2">
-                  <Button onClick={resetQuiz} variant="outline">
-                    Reset
-                  </Button>
-                  <Button onClick={generateQuiz} disabled={isGeneratingQuiz}>
-                    {isGeneratingQuiz ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-4 h-4 mr-2" />
-                        Generate Quiz
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              <ScrollArea className="h-[calc(100vh-300px)]">
-                <div className="space-y-4">
-                  {quizQuestions.map((question, index) => (
-                    <Card key={index}>
-                      <CardHeader>
-                        <CardTitle className="text-lg">
-                          Question {index + 1}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="mb-4">{question.question}</p>
-                        <div className="space-y-2">
-                          {Object.entries(question.options).map(([key, option]) => (
-                            <div
-                              key={key}
-                              className="p-3 border rounded-lg hover:bg-muted/50 cursor-pointer"
-                            >
-                              <strong>{key}.</strong> {option}
-                            </div>
-                          ))}
-                        </div>
-                        <div className="mt-4 p-3 bg-muted rounded-lg">
-                          <p className="text-sm">
-                            <strong>Correct Answer:</strong> {question.correct_answer}
-                          </p>
-                          <p className="text-sm mt-2">
-                            <strong>Explanation:</strong> {question.explanation}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  
-                  {quizQuestions.length === 0 && (
-                    <div className="text-center py-8">
-                      <Zap className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">No quiz questions yet. Generate a quiz to test your knowledge!</p>
                     </div>
                   )}
                 </div>

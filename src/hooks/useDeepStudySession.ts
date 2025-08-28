@@ -1,12 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   sessionAPI,
-  problemAPI,
-  quizAPI,
   studyPlanAPI,
   apiUtils,
   type StudySession,
-  type QuizQuestion,
   type APIError
 } from '@/lib/api';
 
@@ -37,9 +34,7 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
   const [currentSession, setCurrentSession] = useState<StudySession | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([]);
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
   const [error, setError] = useState('');
 
   // Initialize session when subject or topic changes
@@ -115,63 +110,6 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
     }
   }, [currentSession]);
 
-  const solveProblem = useCallback(async (problem: string) => {
-    if (!problem.trim() || !currentSession) return;
-
-    const problemMessage: ChatMessage = {
-      id: Date.now().toString(),
-      text: `Please help me solve this problem: ${problem}`,
-      isUser: true,
-      timestamp: new Date(),
-    };
-
-    setChatMessages(prev => [...prev, problemMessage]);
-    setIsLoading(true);
-    setError('');
-
-    try {
-      const data = await problemAPI.solve({
-        session_id: currentSession.session_id,
-        problem,
-        step: 1,
-        hint_level: 3, // Full solution
-      });
-
-      const solutionMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        text: data.solution,
-        isUser: false,
-        timestamp: new Date(),
-      };
-      setChatMessages(prev => [...prev, solutionMessage]);
-    } catch (err) {
-      console.error('Failed to solve problem:', err);
-      setError(apiUtils.formatError(err));
-    } finally {
-      setIsLoading(false);
-    }
-  }, [currentSession]);
-
-  const generateQuiz = useCallback(async () => {
-    if (!currentSession) return;
-
-    try {
-      setError('');
-      setIsGeneratingQuiz(true);
-      const data = await quizAPI.generate({
-        session_id: currentSession.session_id,
-        difficulty: 'medium',
-        question_count: 5,
-      });
-      setQuizQuestions(data.questions);
-    } catch (err) {
-      console.error('Failed to generate quiz:', err);
-      setError(apiUtils.formatError(err));
-    } finally {
-      setIsGeneratingQuiz(false);
-    }
-  }, [currentSession]);
-
   const createStudyPlan = useCallback(async () => {
     if (!subject) return;
 
@@ -206,27 +144,18 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
     setError('');
   }, []);
 
-  const resetQuiz = useCallback(() => {
-    setQuizQuestions([]);
-  }, []);
-
   return {
     // State
     currentSession,
     chatMessages,
     studyPlans,
-    quizQuestions,
     isLoading,
-    isGeneratingQuiz,
     error,
 
     // Actions
     sendMessage,
-    solveProblem,
-    generateQuiz,
     createStudyPlan,
     clearError,
-    resetQuiz,
     initializeSession,
   };
 }
