@@ -52,7 +52,7 @@ export function ImageUpload({ onImageSelect, disabled = false, className = '' }:
   return (
     <div className={`space-y-4 ${className}`}>
       <label className="block text-sm font-medium">Upload Problem Image (Optional)</label>
-      
+
       <div className="flex items-center space-x-4">
         <Button
           variant="outline"
@@ -63,7 +63,7 @@ export function ImageUpload({ onImageSelect, disabled = false, className = '' }:
           <Upload className="w-4 h-4" />
           <span>Choose Image</span>
         </Button>
-        
+
         <input
           id="image-upload"
           type="file"
