@@ -292,9 +292,9 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden h-full">
         <Tabs defaultValue="chat" className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
             <TabsTrigger value="chat" className="flex items-center space-x-2">
               <MessageSquare className="w-4 h-4" />
               <span>AI Chat</span>
