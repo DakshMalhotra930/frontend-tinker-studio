@@ -243,7 +243,7 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                               <CardTitle className="text-lg">{plan.title}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                              <MarkdownRenderer content={plan.content} />
+                              <MarkdownRenderer content={plan.description} />
                             </CardContent>
                           </Card>
                         ))}
