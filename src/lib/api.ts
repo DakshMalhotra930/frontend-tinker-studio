@@ -79,7 +79,19 @@ async function apiRequest<T>(
 
     try {
       const errorData = await response.json();
-      errorMessage = errorData.detail || errorMessage;
+      // Handle different error response formats
+      if (errorData.detail) {
+        if (Array.isArray(errorData.detail)) {
+          // FastAPI validation errors
+          errorMessage = errorData.detail.map((err: any) => err.msg || err.message || 'Validation error').join(', ');
+        } else {
+          errorMessage = errorData.detail;
+        }
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      } else if (errorData.error) {
+        errorMessage = errorData.error;
+      }
       errorDetails = errorData;
     } catch {
       // If error response is not JSON, use default message
@@ -91,7 +103,7 @@ async function apiRequest<T>(
   return response.json();
 }
 
-// Session Management - Updated to use /agentic/ prefix
+// Session Management - Using /agentic/ prefix
 export const sessionAPI = {
   // Start a new study session
   start: async (data: {
@@ -119,7 +131,7 @@ export const sessionAPI = {
   },
 };
 
-// Study Plan Generation - Updated to use /agentic/ prefix
+// Study Plan Generation - Using /agentic/ prefix
 export const studyPlanAPI = {
   // Generate a personalized study plan
   generate: async (data: {
@@ -136,7 +148,7 @@ export const studyPlanAPI = {
   },
 };
 
-// Quick Help - Updated to use /agentic/ prefix
+// Quick Help - Using /agentic/ prefix
 export const quickHelpAPI = {
   // Get quick AI help
   getHelp: async (data: {
@@ -150,14 +162,25 @@ export const quickHelpAPI = {
   },
 };
 
-// Additional API endpoints for ai-tutor backend - Updated to use /agentic/ prefix
+// Content Generation - Using /api/ prefix (as shown in docs)
 export const contentAPI = {
   // Generate content for different modes (Learn, Revise, Practice)
   generateContent: async (data: {
     topic: string;
     mode: string;
   }): Promise<any> => {
-    return apiRequest<any>('/agentic/generate-content', {
+    return apiRequest<any>('/api/generate-content', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// Google Login - Using /api/ prefix (as shown in docs)
+export const authAPI = {
+  // Google login
+  googleLogin: async (data: any): Promise<any> => {
+    return apiRequest<any>('/api/google-login', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -178,6 +201,14 @@ export const apiUtils = {
     }
     if (error instanceof Error) {
       return error.message;
+    }
+    if (typeof error === 'object' && error !== null) {
+      // Handle [object Object] case
+      try {
+        return JSON.stringify(error);
+      } catch {
+        return 'An unexpected error occurred';
+      }
     }
     return 'An unexpected error occurred';
   },
