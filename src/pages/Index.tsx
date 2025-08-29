@@ -94,22 +94,20 @@ const Index = ({ user, onLogout }) => {
                 <TabsContent value="deep-study" className="flex-1 flex flex-col">
                   <div className="p-6">
                     <div className="max-w-4xl mx-auto">
-                      <div className="flex items-center space-x-3 mb-6">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          <span className="text-2xl">🎓</span>
-                        </div>
-                        <div>
-                          <h1 className="text-3xl font-bold">Deep Study Mode</h1>
-                          <p className="text-muted-foreground">
-                            Structured study plans, detailed problem solving, and in-depth AI tutoring sessions.
-                          </p>
+                      <div className="text-center mb-8">
+                        <h1 className="text-3xl font-bold text-foreground mb-4">
+                          Deep Study Mode
+                        </h1>
+                        <p className="text-muted-foreground text-lg">
+                          Structured study plans, detailed problem solving, and in-depth AI tutoring sessions.
+                        </p>
+                        <div className="mt-4 text-sm text-muted-foreground">
+                          Deep Study Mode {selectedSubject?.name || 'Chemistry'} → {selectedTopic?.name || 'General Study'}
                         </div>
                       </div>
-                      
-                      {/* Deep Study Mode is now always accessible */}
-                      <AgenticStudyMode 
-                        subject={selectedSubject?.name || 'General'} 
-                        topic={selectedTopic?.name || 'General Study'} 
+                      <AgenticStudyMode
+                        subject={selectedSubject?.name || 'Chemistry'} // Default to Chemistry to match backend validation
+                        topic={selectedTopic?.name || 'General Study'}
                       />
                     </div>
                   </div>

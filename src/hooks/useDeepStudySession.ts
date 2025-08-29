@@ -39,23 +39,30 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
 
   // Initialize session when subject or topic changes
   useEffect(() => {
-    if (subject && topic) {
+    // Allow sessions even without specific topic (General Study mode)
+    if (subject) {
       initializeSession();
     }
   }, [subject, topic]);
 
   const initializeSession = useCallback(async () => {
-    if (!subject || !topic) return;
+    if (!subject) return;
 
     try {
       setError('');
       setIsLoading(true);
-      const data = await sessionAPI.start({
-        subject,
-        topic,
-        mode: 'explain',
+      
+      // Ensure we have valid data for backend
+      const sessionData = {
+        subject: subject, // This will be 'Chemistry', 'Physics', or 'Mathematics'
+        topic: topic || 'General Study', // Use 'General Study' if no specific topic
+        mode: 'explain' as const,
         user_id: apiUtils.createUserId(),
-      });
+      };
+
+      console.log('Starting session with:', sessionData);
+      
+      const data = await sessionAPI.start(sessionData);
 
       setCurrentSession(data);
 

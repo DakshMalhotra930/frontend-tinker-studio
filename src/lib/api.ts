@@ -52,55 +52,63 @@ export class APIError extends Error {
 }
 
 // Generic API request function
-async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<T> {
+async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   if (!API_BASE_URL) {
     throw new APIError('Backend URL not configured. Please set VITE_API_BASE_URL in .env file', 0);
   }
-
+  
   const url = `${API_BASE_URL}${endpoint}`;
   
+  // Log the request details for debugging
   console.log(`Making API request to: ${url}`);
+  if (options.body) {
+    console.log('Request body:', options.body);
+  }
+  
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
 
-  const defaultOptions: RequestInit = {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-  };
-
-  const response = await fetch(url, { ...defaultOptions, ...options });
-
-  if (!response.ok) {
-    let errorMessage = `HTTP error! status: ${response.status}`;
-    let errorDetails = null;
-
-    try {
-      const errorData = await response.json();
-      // Handle different error response formats
-      if (errorData.detail) {
-        if (Array.isArray(errorData.detail)) {
-          // FastAPI validation errors
-          errorMessage = errorData.detail.map((err: any) => err.msg || err.message || 'Validation error').join(', ');
-        } else {
-          errorMessage = errorData.detail;
+    if (!response.ok) {
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      let errorDetails = null;
+      
+      try {
+        const errorData = await response.json();
+        console.log('Error response:', errorData);
+        
+        if (errorData.detail) {
+          if (Array.isArray(errorData.detail)) {
+            errorMessage = errorData.detail.map((err: any) => err.msg || err.message || 'Validation error').join(', ');
+          } else {
+            errorMessage = errorData.detail;
+          }
+        } else if (errorData.message) {
+          errorMessage = errorData.message;
+        } else if (errorData.error) {
+          errorMessage = errorData.error;
         }
-      } else if (errorData.message) {
-        errorMessage = errorData.message;
-      } else if (errorData.error) {
-        errorMessage = errorData.error;
+        errorDetails = errorData;
+      } catch {
+        // If we can't parse the error response, use the status text
+        errorMessage = response.statusText || errorMessage;
       }
-      errorDetails = errorData;
-    } catch {
-      // If error response is not JSON, use default message
+      
+      throw new APIError(errorMessage, response.status, errorDetails);
     }
 
-    throw new APIError(errorMessage, response.status, errorDetails);
+    return response.json();
+  } catch (error) {
+    if (error instanceof APIError) {
+      throw error;
+    }
+    throw new APIError(`Network error: ${error instanceof Error ? error.message : 'Unknown error'}`, 0);
   }
-
-  return response.json();
 }
 
 // Session Management - Using /agentic/ prefix
