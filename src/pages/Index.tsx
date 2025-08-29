@@ -54,13 +54,13 @@ const Index = ({ user, onLogout }) => {
           <SyllabusExplorer onTopicSelect={handleTopicSelect} />
         </div>
         <div className="flex-1 flex flex-col">
-          {/* Top Level Tabs */}
+          {/* Top Level Tabs - Reduced size */}
           <div className="border-b border-border bg-card">
-            <div className="container mx-auto px-6">
+            <div className="px-6 py-2">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="syllabus">Syllabus</TabsTrigger>
-                  <TabsTrigger value="deep-study">Deep Study</TabsTrigger>
+                <TabsList className="w-auto">
+                  <TabsTrigger value="syllabus" className="px-4 py-2">Syllabus</TabsTrigger>
+                  <TabsTrigger value="deep-study" className="px-4 py-2">Deep Study</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="syllabus" className="flex-1 flex flex-col">
@@ -106,19 +106,11 @@ const Index = ({ user, onLogout }) => {
                         </div>
                       </div>
                       
-                      {selectedTopic && selectedChapter && selectedSubject ? (
-                        <AgenticStudyMode subject={selectedSubject.name} topic={selectedTopic.name} />
-                      ) : (
-                        <div className="text-center py-12">
-                          <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-2xl">📚</span>
-                          </div>
-                          <h3 className="text-xl font-semibold mb-2">Select a Topic to Begin</h3>
-                          <p className="text-muted-foreground">
-                            Choose a subject, chapter, and topic from the left panel to start your deep study session.
-                          </p>
-                        </div>
-                      )}
+                      {/* Deep Study Mode is now always accessible */}
+                      <AgenticStudyMode 
+                        subject={selectedSubject?.name || 'General'} 
+                        topic={selectedTopic?.name || 'General Study'} 
+                      />
                     </div>
                   </div>
                 </TabsContent>
