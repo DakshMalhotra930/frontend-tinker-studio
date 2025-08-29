@@ -111,9 +111,18 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="chat" className="flex-1 flex flex-col">
-                <div className="flex-1 flex flex-col">
-                  <ScrollArea className="flex-1 p-4">
+              <TabsContent value="chat" className="flex-1 flex flex-col" style={{ height: '600px' }}>
+                <div className="flex-1 flex flex-col" style={{ height: '600px' }}>
+                  {/* Chat Messages Container - Hard Fixed Height with Internal Scroll */}
+                  <div 
+                    className="flex-1 overflow-y-auto p-4 space-y-4"
+                    style={{ 
+                      height: '500px',
+                      maxHeight: '500px',
+                      minHeight: '500px',
+                      overflowY: 'auto'
+                    }}
+                  >
                     {chatMessages.length === 0 ? (
                       <div className="text-center py-8">
                         <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
@@ -137,24 +146,35 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                         {chatMessages.map((msg, index) => (
                           <div
                             key={index}
-                            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                            className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}
                           >
                             <div
                               className={`max-w-[80%] p-3 rounded-lg ${
-                                msg.role === 'user'
+                                msg.isUser
                                   ? 'bg-primary text-primary-foreground'
                                   : 'bg-muted'
                               }`}
                             >
-                              <MarkdownRenderer content={msg.content} />
+                              <MarkdownRenderer content={msg.text} />
                             </div>
                           </div>
                         ))}
+                        {/* Auto-scroll anchor */}
+                        <div ref={chatBottomRef} />
                       </div>
                     )}
-                  </ScrollArea>
+                  </div>
                   
-                  <div className="p-4 border-t border-border">
+                  {/* Input Field - Fixed at Bottom with Hard Height */}
+                  <div 
+                    className="p-4 border-t border-border bg-background"
+                    style={{ 
+                      height: '100px',
+                      minHeight: '100px',
+                      maxHeight: '100px',
+                      flexShrink: 0
+                    }}
+                  >
                     <div className="flex space-x-2">
                       <Input
                         value={message}
