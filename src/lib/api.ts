@@ -1,9 +1,13 @@
 // API service layer for AI Tutor backend integration
 // Connect to your ai-tutor backend: https://github.com/DakshMalhotra930/ai-tutor/tree/main/backend
 
-// For local development, use: 'http://localhost:8000'
-// For production, use your actual ai-tutor backend deployment URL
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+// Set your Fly.io backend URL in .env file
+// Example: VITE_API_BASE_URL=https://praxis-ai.fly.dev
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+if (!API_BASE_URL) {
+  console.error('VITE_API_BASE_URL is not set. Please set your Fly.io backend URL in .env file');
+}
 
 export interface StudySession {
   session_id: string;
@@ -52,6 +56,10 @@ async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
+  if (!API_BASE_URL) {
+    throw new APIError('Backend URL not configured. Please set VITE_API_BASE_URL in .env file', 0);
+  }
+
   const url = `${API_BASE_URL}${endpoint}`;
   
   console.log(`Making API request to: ${url}`);
@@ -83,7 +91,7 @@ async function apiRequest<T>(
   return response.json();
 }
 
-// Session Management - Updated to match ai-tutor backend
+// Session Management - Updated to use /agentic/ prefix
 export const sessionAPI = {
   // Start a new study session
   start: async (data: {
@@ -92,7 +100,7 @@ export const sessionAPI = {
     mode: string;
     user_id: string;
   }): Promise<StudySession> => {
-    return apiRequest<StudySession>('/api/session/start', {
+    return apiRequest<StudySession>('/agentic/session/start', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -104,14 +112,14 @@ export const sessionAPI = {
     message: string;
     context_hint?: string;
   }): Promise<ChatResponse> => {
-    return apiRequest<ChatResponse>('/api/session/chat', {
+    return apiRequest<ChatResponse>('/agentic/session/chat', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 };
 
-// Study Plan Generation - Updated to match ai-tutor backend
+// Study Plan Generation - Updated to use /agentic/ prefix
 export const studyPlanAPI = {
   // Generate a personalized study plan
   generate: async (data: {
@@ -121,35 +129,35 @@ export const studyPlanAPI = {
     goals: string[];
     current_level?: string;
   }): Promise<StudyPlanResponse> => {
-    return apiRequest<StudyPlanResponse>('/api/plan/generate', {
+    return apiRequest<StudyPlanResponse>('/agentic/plan/generate', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 };
 
-// Quick Help - Updated to match ai-tutor backend
+// Quick Help - Updated to use /agentic/ prefix
 export const quickHelpAPI = {
   // Get quick AI help
   getHelp: async (data: {
     query: string;
     context?: string;
   }): Promise<QuickHelpResponse> => {
-    return apiRequest<QuickHelpResponse>('/api/quick-help', {
+    return apiRequest<QuickHelpResponse>('/agentic/quick-help', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 };
 
-// Additional API endpoints for ai-tutor backend
+// Additional API endpoints for ai-tutor backend - Updated to use /agentic/ prefix
 export const contentAPI = {
   // Generate content for different modes (Learn, Revise, Practice)
   generateContent: async (data: {
     topic: string;
     mode: string;
   }): Promise<any> => {
-    return apiRequest<any>('/api/generate-content', {
+    return apiRequest<any>('/agentic/generate-content', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -176,6 +184,6 @@ export const apiUtils = {
 
   // Get the current API base URL
   getApiBaseUrl: (): string => {
-    return API_BASE_URL;
+    return API_BASE_URL || 'Not configured';
   },
 };
