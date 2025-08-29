@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Brain, Sparkles, FileText, Loader2, AlertTriangle, Zap } from 'lucide-react';
+import { Brain, Sparkles, FileText, Loader2, AlertTriangle } from 'lucide-react';
 import { Subject, Chapter, Topic } from '@/data/syllabus';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { QuizComponent } from './QuizComponent';
-import { AgenticStudyMode } from './AgenticStudyMode';
 
 interface ContentViewerProps {
   topic: Topic | null;
@@ -13,7 +12,7 @@ interface ContentViewerProps {
   subject: Subject | null;
 }
 
-type Mode = 'learn' | 'revise' | 'practice' | 'deep-study';
+type Mode = 'learn' | 'revise' | 'practice';
 
 interface BackendPracticeQuestion {
   question: string;
@@ -131,7 +130,7 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-2">{topic.name}</h1>
           <p className="text-muted-foreground mb-6">{subject.name} → {chapter.name}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => fetchContent('learn')}>
               <CardHeader className="text-center">
                 <Brain className="w-12 h-12 mx-auto mb-4 text-primary" />
@@ -162,17 +161,6 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
               <CardContent>
                 <p className="text-muted-foreground text-center">
                   Interactive quiz questions to test your understanding
-                </p>
-              </CardContent>
-            </Card>
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => setMode('deep-study')}>
-              <CardHeader className="text-center">
-                <Zap className="w-12 h-12 mx-auto mb-4 text-primary" />
-                <CardTitle className="text-xl">⚡ Deep Study</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-center">
-                  AI-powered interactive study session with chat, problem solving, and personalized plans
                 </p>
               </CardContent>
             </Card>
@@ -219,7 +207,7 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
           </div>
         )}
 
-        {content && !isLoading && mode !== 'deep-study' && (
+        {content && !isLoading && (
           <>
             {mode === 'learn' && <MarkdownRenderer content={content.content} />}
             {mode === 'revise' && <MarkdownRenderer content={content.content} />}
@@ -243,10 +231,6 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
               </p>
             </div>
           </>
-        )}
-
-        {mode === 'deep-study' && (
-          <AgenticStudyMode subject={subject.name} topic={topic.name} />
         )}
       </div>
     </div>
