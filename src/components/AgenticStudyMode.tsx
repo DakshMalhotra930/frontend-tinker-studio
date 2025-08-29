@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -21,6 +21,7 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
   const [message, setMessage] = useState('');
   const [problem, setProblem] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const chatBottomRef = useRef<HTMLDivElement>(null);
 
   const {
     currentSession,
@@ -32,6 +33,13 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
     createStudyPlan,
     clearError,
   } = useDeepStudySession({ subject, topic });
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (chatBottomRef.current) {
+      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages]);
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
