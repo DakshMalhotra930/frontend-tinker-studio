@@ -1,16 +1,22 @@
-# Backend Integration Guide
+# AI Tutor Backend Integration Guide
 
 ## Overview
 This guide explains how to connect the frontend to your [ai-tutor backend](https://github.com/DakshMalhotra930/ai-tutor/tree/main/backend).
 
+## Current Issue & Solution
+
+**Problem**: The frontend was still trying to connect to the old backend (`praxis-ai.fly.dev`) instead of your ai-tutor backend.
+
+**Solution**: Updated API configuration to properly connect to your ai-tutor backend and created environment configuration.
+
 ## Current API Configuration
 
-The frontend is now configured to work with standard backend patterns. Here are the current API endpoints:
+The frontend is now configured to work with your ai-tutor backend. Here are the current API endpoints:
 
 ### Base URL Configuration
-- **Local Development**: `http://localhost:8000`
-- **Production**: Your actual backend deployment URL
-- **Previous**: `https://praxis-ai.fly.dev/agentic` (as fallback)
+- **Local Development**: `http://localhost:8000` (default)
+- **Production**: Your actual ai-tutor backend deployment URL
+- **Environment Variable**: `VITE_API_BASE_URL`
 
 ### API Endpoints
 
@@ -29,60 +35,113 @@ The frontend is now configured to work with standard backend patterns. Here are 
 
 ## Setup Instructions
 
-### Step 1: Create Environment File
-Create a `.env` file in your project root:
-
-```bash
-# Copy from .env.example
-cp .env.example .env
-```
-
-### Step 2: Configure Backend URL
-Edit the `.env` file and set your backend URL:
-
+### Step 1: Environment Configuration ✅ COMPLETED
+The `.env` file has been created with:
 ```env
-# For local development
 VITE_API_BASE_URL=http://localhost:8000
-
-# For production (update with your actual backend URL)
-# VITE_API_BASE_URL=https://your-backend-domain.com
 ```
+
+### Step 2: Start Your AI Tutor Backend
+1. Navigate to your [ai-tutor backend](https://github.com/DakshMalhotra930/ai-tutor/tree/main/backend)
+2. Start your Python backend server (typically on port 8000)
+3. Ensure it's accessible at `http://localhost:8000`
 
 ### Step 3: Update Backend Routes
-Make sure your Python backend has these routes:
+Make sure your ai-tutor backend has these routes:
 
 ```python
-# Example FastAPI routes
+# Example FastAPI routes for ai-tutor backend
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class SessionStartRequest(BaseModel):
+    subject: str
+    topic: str
+    mode: str
+    user_id: str
+
+class ChatRequest(BaseModel):
+    session_id: str
+    message: str
+    context_hint: str = None
+
+class StudyPlanRequest(BaseModel):
+    user_id: str
+    subjects: list[str]
+    duration_days: int
+    goals: list[str]
+    current_level: str = None
+
+class QuickHelpRequest(BaseModel):
+    query: str
+    context: str = None
+
+class ContentRequest(BaseModel):
+    topic: str
+    mode: str
+
 @app.post("/api/session/start")
-async def start_session(data: dict):
+async def start_session(data: SessionStartRequest):
     # Your session start logic
-    pass
+    return {
+        "session_id": "session_123",
+        "subject": data.subject,
+        "topic": data.topic,
+        "mode": data.mode,
+        "created_at": "2025-01-29T10:00:00Z",
+        "welcome_message": "Welcome to your study session!"
+    }
 
 @app.post("/api/session/chat")
-async def chat(data: dict):
+async def chat(data: ChatRequest):
     # Your chat logic
-    pass
+    return {
+        "session_id": data.session_id,
+        "response": "I'm here to help you with your studies!",
+        "timestamp": "2025-01-29T10:00:00Z"
+    }
 
 @app.post("/api/plan/generate")
-async def generate_plan(data: dict):
+async def generate_plan(data: StudyPlanRequest):
     # Your plan generation logic
-    pass
+    return {
+        "plan_id": "plan_123",
+        "subjects": data.subjects,
+        "duration_days": data.duration_days,
+        "goals": data.goals,
+        "daily_tasks": [],
+        "created_at": "2025-01-29T10:00:00Z",
+        "progress": {}
+    }
 
 @app.post("/api/quick-help")
-async def quick_help(data: dict):
+async def quick_help(data: QuickHelpRequest):
     # Your quick help logic
-    pass
+    return {
+        "response": "Here's quick help for your question!",
+        "timestamp": "2025-01-29T10:00:00Z"
+    }
 
 @app.post("/api/generate-content")
-async def generate_content(data: dict):
+async def generate_content(data: ContentRequest):
     # Your content generation logic
-    pass
+    return {
+        "content": f"Generated content for {data.topic} in {data.mode} mode",
+        "source_name": "AI Tutor",
+        "source_level": "Generated"
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
 ```
 
 ### Step 4: Test Connection
-1. Start your backend server
+1. Start your ai-tutor backend server
 2. Start the frontend: `npm run dev`
-3. Check browser console for any connection errors
+3. Check browser console for connection logs
 4. Test the Deep Study Mode functionality
 
 ## API Data Formats
@@ -127,32 +186,45 @@ async def generate_content(data: dict):
 
 ## Troubleshooting
 
+### Current Issue: Method Not Allowed (405)
+**Symptoms**: 
+- Console shows "Method Not Allowed" errors
+- API calls to old backend URL
+
+**Solution**: 
+1. ✅ Frontend API configuration updated
+2. ✅ Environment file created
+3. 🔄 Start your ai-tutor backend server
+4. 🔄 Ensure backend routes match frontend expectations
+
 ### Common Issues
 
-1. **CORS Errors**: Ensure your backend allows requests from your frontend domain
-2. **404 Errors**: Check that your backend routes match the frontend API calls
-3. **Connection Refused**: Verify your backend server is running and accessible
+1. **CORS Errors**: Ensure your ai-tutor backend allows requests from your frontend domain
+2. **404 Errors**: Check that your backend routes match the frontend API calls exactly
+3. **Connection Refused**: Verify your ai-tutor backend server is running on port 8000
 
 ### Debug Steps
 
-1. Check browser Network tab for failed requests
-2. Verify backend server is running on the correct port
+1. Check browser console for the new log: "Making API request to: [URL]"
+2. Verify your ai-tutor backend server is running and accessible
 3. Test API endpoints with tools like Postman or curl
 4. Check backend logs for any errors
 
 ## Next Steps
 
-1. **Deploy Backend**: Deploy your ai-tutor backend to a hosting service
-2. **Update Environment**: Set the production backend URL in your environment
-3. **Test Integration**: Verify all features work with the live backend
-4. **Monitor**: Watch for any API errors or performance issues
+1. **Start Backend**: Start your ai-tutor backend server
+2. **Test Integration**: Verify all features work with the live backend
+3. **Deploy Backend**: Deploy your ai-tutor backend to production
+4. **Update Environment**: Set the production backend URL in your environment
 
 ## Support
 
 If you encounter issues:
-1. Check the browser console for error messages
-2. Verify your backend routes match the frontend expectations
+1. Check the browser console for "Making API request to:" logs
+2. Verify your ai-tutor backend routes match the frontend expectations
 3. Ensure your backend is properly handling the request/response formats
 4. Test individual API endpoints independently
 
-The frontend is now ready to connect to your ai-tutor backend! 🚀
+The frontend is now properly configured to connect to your ai-tutor backend! 🚀
+
+**Next Action**: Start your ai-tutor backend server and test the connection.

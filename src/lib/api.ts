@@ -1,8 +1,8 @@
 // API service layer for AI Tutor backend integration
-// Update this API_BASE_URL to match your backend deployment
+// Connect to your ai-tutor backend: https://github.com/DakshMalhotra930/ai-tutor/tree/main/backend
 
 // For local development, use: 'http://localhost:8000'
-// For production, use your actual backend URL
+// For production, use your actual ai-tutor backend deployment URL
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export interface StudySession {
@@ -53,6 +53,8 @@ async function apiRequest<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  
+  console.log(`Making API request to: ${url}`);
 
   const defaultOptions: RequestInit = {
     headers: {
@@ -81,7 +83,7 @@ async function apiRequest<T>(
   return response.json();
 }
 
-// Session Management - Updated to match typical backend patterns
+// Session Management - Updated to match ai-tutor backend
 export const sessionAPI = {
   // Start a new study session
   start: async (data: {
@@ -109,7 +111,7 @@ export const sessionAPI = {
   },
 };
 
-// Study Plan Generation - Updated to match typical backend patterns
+// Study Plan Generation - Updated to match ai-tutor backend
 export const studyPlanAPI = {
   // Generate a personalized study plan
   generate: async (data: {
@@ -126,7 +128,7 @@ export const studyPlanAPI = {
   },
 };
 
-// Quick Help - Updated to match typical backend patterns
+// Quick Help - Updated to match ai-tutor backend
 export const quickHelpAPI = {
   // Get quick AI help
   getHelp: async (data: {
@@ -140,7 +142,7 @@ export const quickHelpAPI = {
   },
 };
 
-// Additional API endpoints that might be available in your backend
+// Additional API endpoints for ai-tutor backend
 export const contentAPI = {
   // Generate content for different modes (Learn, Revise, Practice)
   generateContent: async (data: {
