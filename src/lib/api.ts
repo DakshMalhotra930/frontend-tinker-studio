@@ -1,6 +1,9 @@
-// API service layer for Deep Study Mode backend integration
+// API service layer for AI Tutor backend integration
+// Update this API_BASE_URL to match your backend deployment
 
-const API_BASE_URL = 'https://praxis-ai.fly.dev/agentic';
+// For local development, use: 'http://localhost:8000'
+// For production, use your actual backend URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export interface StudySession {
   session_id: string;
@@ -78,7 +81,7 @@ async function apiRequest<T>(
   return response.json();
 }
 
-// Session Management
+// Session Management - Updated to match typical backend patterns
 export const sessionAPI = {
   // Start a new study session
   start: async (data: {
@@ -87,7 +90,7 @@ export const sessionAPI = {
     mode: string;
     user_id: string;
   }): Promise<StudySession> => {
-    return apiRequest<StudySession>('/session/start', {
+    return apiRequest<StudySession>('/api/session/start', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -99,14 +102,14 @@ export const sessionAPI = {
     message: string;
     context_hint?: string;
   }): Promise<ChatResponse> => {
-    return apiRequest<ChatResponse>('/session/chat', {
+    return apiRequest<ChatResponse>('/api/session/chat', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 };
 
-// Study Plan Generation
+// Study Plan Generation - Updated to match typical backend patterns
 export const studyPlanAPI = {
   // Generate a personalized study plan
   generate: async (data: {
@@ -116,21 +119,35 @@ export const studyPlanAPI = {
     goals: string[];
     current_level?: string;
   }): Promise<StudyPlanResponse> => {
-    return apiRequest<StudyPlanResponse>('/plan/generate', {
+    return apiRequest<StudyPlanResponse>('/api/plan/generate', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 };
 
-// Quick Help
+// Quick Help - Updated to match typical backend patterns
 export const quickHelpAPI = {
   // Get quick AI help
   getHelp: async (data: {
     query: string;
     context?: string;
   }): Promise<QuickHelpResponse> => {
-    return apiRequest<QuickHelpResponse>('/quick-help', {
+    return apiRequest<QuickHelpResponse>('/api/quick-help', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// Additional API endpoints that might be available in your backend
+export const contentAPI = {
+  // Generate content for different modes (Learn, Revise, Practice)
+  generateContent: async (data: {
+    topic: string;
+    mode: string;
+  }): Promise<any> => {
+    return apiRequest<any>('/api/generate-content', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -153,5 +170,10 @@ export const apiUtils = {
       return error.message;
     }
     return 'An unexpected error occurred';
+  },
+
+  // Get the current API base URL
+  getApiBaseUrl: (): string => {
+    return API_BASE_URL;
   },
 };

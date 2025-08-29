@@ -5,6 +5,7 @@ import { Brain, Sparkles, FileText, Loader2, AlertTriangle } from 'lucide-react'
 import { Subject, Chapter, Topic } from '@/data/syllabus';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { QuizComponent } from './QuizComponent';
+import { contentAPI } from '@/lib/api';
 
 interface ContentViewerProps {
   topic: Topic | null;
@@ -55,25 +56,18 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
     console.log(`Fetching content for mode: ${selectedMode}`);
 
     try {
-      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/generate-content`;
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: topic.name, mode: selectedMode }),
+      // Use the new contentAPI from the updated api.ts
+      const data = await contentAPI.generateContent({
+        topic: topic.name,
+        mode: selectedMode
       });
 
-      console.log("Response status:", response.status);
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log("Backend error:", errorData);
-        throw new Error(errorData.detail || `HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
       console.log("Backend data received:", data);
       setContent(data);
-      setSourceInfo({ name: data.source_name, level: data.source_level });
+      setSourceInfo({ 
+        name: data.source_name || 'AI Tutor', 
+        level: data.source_level || 'Generated' 
+      });
     } catch (err: any) {
       setError(err.message);
       console.error(`Failed to fetch ${selectedMode} content:`, err);
