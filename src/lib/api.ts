@@ -137,6 +137,19 @@ export const sessionAPI = {
       body: JSON.stringify(data),
     });
   },
+
+  // Solve a problem using dedicated endpoint
+  solve: async (data: {
+    session_id: string;
+    problem: string;
+    step?: number;
+    hint_level?: number;
+  }): Promise<any> => {
+    return apiRequest<any>('/agentic/session/solve', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
 };
 
 // Study Plan Generation - Using /agentic/ prefix

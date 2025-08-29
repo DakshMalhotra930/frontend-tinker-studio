@@ -10,6 +10,7 @@ import { Send, Loader2, MessageSquare, BookOpen, Calculator, AlertCircle } from 
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ImageUpload } from './ImageUpload';
 import { useDeepStudySession } from '@/hooks/useDeepStudySession';
+import { sessionAPI, apiUtils } from '@/lib/api';
 
 interface AgenticStudyModeProps {
   subject: string | null;
