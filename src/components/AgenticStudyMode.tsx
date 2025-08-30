@@ -83,13 +83,37 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
     }
   };
 
-  // Helper function to convert image to base64
+  // Helper function to convert image to base64 with proper padding
   const convertImageToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
-          resolve(reader.result);
+          // Ensure proper base64 padding
+          let base64String = reader.result;
+          
+          // Remove data URL prefix if present
+          if (base64String.startsWith('data:')) {
+            base64String = base64String.split(',')[1];
+          }
+          
+          // Add padding if needed (base64 length must be divisible by 4)
+          while (base64String.length % 4 !== 0) {
+            base64String += '=';
+          }
+          
+          // Convert back to data URL format for the backend
+          const mimeType = file.type || 'image/jpeg';
+          const finalBase64 = `data:${mimeType};base64,${base64String}`;
+          
+          console.log('Base64 conversion complete:', {
+            originalLength: reader.result.length,
+            finalLength: finalBase64.length,
+            paddingAdded: finalBase64.length - reader.result.length,
+            mimeType
+          });
+          
+          resolve(finalBase64);
         } else {
           reject(new Error('Failed to convert image to base64'));
         }
