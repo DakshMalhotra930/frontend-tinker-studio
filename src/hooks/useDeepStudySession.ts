@@ -82,7 +82,7 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
     }
   }, [subject, topic]);
 
-  const sendMessage = useCallback(async (message: string) => {
+  const sendMessage = useCallback(async (message: string, imageData?: string) => {
     if (!message.trim() || !currentSession) return;
 
     const userMessage: ChatMessage = {
@@ -97,10 +97,19 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
     setError('');
 
     try {
-      const data = await sessionAPI.chat({
+      // Prepare the request payload
+      const requestPayload: any = {
         session_id: currentSession.session_id,
         message,
-      });
+      };
+
+      // Add image_data if provided
+      if (imageData) {
+        requestPayload.image_data = imageData;
+        console.log('Sending message with image data');
+      }
+
+      const data = await sessionAPI.chat(requestPayload);
 
       const aiResponse: ChatMessage = {
         id: (Date.now() + 1).toString(),

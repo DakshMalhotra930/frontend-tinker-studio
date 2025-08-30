@@ -35,16 +35,68 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
-    await sendMessage(message);
-    setMessage('');
+    
+    try {
+      let imageData: string | undefined;
+      
+      // Convert image to base64 if selected
+      if (selectedImage) {
+        imageData = await convertImageToBase64(selectedImage);
+        console.log('Image converted to base64 for chat, size:', imageData.length);
+      }
+      
+      await sendMessage(message, imageData);
+      setMessage('');
+      setSelectedImage(null); // Clear image after sending
+    } catch (error) {
+      console.error('Failed to process image for chat:', error);
+      // Still send the message without image if conversion fails
+      await sendMessage(message);
+      setMessage('');
+      setSelectedImage(null);
+    }
   };
 
   const handleSolveProblem = async () => {
-    if (!problem.trim()) return;
-    // Use the chat API for problem solving
-    await sendMessage(`Please help me solve this problem: ${problem}`);
-    setProblem('');
-    setSelectedImage(null);
+    if (!problem.trim() && !selectedImage) return;
+    
+    try {
+      let imageData: string | undefined;
+      
+      // Convert image to base64 if selected
+      if (selectedImage) {
+        imageData = await convertImageToBase64(selectedImage);
+        console.log('Image converted to base64, size:', imageData.length);
+      }
+      
+      // Use the chat API for problem solving with image data
+      await sendMessage(`Please help me solve this problem: ${problem}`, imageData);
+      
+      setProblem('');
+      setSelectedImage(null);
+    } catch (error) {
+      console.error('Failed to process image:', error);
+      // Still send the message without image if conversion fails
+      await sendMessage(`Please help me solve this problem: ${problem}`);
+      setProblem('');
+      setSelectedImage(null);
+    }
+  };
+
+  // Helper function to convert image to base64
+  const convertImageToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          reject(new Error('Failed to convert image to base64'));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
