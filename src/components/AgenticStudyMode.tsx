@@ -320,10 +320,19 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
           </TabsList>
 
           {/* AI Chat Tab */}
-          <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
-            <div className="flex-1 flex flex-col">
+          <TabsContent value="chat" className="flex flex-col mt-0" style={{ height: 'calc(100vh - 200px)' }}>
+            <div className="flex flex-col" style={{ height: '100%' }}>
               {/* Chat Messages Container - Fixed Height with Scroll */}
-              <div className="flex-1 overflow-y-auto p-4" style={{ height: 'calc(100vh - 300px)' }}>
+              <div 
+                className="overflow-y-auto p-4" 
+                style={{ 
+                  height: 'calc(100vh - 300px)',
+                  maxHeight: 'calc(100vh - 300px)',
+                  minHeight: 'calc(100vh - 300px)',
+                  overflowY: 'auto',
+                  flexShrink: 0
+                }}
+              >
                 <div className="space-y-4">
                   {chatMessages.map((msg) => (
                     <div
