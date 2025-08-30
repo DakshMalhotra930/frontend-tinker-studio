@@ -31,10 +31,18 @@ export function AgenticSidebar() {
     setError('');
 
     try {
+      console.log('Sending quick help query:', userQuery);
+      
       const data = await quickHelpAPI.getHelp({
         query: userQuery,
         context: 'quick-help',
       });
+
+      console.log('Quick help response:', data);
+
+      if (!data || !data.response) {
+        throw new Error('Invalid response from API - no response content');
+      }
 
       const newMessage: QuickHelpMessage = {
         id: Date.now().toString(),
@@ -44,9 +52,21 @@ export function AgenticSidebar() {
       };
 
       setMessages(prev => [...prev, newMessage]);
+      setError(''); // Clear any previous errors
     } catch (err) {
       console.error('Failed to get quick help:', err);
-      setError(apiUtils.formatError(err));
+      const errorMessage = apiUtils.formatError(err);
+      setError(errorMessage);
+      
+      // Add a fallback message to show the user something
+      const fallbackMessage: QuickHelpMessage = {
+        id: Date.now().toString(),
+        query: userQuery,
+        response: `Sorry, I couldn't get a response right now. Error: ${errorMessage}`,
+        timestamp: new Date(),
+      };
+      
+      setMessages(prev => [...prev, fallbackMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -134,6 +154,9 @@ export function AgenticSidebar() {
                   <p className="text-muted-foreground">
                     Ask me anything! I'm here to help with your studies.
                   </p>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Type your question below and press Enter or click Send
+                  </p>
                 </div>
               )}
 
@@ -169,6 +192,16 @@ export function AgenticSidebar() {
                       <Loader2 className="w-4 h-4 animate-spin" />
                       <span className="text-sm">AI is thinking...</span>
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* API Status Info */}
+              {messages.length === 0 && (
+                <div className="text-center py-4">
+                  <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3">
+                    <p>API Status: {apiUtils.getApiBaseUrl()}</p>
+                    <p className="mt-1">Make sure your backend is running and accessible</p>
                   </div>
                 </div>
               )}
