@@ -21,7 +21,6 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
   const [message, setMessage] = useState('');
   const [problem, setProblem] = useState('');
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const chatBottomRef = useRef<HTMLDivElement>(null);
 
   const {
     currentSession,
@@ -33,13 +32,6 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
     createStudyPlan,
     clearError,
   } = useDeepStudySession({ subject, topic });
-
-  // Auto-scroll to bottom when new messages arrive
-  useEffect(() => {
-    if (chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [chatMessages]);
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -159,8 +151,6 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                             </div>
                           </div>
                         ))}
-                        {/* Auto-scroll anchor */}
-                        <div ref={chatBottomRef} />
                       </div>
                     )}
                   </div>
@@ -332,7 +322,8 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
           {/* AI Chat Tab */}
           <TabsContent value="chat" className="flex-1 flex flex-col mt-0">
             <div className="flex-1 flex flex-col">
-              <ScrollArea className="flex-1 p-4">
+              {/* Chat Messages Container - Fixed Height with Scroll */}
+              <div className="flex-1 overflow-y-auto p-4" style={{ height: 'calc(100vh - 300px)' }}>
                 <div className="space-y-4">
                   {chatMessages.map((msg) => (
                     <div
@@ -364,9 +355,10 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                     </div>
                   )}
                 </div>
-              </ScrollArea>
+              </div>
               
-              <div className="p-4 border-t border-border">
+              {/* Input Field - Fixed at Bottom */}
+              <div className="p-4 border-t border-border bg-background flex-shrink-0">
                 <div className="flex space-x-2">
                   <Input
                     value={message}
