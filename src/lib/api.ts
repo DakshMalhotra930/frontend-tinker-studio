@@ -25,13 +25,14 @@ export interface ChatResponse {
 }
 
 export interface StudyPlanResponse {
-  plan_id: string;
-  subjects: string[];
-  duration_days: number;
-  goals: string[];
-  daily_tasks: any[];
-  created_at: string;
-  progress: any;
+  plan_id?: string;
+  plan?: string; // Natural language plan description
+  subjects?: string[];
+  duration_days?: number;
+  goals?: string[];
+  daily_tasks?: any[];
+  created_at?: string;
+  progress?: any;
 }
 
 export interface QuickHelpResponse {
@@ -154,7 +155,7 @@ export const sessionAPI = {
 
 // Study Plan Generation - Using /agentic/ prefix
 export const studyPlanAPI = {
-  // Generate a personalized study plan
+  // Generate a personalized study plan (legacy form-based)
   generate: async (data: {
     user_id: string;
     subjects: string[];
@@ -167,16 +168,27 @@ export const studyPlanAPI = {
       body: JSON.stringify(data),
     });
   },
+
+  // Generate study plan from natural language chat
+  generateFromChat: async (data: {
+    message: string;
+    user_id?: string;
+  }): Promise<StudyPlanResponse> => {
+    return apiRequest<StudyPlanResponse>('/agentic/chat/study-plan', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
 };
 
-// Quick Help - Using /api/ prefix (as shown in docs)
+// Quick Help - Using /agentic/ prefix (as shown in backend docs)
 export const quickHelpAPI = {
   // Get quick AI help
   getHelp: async (data: {
     query: string;
     context?: string;
   }): Promise<QuickHelpResponse> => {
-    return apiRequest<QuickHelpResponse>('/api/quick-help', {
+    return apiRequest<QuickHelpResponse>('/agentic/quick-help', {
       method: 'POST',
       body: JSON.stringify(data),
     });

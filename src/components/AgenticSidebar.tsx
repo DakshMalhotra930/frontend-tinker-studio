@@ -35,7 +35,6 @@ export function AgenticSidebar() {
       
       const data = await quickHelpAPI.getHelp({
         query: userQuery,
-        context: 'quick-help',
       });
 
       console.log('Quick help response:', data);

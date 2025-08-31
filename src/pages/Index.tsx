@@ -5,6 +5,7 @@ import { ContentViewer } from '@/components/ContentViewer';
 import { FeatureRequestForm } from '@/components/ui/FeatureRequestForm';
 import { AgenticSidebar } from '@/components/AgenticSidebar';
 import { AgenticStudyMode } from '@/components/AgenticStudyMode';
+import StudyPlanChatPage from './StudyPlanChatPage';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const Index = ({ user, onLogout }) => {
@@ -61,6 +62,7 @@ const Index = ({ user, onLogout }) => {
                 <TabsList className="w-auto">
                   <TabsTrigger value="syllabus" className="px-4 py-2">Syllabus</TabsTrigger>
                   <TabsTrigger value="deep-study" className="px-4 py-2">Deep Study</TabsTrigger>
+                  <TabsTrigger value="study-plan" className="px-4 py-2">Study Plan</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="syllabus" className="flex-1 flex flex-col">
@@ -111,6 +113,10 @@ const Index = ({ user, onLogout }) => {
                       />
                     </div>
                   </div>
+                </TabsContent>
+
+                <TabsContent value="study-plan" className="flex-1 flex flex-col">
+                  <StudyPlanChatPage />
                 </TabsContent>
               </Tabs>
             </div>
