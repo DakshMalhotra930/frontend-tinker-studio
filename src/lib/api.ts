@@ -173,6 +173,7 @@ export const studyPlanAPI = {
   generateFromChat: async (data: {
     message: string;
     user_id?: string;
+    currentDateTime?: string;
   }): Promise<StudyPlanResponse> => {
     return apiRequest<StudyPlanResponse>('/agentic/chat/study-plan', {
       method: 'POST',

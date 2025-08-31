@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Send, Loader2, Calendar, Target, BookOpen, Lightbulb, ArrowRight } from 'lucide-react';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { studyPlanAPI, apiUtils } from '@/lib/api';
+import { format } from 'date-fns';
 
 interface StudyPlanMessage {
   id: string;
@@ -47,9 +48,11 @@ export function StudyPlanChat() {
 
     try {
       console.log('Sending study plan request:', userMessage);
+      console.log('Current date/time context:', new Date().toISOString());
       
       const response = await studyPlanAPI.generateFromChat({
         message: userMessage,
+        currentDateTime: new Date().toISOString(),
       });
 
       console.log('Study plan response:', response);
@@ -111,8 +114,9 @@ Tell me about your exam and what you want to study in natural language. I'll cre
 • "My JEE exam is on December 15th, need to study Physics Mechanics"
 • "I have an exam in 2 months, focusing on Math Calculus and Chemistry"
 • "Need study plan for JEE, exam on 20th December"
+• "My coaching test is on 23rd September, studying Mechanics"
 
-Just describe your situation and I'll help you create the perfect study plan! 📚✨`,
+**💡 Tip:** You can use relative dates like "next month" or "in 2 weeks" - I'll automatically calculate the correct dates! 📚✨`,
       timestamp: new Date(),
     };
   };
@@ -128,7 +132,7 @@ Just describe your situation and I'll help you create the perfect study plan! �
           <div>
             <h2 className="text-xl font-semibold">AI Study Plan Generator</h2>
             <p className="text-sm text-muted-foreground">
-              Chat naturally to create personalized study plans
+              Chat naturally to create personalized study plans • AI knows current date: {format(new Date(), 'MMM d, yyyy')}
             </p>
           </div>
         </div>
