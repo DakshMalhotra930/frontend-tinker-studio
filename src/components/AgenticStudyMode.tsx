@@ -489,63 +489,7 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
 
           {/* Study Plans Tab */}
           <TabsContent value="plans" className="flex-1 mt-0">
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Study Plans</h3>
-                <Button onClick={createStudyPlan} disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <BookOpen className="w-4 h-4 mr-2" />
-                      Create New Plan
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              <ScrollArea className="h-[calc(100vh-300px)]">
-                <div className="space-y-4">
-                  {studyPlans.map((plan) => (
-                    <Card key={plan.id}>
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle>{plan.title}</CardTitle>
-                          <Badge variant={plan.status === 'active' ? 'default' : 'secondary'}>
-                            {plan.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground">{plan.description}</p>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <p className="text-sm">
-                            <strong>Duration:</strong> {plan.duration}
-                          </p>
-                          <p className="text-sm">
-                            <strong>Topics:</strong> {plan.topics.slice(0, 3).join(', ')}
-                            {plan.topics.length > 3 && ` +${plan.topics.length - 3} more`}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            Created: {plan.created.toLocaleDateString()}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                  
-                  {studyPlans.length === 0 && (
-                    <div className="text-center py-8">
-                      <BookOpen className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                      <p className="text-muted-foreground">No study plans yet. Create your first one!</p>
-                    </div>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
+            <StudyPlanChat />
           </TabsContent>
         </Tabs>
       </div>
