@@ -39,9 +39,12 @@ export function AgenticSidebar() {
       });
 
       console.log('Quick help response:', data);
+      console.log('Response type:', typeof data);
+      console.log('Response keys:', Object.keys(data || {}));
 
       if (!data || !data.response) {
-        throw new Error('Invalid response from API - no response content');
+        console.error('Invalid response structure:', data);
+        throw new Error(`Invalid response from API - expected 'response' field, got: ${JSON.stringify(data)}`);
       }
 
       const newMessage: QuickHelpMessage = {

@@ -169,14 +169,14 @@ export const studyPlanAPI = {
   },
 };
 
-// Quick Help - Using /agentic/ prefix
+// Quick Help - Using /api/ prefix (as shown in docs)
 export const quickHelpAPI = {
   // Get quick AI help
   getHelp: async (data: {
     query: string;
     context?: string;
   }): Promise<QuickHelpResponse> => {
-    return apiRequest<QuickHelpResponse>('/agentic/quick-help', {
+    return apiRequest<QuickHelpResponse>('/api/quick-help', {
       method: 'POST',
       body: JSON.stringify(data),
     });
