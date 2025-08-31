@@ -120,19 +120,19 @@ Just describe your situation and I'll help you create the perfect study plan! ğŸ
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <CardHeader className="border-b border-border bg-card">
+      <div className="p-4 border-b border-border bg-card">
         <div className="flex items-center space-x-3">
           <div className="p-2 bg-primary/10 rounded-lg">
             <Target className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <CardTitle className="text-xl">AI Study Plan Generator</CardTitle>
+            <h2 className="text-xl font-semibold">AI Study Plan Generator</h2>
             <p className="text-sm text-muted-foreground">
               Chat naturally to create personalized study plans
             </p>
           </div>
         </div>
-      </CardHeader>
+      </div>
 
       {/* Error Display */}
       {error && (

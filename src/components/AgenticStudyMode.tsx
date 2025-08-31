@@ -6,9 +6,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Loader2, MessageSquare, BookOpen, Calculator, AlertCircle } from 'lucide-react';
+import { Send, Loader2, MessageSquare, BookOpen, Calculator, AlertCircle, Target } from 'lucide-react';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ImageUpload } from './ImageUpload';
+import { StudyPlanChat } from './StudyPlanChat';
 import { useDeepStudySession } from '@/hooks/useDeepStudySession';
 import { sessionAPI, apiUtils } from '@/lib/api';
 
@@ -174,8 +175,8 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                   <span>Problem Solver</span>
                 </TabsTrigger>
                 <TabsTrigger value="plans">
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  <span>Study Plans</span>
+                  <Target className="w-4 h-4 mr-2" />
+                  <span>AI Study Plans</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -297,46 +298,7 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
               </TabsContent>
 
               <TabsContent value="plans" className="flex-1 flex flex-col">
-                <div className="flex-1 flex flex-col">
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold">Study Plans</h3>
-                      <Button onClick={createStudyPlan} disabled={isLoading}>
-                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <BookOpen className="w-4 h-4 mr-2" />}
-                        Generate Plan
-                      </Button>
-                    </div>
-                    
-                    {studyPlans.length === 0 ? (
-                      <div className="text-center py-8">
-                        <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                          <BookOpen className="w-6 h-6 text-muted-foreground" />
-                        </div>
-                        <h4 className="text-lg font-semibold mb-2">No Study Plans Yet</h4>
-                        <p className="text-muted-foreground mb-4">
-                          Generate a personalized study plan for any subject or topic you want to master.
-                        </p>
-                        <Button onClick={createStudyPlan} disabled={isLoading}>
-                          {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <BookOpen className="w-4 h-4 mr-2" />}
-                          Create Your First Study Plan
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {studyPlans.map((plan, index) => (
-                          <Card key={index}>
-                            <CardHeader>
-                              <CardTitle className="text-lg">{plan.title}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              <MarkdownRenderer content={plan.description} />
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <StudyPlanChat />
               </TabsContent>
             </Tabs>
           </div>
@@ -380,20 +342,20 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
       {/* Main Content */}
       <div className="flex-1 overflow-hidden h-full">
         <Tabs defaultValue="chat" className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
-            <TabsTrigger value="chat" className="flex items-center space-x-2">
-              <MessageSquare className="w-4 h-4" />
-              <span>AI Chat</span>
-            </TabsTrigger>
-            <TabsTrigger value="problems" className="flex items-center space-x-2">
-              <Calculator className="w-4 h-4" />
-              <span>Problem Solver</span>
-            </TabsTrigger>
-            <TabsTrigger value="plans" className="flex items-center space-x-2">
-              <BookOpen className="w-4 h-4" />
-              <span>Study Plans</span>
-            </TabsTrigger>
-          </TabsList>
+                      <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+              <TabsTrigger value="chat" className="flex items-center space-x-2">
+                <MessageSquare className="w-4 h-4" />
+                <span>AI Chat</span>
+              </TabsTrigger>
+              <TabsTrigger value="problems" className="flex items-center space-x-2">
+                <Calculator className="w-4 h-4" />
+                <span>Problem Solver</span>
+              </TabsTrigger>
+              <TabsTrigger value="plans" className="flex items-center space-x-2">
+                <Target className="w-4 h-4" />
+                <span>AI Study Plans</span>
+              </TabsTrigger>
+            </TabsList>
 
           {/* AI Chat Tab */}
           <TabsContent value="chat" className="flex flex-col mt-0" style={{ height: 'calc(100vh - 200px)' }}>
