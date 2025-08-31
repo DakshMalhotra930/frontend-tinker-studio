@@ -56,16 +56,35 @@ export function StudyPlanChat() {
       });
 
       console.log('Study plan response:', response);
+      console.log('Response structure:', {
+        hasResponse: !!response.response,
+        hasPlan: !!response.plan,
+        responseLength: response.response?.length,
+        planKeys: response.plan ? Object.keys(response.plan) : 'No plan object',
+        fullResponse: response
+      });
 
-      if (!response || !response.plan) {
-        throw new Error('Invalid response from API - no plan content');
+      if (!response) {
+        throw new Error('Invalid response from API - no response received');
+      }
+
+      // Handle different response structures
+      let contentToDisplay = '';
+      if (response.response) {
+        contentToDisplay = response.response;
+      } else if (response.plan && typeof response.plan === 'string') {
+        contentToDisplay = response.plan;
+      } else if (response.plan && typeof response.plan === 'object') {
+        contentToDisplay = JSON.stringify(response.plan, null, 2);
+      } else {
+        throw new Error('Invalid response from API - no readable content found');
       }
 
       // Add AI response
       const aiMsg: StudyPlanMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: response.plan,
+        content: contentToDisplay,
         timestamp: new Date(),
         planData: response,
       };
@@ -191,12 +210,12 @@ Tell me about your exam and what you want to study in natural language. I'll cre
                 {/* Plan Data Display */}
                 {message.planData && message.role === 'assistant' && (
                   <div className="mt-4 space-y-3">
-                    {message.planData.subjects && (
+                    {message.planData.plan?.subjects && (
                       <div className="flex items-center space-x-2">
                         <BookOpen className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium">Subjects:</span>
                         <div className="flex flex-wrap gap-1">
-                          {message.planData.subjects.map((subject: string, index: number) => (
+                          {message.planData.plan.subjects.map((subject: string, index: number) => (
                             <Badge key={index} variant="secondary" className="text-xs">
                               {subject}
                             </Badge>
@@ -205,28 +224,46 @@ Tell me about your exam and what you want to study in natural language. I'll cre
                       </div>
                     )}
                     
-                    {message.planData.duration_days && (
+                    {message.planData.plan?.duration_days && (
                       <div className="flex items-center space-x-2">
                         <Calendar className="w-4 h-4 text-primary" />
                         <span className="text-sm font-medium">Duration:</span>
-                        <span className="text-sm">{message.planData.duration_days} days</span>
+                        <span className="text-sm">{message.planData.plan.duration_days} days</span>
                       </div>
                     )}
                     
-                    {message.planData.goals && message.planData.goals.length > 0 && (
+                    {message.planData.plan?.goals && message.planData.plan.goals.length > 0 && (
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
                           <Target className="w-4 h-4 text-primary" />
                           <span className="text-sm font-medium">Goals:</span>
                         </div>
                         <ul className="text-sm space-y-1 ml-6">
-                          {message.planData.goals.map((goal: string, index: number) => (
+                          {message.planData.plan.goals.map((goal: string, index: number) => (
                             <li key={index} className="flex items-start space-x-2">
                               <ArrowRight className="w-3 h-3 text-primary mt-1 flex-shrink-0" />
                               <span>{goal}</span>
                             </li>
                           ))}
                         </ul>
+                      </div>
+                    )}
+
+                    {/* Show motivation if available */}
+                    {message.planData.motivation && (
+                      <div className="flex items-center space-x-2">
+                        <Lightbulb className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium">Motivation:</span>
+                        <span className="text-sm">{message.planData.motivation}</span>
+                      </div>
+                    )}
+
+                    {/* Show if more info is needed */}
+                    {message.planData.needs_more_info && (
+                      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p className="text-sm text-yellow-800">
+                          💡 I need a bit more information to create the perfect study plan. Please provide more details about your exam goals.
+                        </p>
                       </div>
                     )}
                   </div>

@@ -26,13 +26,16 @@ export interface ChatResponse {
 
 export interface StudyPlanResponse {
   plan_id?: string;
-  plan?: string; // Natural language plan description
+  response?: string; // The full text response containing the study plan
+  plan?: any; // Structured plan object with details
   subjects?: string[];
   duration_days?: number;
   goals?: string[];
   daily_tasks?: any[];
   created_at?: string;
   progress?: any;
+  needs_more_info?: boolean; // Boolean telling if more info is needed
+  motivation?: string; // Short motivational message
 }
 
 export interface QuickHelpResponse {
