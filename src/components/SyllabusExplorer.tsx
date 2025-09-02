@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Subject, Chapter, Topic } from '@/data/syllabus'; // We still need the types
+import { BookOpen, Layers, Target, GraduationCap, ChevronRight, Sparkles } from 'lucide-react';
 
 interface SyllabusExplorerProps {
   onTopicSelect: (topic: Topic, chapter: Chapter, subject: Subject) => void;
@@ -65,8 +67,8 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
 
   const groupedChapters = selectedSubject ?
     selectedSubject.chapters.reduce((acc, chapter) => {
-      // Use the correct property name from your backend: class_level
-      const classKey = `Class ${chapter.class_level}`;
+      // Use the correct property name from your backend: class
+      const classKey = `Class ${chapter.class}`;
       if (!acc[classKey]) acc[classKey] = [];
       acc[classKey].push(chapter);
       return acc;
@@ -75,105 +77,190 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
   
   // --- NEW: Render loading and error states ---
   if (isLoading) {
-    return <div className="p-4 text-center text-muted-foreground">Loading syllabus...</div>;
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto animate-pulse">
+            <BookOpen className="w-8 h-8 text-primary" />
+          </div>
+          <p className="text-muted-foreground font-medium">Loading syllabus...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="p-4 text-center text-red-500">Error: {error}</div>;
+    return (
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center space-y-4 p-6 bg-destructive/10 rounded-xl border border-destructive/20 max-w-md">
+          <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto">
+            <Target className="w-8 h-8 text-destructive" />
+          </div>
+          <p className="text-destructive font-medium">Error: {error}</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Subjects Pane */}
-      <div className="flex-1 border-b border-border">
-        <div className="p-4 border-b border-border bg-card">
-          <h2 className="font-semibold text-lg">Subjects</h2>
+    <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-card/20">
+      {/* Enhanced Subjects Pane */}
+      <div className="flex-1 border-b border-border/50">
+        <div className="p-5 border-b border-border/50 bg-gradient-to-r from-card to-card/80 backdrop-blur-sm">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-gradient-to-br from-primary to-primary/80 rounded-lg shadow-md">
+              <BookOpen className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <h2 className="font-bold text-xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              Subjects
+            </h2>
+          </div>
         </div>
-        <ScrollArea className="h-[calc(33.33vh-50px)]">
-          <div className="p-2">
+        <ScrollArea className="h-[calc(33.33vh-60px)]">
+          <div className="p-3">
             {/* --- Use the 'syllabus' state variable --- */}
             {syllabus.map((subject) => (
               <Button
                 key={subject.id}
                 variant="ghost"
-                className={`w-full justify-start mb-1 h-auto p-3 ${
+                className={`w-full justify-start mb-2 h-auto p-4 rounded-xl transition-all duration-200 ease-in-out ${
                   selectedSubject?.id === subject.id
-                    ? 'bg-primary text-primary-foreground font-bold'
-                    : 'text-foreground hover:bg-muted'
+                    ? 'bg-gradient-to-r from-primary to-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/25'
+                    : 'text-foreground hover:bg-muted/50 hover:shadow-md'
                 }`}
                 onClick={() => handleSubjectClick(subject)}
               >
-                {subject.name}
+                <div className="flex items-center space-x-3 w-full">
+                  <div className={`w-3 h-3 rounded-full ${
+                    selectedSubject?.id === subject.id ? 'bg-primary-foreground' : 'bg-primary/40'
+                  }`} />
+                  <span className="text-left">{subject.name}</span>
+                  {selectedSubject?.id === subject.id && (
+                    <ChevronRight className="w-4 h-4 ml-auto" />
+                  )}
+                </div>
               </Button>
             ))}
           </div>
         </ScrollArea>
       </div>
 
-      {/* Chapters Pane */}
-      <div id="chapters-pane" className="flex-1 border-b border-border">
-        <div className="p-4 border-b border-border bg-card">
-          <h2 className="font-semibold text-lg">Chapters</h2>
+      {/* Enhanced Chapters Pane */}
+      <div id="chapters-pane" className="flex-1 border-b border-border/50">
+        <div className="p-5 border-b border-border/50 bg-gradient-to-r from-card to-card/80 backdrop-blur-sm">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-gradient-to-br from-secondary to-secondary/80 rounded-lg shadow-md">
+              <Layers className="w-5 h-5 text-secondary-foreground" />
+            </div>
+            <h2 className="font-bold text-xl bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent">
+              Chapters
+            </h2>
+          </div>
         </div>
-        <ScrollArea className="h-[calc(33.33vh-50px)]">
-          <div className="p-2">
+        <ScrollArea className="h-[calc(33.33vh-60px)]">
+          <div className="p-3">
             {selectedSubject ? (
               Object.entries(groupedChapters).map(([className, chapters]) => (
-                <div key={className} className="mb-4">
-                  <h3 className="text-sm font-medium text-muted-foreground mb-2 px-3">
-                    {className}
-                  </h3>
+                <div key={className} className="mb-6">
+                  <div className="flex items-center space-x-2 mb-3 px-3">
+                    <GraduationCap className="w-4 h-4 text-secondary" />
+                    <h3 className="text-sm font-semibold text-secondary bg-gradient-to-r from-secondary to-secondary/80 bg-clip-text text-transparent">
+                      {className}
+                    </h3>
+                  </div>
                   {chapters.map((chapter) => (
                     <Button
                       key={chapter.id}
                       variant="ghost"
-                      className={`w-full justify-start mb-1 h-auto p-3 ${
+                      className={`w-full justify-start mb-2 h-auto p-4 rounded-xl transition-all duration-200 ease-in-out ${
                         selectedChapter?.id === chapter.id
-                          ? 'bg-primary text-primary-foreground font-bold'
-                          : 'text-foreground hover:bg-muted'
+                          ? 'bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground font-bold shadow-lg shadow-secondary/25'
+                          : 'text-foreground hover:bg-muted/50 hover:shadow-md'
                       }`}
                       onClick={() => handleChapterClick(chapter)}
                     >
-                      Ch. {chapter.number}: {chapter.name}
+                      <div className="flex items-center space-x-3 w-full">
+                        <div className={`w-3 h-3 rounded-full ${
+                          selectedChapter?.id === chapter.id ? 'bg-secondary-foreground' : 'bg-secondary/40'
+                        }`} />
+                        <div className="text-left">
+                          <div className="font-medium">{chapter.name}</div>
+                          <div className="text-xs opacity-70 mt-1">{chapter.topics.length} topics</div>
+                        </div>
+                        {selectedChapter?.id === chapter.id && (
+                          <ChevronRight className="w-4 h-4 ml-auto" />
+                        )}
+                      </div>
                     </Button>
                   ))}
                 </div>
               ))
             ) : (
-              <p className="text-muted-foreground text-center py-8">
-                Select a subject to view chapters
-              </p>
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gradient-to-br from-muted/30 to-muted/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Layers className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground font-medium">Select a subject to view chapters</p>
+              </div>
             )}
           </div>
         </ScrollArea>
       </div>
 
-      {/* Topics Pane */}
+      {/* Enhanced Topics Pane */}
       <div id="topics-pane" className="flex-1">
-        <div className="p-4 border-b border-border bg-card">
-          <h2 className="font-semibold text-lg">Topics</h2>
+        <div className="p-5 border-b border-border/50 bg-gradient-to-r from-card to-card/80 backdrop-blur-sm">
+          <div className="flex items-center space-x-3">
+            <div className="p-2 bg-gradient-to-br from-accent to-accent/80 rounded-lg shadow-md">
+              <Target className="w-5 h-5 text-accent-foreground" />
+            </div>
+            <h2 className="font-bold text-xl bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
+              Topics
+            </h2>
+          </div>
         </div>
-        <ScrollArea className="h-[calc(33.33vh-50px)]">
-          <div className="p-2">
+        <ScrollArea className="h-[calc(33.33vh-60px)]">
+          <div className="p-3">
             {selectedChapter ? (
-              selectedChapter.topics.map((topic) => (
-                <Button
-                  key={topic.id}
-                  variant="ghost"
-                  className={`w-full justify-start mb-1 h-auto p-3 ${
-                    selectedTopic?.id === topic.id
-                      ? 'bg-primary text-primary-foreground font-bold'
-                      : 'text-foreground hover:bg-muted'
-                  }`}
-                  onClick={() => handleTopicClick(topic)}
-                >
-                  {topic.number} {topic.name}
-                </Button>
-              ))
+              <div className="space-y-3">
+                {selectedChapter.topics.map((topic) => (
+                  <Button
+                    key={topic.id}
+                    variant="ghost"
+                    className={`w-full justify-start mb-2 h-auto p-4 rounded-xl transition-all duration-200 ease-in-out ${
+                      selectedTopic?.id === topic.id
+                        ? 'bg-gradient-to-r from-accent to-accent/90 text-accent-foreground font-bold shadow-lg shadow-accent/25'
+                        : 'text-foreground hover:bg-muted/50 hover:shadow-md'
+                    }`}
+                    onClick={() => handleTopicClick(topic)}
+                  >
+                    <div className="flex items-center space-x-3 w-full">
+                      <div className={`w-3 h-3 rounded-full ${
+                        selectedTopic?.id === topic.id ? 'bg-accent-foreground' : 'bg-accent/40'
+                      }`} />
+                      <div className="text-left">
+                        <div className="font-medium">{topic.name}</div>
+                        <div className="text-xs opacity-70 mt-1">Click to study</div>
+                      </div>
+                      {selectedTopic?.id === topic.id && (
+                        <div className="ml-auto">
+                          <Badge variant="academic" className="text-xs">
+                            <Sparkles className="w-3 h-3 mr-1" />
+                            Selected
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  </Button>
+                ))}
+              </div>
             ) : (
-              <p className="text-muted-foreground text-center py-8">
-                Select a chapter to view topics
-              </p>
+              <div className="text-center py-12">
+                <div className="w-16 h-16 bg-gradient-to-br from-muted/30 to-muted/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <p className="text-muted-foreground font-medium">Select a chapter to view topics</p>
+              </div>
             )}
           </div>
         </ScrollArea>
