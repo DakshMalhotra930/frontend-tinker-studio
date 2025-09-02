@@ -72,13 +72,19 @@ export function StudyPlanChat() {
       let contentToDisplay = '';
       if (response.response) {
         contentToDisplay = response.response;
+        console.log('✅ Using response.response:', contentToDisplay.substring(0, 100) + '...');
       } else if (response.plan && typeof response.plan === 'string') {
         contentToDisplay = response.plan;
+        console.log('✅ Using response.plan (string):', contentToDisplay.substring(0, 100) + '...');
       } else if (response.plan && typeof response.plan === 'object') {
         contentToDisplay = JSON.stringify(response.plan, null, 2);
+        console.log('✅ Using response.plan (object):', contentToDisplay.substring(0, 200) + '...');
       } else {
+        console.error('❌ No readable content found in response:', response);
         throw new Error('Invalid response from API - no readable content found');
       }
+
+      console.log('🎯 Final content to display:', contentToDisplay.substring(0, 200) + '...');
 
       // Add AI response
       const aiMsg: StudyPlanMessage = {
@@ -88,7 +94,19 @@ export function StudyPlanChat() {
         timestamp: new Date(),
         planData: response,
       };
-      setMessages(prev => [...prev, aiMsg]);
+      
+      console.log('📝 Creating AI message:', {
+        id: aiMsg.id,
+        contentLength: aiMsg.content?.length,
+        contentPreview: aiMsg.content?.substring(0, 100),
+        hasPlanData: !!aiMsg.planData
+      });
+      
+      setMessages(prev => {
+        const newMessages = [...prev, aiMsg];
+        console.log('📊 Messages state updated. Total messages:', newMessages.length);
+        return newMessages;
+      });
       setError('');
 
     } catch (err) {
@@ -205,7 +223,33 @@ Tell me about your exam and what you want to study in natural language. I'll cre
                   ? 'bg-primary text-primary-foreground' 
                   : 'bg-muted'
               }`}>
-                <MarkdownRenderer content={message.content} />
+                {message.role === 'assistant' && (
+                  <div className="text-xs text-muted-foreground mb-2">
+                    Debug: Content length: {message.content?.length || 0} | 
+                    Has planData: {!!message.planData} | 
+                    PlanData keys: {message.planData ? Object.keys(message.planData).join(', ') : 'none'}
+                  </div>
+                )}
+                {/* Main content display */}
+                {message.content ? (
+                  <MarkdownRenderer content={message.content} />
+                ) : (
+                  <div className="text-red-500 text-sm">❌ No content to display</div>
+                )}
+                
+                {/* Raw content debug fallback */}
+                {message.role === 'assistant' && (
+                  <details className="mt-2">
+                    <summary className="text-xs text-muted-foreground cursor-pointer">🐛 Raw Content Debug</summary>
+                    <pre className="text-xs bg-gray-100 p-2 rounded mt-1 overflow-auto max-h-32">
+                      {JSON.stringify({
+                        content: message.content,
+                        contentLength: message.content?.length,
+                        planData: message.planData
+                      }, null, 2)}
+                    </pre>
+                  </details>
+                )}
                 
                 {/* Plan Data Display */}
                 {message.planData && message.role === 'assistant' && (
