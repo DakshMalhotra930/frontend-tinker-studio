@@ -47,21 +47,15 @@ export function StudyPlanChat() {
     setMessages(prev => [...prev, userMsg]);
 
     try {
-      console.log('Sending study plan request:', userMessage);
-      console.log('Current date/time context:', new Date().toISOString());
-      
       const response = await studyPlanAPI.generateFromChat({
         message: userMessage,
         currentDateTime: new Date().toISOString(),
       });
 
-      console.log('Study plan response:', response);
-      console.log('Response structure:', {
+      console.log('Study plan response received:', {
         hasResponse: !!response.response,
-        hasPlan: !!response.plan,
         responseLength: response.response?.length,
-        planKeys: response.plan ? Object.keys(response.plan) : 'No plan object',
-        fullResponse: response
+        hasPlan: !!response.plan
       });
 
       if (!response) {
@@ -72,19 +66,14 @@ export function StudyPlanChat() {
       let contentToDisplay = '';
       if (response.response) {
         contentToDisplay = response.response;
-        console.log('✅ Using response.response:', contentToDisplay.substring(0, 100) + '...');
       } else if (response.plan && typeof response.plan === 'string') {
         contentToDisplay = response.plan;
-        console.log('✅ Using response.plan (string):', contentToDisplay.substring(0, 100) + '...');
       } else if (response.plan && typeof response.plan === 'object') {
         contentToDisplay = JSON.stringify(response.plan, null, 2);
-        console.log('✅ Using response.plan (object):', contentToDisplay.substring(0, 200) + '...');
       } else {
-        console.error('❌ No readable content found in response:', response);
+        console.error('No readable content found in response:', response);
         throw new Error('Invalid response from API - no readable content found');
       }
-
-      console.log('🎯 Final content to display:', contentToDisplay.substring(0, 200) + '...');
 
       // Add AI response
       const aiMsg: StudyPlanMessage = {
@@ -95,18 +84,7 @@ export function StudyPlanChat() {
         planData: response,
       };
       
-      console.log('📝 Creating AI message:', {
-        id: aiMsg.id,
-        contentLength: aiMsg.content?.length,
-        contentPreview: aiMsg.content?.substring(0, 100),
-        hasPlanData: !!aiMsg.planData
-      });
-      
-      setMessages(prev => {
-        const newMessages = [...prev, aiMsg];
-        console.log('📊 Messages state updated. Total messages:', newMessages.length);
-        return newMessages;
-      });
+      setMessages(prev => [...prev, aiMsg]);
       setError('');
 
     } catch (err) {
@@ -147,7 +125,7 @@ export function StudyPlanChat() {
 
 Tell me about your exam and what you want to study in natural language. I'll create a personalized study plan for you!
 
-**Examples:**
+**Examples of what you can ask:**
 • "My JEE exam is on December 15th, need to study Physics Mechanics"
 • "I have an exam in 2 months, focusing on Math Calculus and Chemistry"
 • "Need study plan for JEE, exam on 20th December"
@@ -223,13 +201,7 @@ Tell me about your exam and what you want to study in natural language. I'll cre
                   ? 'bg-primary text-primary-foreground' 
                   : 'bg-muted'
               }`}>
-                {message.role === 'assistant' && (
-                  <div className="text-xs text-muted-foreground mb-2">
-                    Debug: Content length: {message.content?.length || 0} | 
-                    Has planData: {!!message.planData} | 
-                    PlanData keys: {message.planData ? Object.keys(message.planData).join(', ') : 'none'}
-                  </div>
-                )}
+
                 {/* Main content display */}
                 {message.content ? (
                   <MarkdownRenderer content={message.content} />
@@ -237,19 +209,7 @@ Tell me about your exam and what you want to study in natural language. I'll cre
                   <div className="text-red-500 text-sm">❌ No content to display</div>
                 )}
                 
-                {/* Raw content debug fallback */}
-                {message.role === 'assistant' && (
-                  <details className="mt-2">
-                    <summary className="text-xs text-muted-foreground cursor-pointer">🐛 Raw Content Debug</summary>
-                    <pre className="text-xs bg-gray-100 p-2 rounded mt-1 overflow-auto max-h-32">
-                      {JSON.stringify({
-                        content: message.content,
-                        contentLength: message.content?.length,
-                        planData: message.planData
-                      }, null, 2)}
-                    </pre>
-                  </details>
-                )}
+
                 
                 {/* Plan Data Display */}
                 {message.planData && message.role === 'assistant' && (
