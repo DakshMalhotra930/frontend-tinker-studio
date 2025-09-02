@@ -342,20 +342,20 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
       {/* Main Content */}
       <div className="flex-1 overflow-hidden h-full">
         <Tabs defaultValue="chat" className="h-full flex flex-col">
-                      <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
-              <TabsTrigger value="chat" className="flex items-center space-x-2">
-                <MessageSquare className="w-4 h-4" />
-                <span>AI Chat</span>
-              </TabsTrigger>
-              <TabsTrigger value="problems" className="flex items-center space-x-2">
-                <Calculator className="w-4 h-4" />
-                <span>Problem Solver</span>
-              </TabsTrigger>
-              <TabsTrigger value="plans" className="flex items-center space-x-2">
-                <Target className="w-4 h-4" />
-                <span>AI Study Plans</span>
-              </TabsTrigger>
-            </TabsList>
+          <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+            <TabsTrigger value="chat" className="flex items-center space-x-2">
+              <MessageSquare className="w-4 h-4" />
+              <span>AI Chat</span>
+            </TabsTrigger>
+            <TabsTrigger value="problems" className="flex items-center space-x-2">
+              <Calculator className="w-4 h-4" />
+              <span>Problem Solver</span>
+            </TabsTrigger>
+            <TabsTrigger value="plans" className="flex items-center space-x-2">
+              <Target className="w-4 h-4" />
+              <span>AI Study Plans</span>
+            </TabsTrigger>
+          </TabsList>
 
           {/* AI Chat Tab */}
           <TabsContent value="chat" className="flex flex-col mt-0" style={{ height: 'calc(100vh - 200px)' }}>
