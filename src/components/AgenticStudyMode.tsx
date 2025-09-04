@@ -10,7 +10,9 @@ import { Send, Loader2, MessageSquare, BookOpen, Calculator, AlertCircle, Target
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ImageUpload } from './ImageUpload';
 import { StudyPlanChat } from './StudyPlanChat';
+import { ProFeatureGate } from './ProFeatureGate';
 import { useDeepStudySession } from '@/hooks/useDeepStudySession';
+import { useSubscription } from '@/hooks/useSubscription';
 import { sessionAPI, apiUtils } from '@/lib/api';
 
 interface AgenticStudyModeProps {
@@ -33,6 +35,23 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
     createStudyPlan,
     clearError,
   } = useDeepStudySession({ subject, topic });
+
+  const { useTrialSession, hasTrialSessions } = useSubscription();
+
+  const handleUseTrial = async () => {
+    if (currentSession) {
+      const success = await useTrialSession('deep_study_mode', currentSession.session_id);
+      if (success) {
+        // Trial session used successfully, user can now access the feature
+        console.log('Trial session used for Deep Study Mode');
+      }
+    }
+  };
+
+  const handleUpgrade = () => {
+    // Navigate to pricing page or show upgrade modal
+    window.location.href = '/pricing';
+  };
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -308,54 +327,59 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="p-4 border-b border-border bg-card">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Deep Study Mode</h1>
-            <p className="text-sm text-muted-foreground">
-              {subject} → {topic}
-            </p>
-          </div>
-          {currentSession && (
-            <Badge variant="secondary">
-              Session: {currentSession.session_id.slice(0, 8)}...
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {/* Error Display */}
-      {error && (
-        <div className="p-4 bg-destructive/10 border border-destructive/20">
-          <div className="flex items-center space-x-2">
-            <AlertCircle className="w-4 h-4 text-destructive" />
-            <span className="text-sm text-destructive">{error}</span>
-            <Button variant="ghost" size="sm" onClick={clearError}>
-              Dismiss
-            </Button>
+    <ProFeatureGate
+      feature="deep_study_mode"
+      onUpgrade={handleUpgrade}
+      onUseTrial={handleUseTrial}
+    >
+      <div className="h-full flex flex-col">
+        {/* Header */}
+        <div className="p-4 border-b border-border bg-card">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Deep Study Mode</h1>
+              <p className="text-sm text-muted-foreground">
+                {subject} → {topic}
+              </p>
+            </div>
+            {currentSession && (
+              <Badge variant="secondary">
+                Session: {currentSession.session_id.slice(0, 8)}...
+              </Badge>
+            )}
           </div>
         </div>
-      )}
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-hidden h-full">
-        <Tabs defaultValue="chat" className="h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
-            <TabsTrigger value="chat" className="flex items-center space-x-2">
-              <MessageSquare className="w-4 h-4" />
-              <span>AI Chat</span>
-            </TabsTrigger>
-            <TabsTrigger value="problems" className="flex items-center space-x-2">
-              <Calculator className="w-4 h-4" />
-              <span>Problem Solver</span>
-            </TabsTrigger>
-            <TabsTrigger value="plans" className="flex items-center space-x-2">
-              <Target className="w-4 h-4" />
-              <span>AI Study Plans</span>
-            </TabsTrigger>
-          </TabsList>
+        {/* Error Display */}
+        {error && (
+          <div className="p-4 bg-destructive/10 border border-destructive/20">
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="w-4 h-4 text-destructive" />
+              <span className="text-sm text-destructive">{error}</span>
+              <Button variant="ghost" size="sm" onClick={clearError}>
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="flex-1 overflow-hidden h-full">
+          <Tabs defaultValue="chat" className="h-full flex flex-col">
+            <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
+              <TabsTrigger value="chat" className="flex items-center space-x-2">
+                <MessageSquare className="w-4 h-4" />
+                <span>AI Chat</span>
+              </TabsTrigger>
+              <TabsTrigger value="problems" className="flex items-center space-x-2">
+                <Calculator className="w-4 h-4" />
+                <span>Problem Solver</span>
+              </TabsTrigger>
+              <TabsTrigger value="plans" className="flex items-center space-x-2">
+                <Target className="w-4 h-4" />
+                <span>AI Study Plans</span>
+              </TabsTrigger>
+            </TabsList>
 
           {/* AI Chat Tab */}
           <TabsContent value="chat" className="flex flex-col mt-0" style={{ height: 'calc(100vh - 200px)' }}>
@@ -494,5 +518,6 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
         </Tabs>
       </div>
     </div>
+    </ProFeatureGate>
   );
 }

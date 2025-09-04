@@ -43,6 +43,45 @@ export interface QuickHelpResponse {
   timestamp: string;
 }
 
+// Subscription Management Interfaces
+export interface SubscriptionStatus {
+  status: 'free' | 'pro' | 'trial' | 'expired' | 'cancelled';
+  tier: 'free' | 'pro_monthly' | 'pro_yearly' | 'pro_lifetime';
+  trial_sessions_used: number;
+  trial_sessions_limit: number;
+  expires_at?: string;
+  features: string[];
+}
+
+export interface PricingInfo {
+  monthly: {
+    price: number;
+    currency: string;
+    features: string[];
+  };
+  yearly: {
+    price: number;
+    currency: string;
+    features: string[];
+    discount: string;
+  };
+  lifetime: {
+    price: number;
+    currency: string;
+    features: string[];
+  };
+}
+
+export interface UpgradeRequest {
+  tier: 'pro_monthly' | 'pro_yearly' | 'pro_lifetime';
+  payment_method?: string;
+}
+
+export interface TrialUsageRequest {
+  feature: string;
+  session_id?: string;
+}
+
 // API Error class
 export class APIError extends Error {
   constructor(
@@ -123,6 +162,9 @@ export const sessionAPI = {
     topic: string;
     mode: string;
     user_id: string;
+    exam_type?: string;
+    current_level?: string;
+    study_hours?: number;
   }): Promise<StudySession> => {
     return apiRequest<StudySession>('/agentic/session/start', {
       method: 'POST',
@@ -224,6 +266,53 @@ export const authAPI = {
   },
 };
 
+// Subscription Management - Using /api/ prefix
+export const subscriptionAPI = {
+  // Get current subscription status
+  getStatus: async (): Promise<SubscriptionStatus> => {
+    return apiRequest<SubscriptionStatus>('/api/subscription/status', {
+      method: 'GET',
+    });
+  },
+
+  // Upgrade subscription
+  upgrade: async (data: UpgradeRequest): Promise<{ success: boolean; message: string }> => {
+    return apiRequest<{ success: boolean; message: string }>('/api/subscription/upgrade', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Cancel subscription
+  cancel: async (): Promise<{ success: boolean; message: string }> => {
+    return apiRequest<{ success: boolean; message: string }>('/api/subscription/cancel', {
+      method: 'POST',
+    });
+  },
+
+  // Use trial session
+  useTrial: async (data: TrialUsageRequest): Promise<{ success: boolean; message: string; trial_sessions_remaining: number }> => {
+    return apiRequest<{ success: boolean; message: string; trial_sessions_remaining: number }>('/api/subscription/use-trial', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Get available features for current subscription
+  getFeatures: async (): Promise<{ features: string[] }> => {
+    return apiRequest<{ features: string[] }>('/api/subscription/features', {
+      method: 'GET',
+    });
+  },
+
+  // Get pricing information
+  getPricing: async (): Promise<PricingInfo> => {
+    return apiRequest<PricingInfo>('/api/subscription/pricing', {
+      method: 'GET',
+    });
+  },
+};
+
 // Utility functions
 export const apiUtils = {
   // Create a user ID (in a real app, this would come from authentication)
@@ -253,5 +342,37 @@ export const apiUtils = {
   // Get the current API base URL
   getApiBaseUrl: (): string => {
     return API_BASE_URL || 'Not configured';
+  },
+
+  // Check if error is a Pro access error
+  isProAccessError: (error: unknown): boolean => {
+    return error instanceof APIError && error.status === 403;
+  },
+
+  // Get Pro access error details
+  getProAccessError: (error: unknown): { message: string; upgradePrompt?: string } | null => {
+    if (!apiUtils.isProAccessError(error)) return null;
+    
+    const apiError = error as APIError;
+    const message = apiError.message.toLowerCase();
+    
+    if (message.includes('trial') && message.includes('limit')) {
+      return {
+        message: 'Trial sessions exhausted',
+        upgradePrompt: 'You have used all your trial sessions. Upgrade to Pro for unlimited access.',
+      };
+    }
+    
+    if (message.includes('pro') || message.includes('subscription') || message.includes('upgrade')) {
+      return {
+        message: 'Pro feature access required',
+        upgradePrompt: 'This feature requires a Pro subscription. Upgrade now to unlock all features.',
+      };
+    }
+    
+    return {
+      message: 'Access denied',
+      upgradePrompt: 'This feature requires Pro access. Upgrade to continue.',
+    };
   },
 };

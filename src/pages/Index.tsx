@@ -5,7 +5,10 @@ import { ContentViewer } from '@/components/ContentViewer';
 import { FeatureRequestForm } from '@/components/ui/FeatureRequestForm';
 import { AgenticSidebar } from '@/components/AgenticSidebar';
 import { AgenticStudyMode } from '@/components/AgenticStudyMode';
+import { SubscriptionStatus } from '@/components/SubscriptionStatus';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Crown, Settings } from 'lucide-react';
 
 const Index = ({ user, onLogout }) => {
   const [selectedTopic, setSelectedTopic] = useState(null);
@@ -31,18 +34,39 @@ const Index = ({ user, onLogout }) => {
                 <p className="text-sm text-muted-foreground">Your Personal AI Tutor for JEE Prep</p>
               </div>
             </div>
-            <div className="flex flex-col items-end">
-              <p className="text-sm text-muted-foreground">
-                Logged in as: {user?.email}
-              </p>
-              <button
-                className="mt-2 px-6 py-2 bg-red-600 text-white font-bold rounded-lg shadow-md hover:bg-red-700 transition-all"
-                onClick={onLogout}
-              >
-                Logout
-              </button>
-              <p className="text-sm text-muted-foreground mt-2">Target: JEE Main & Advanced</p>
-              <p className="text-xs text-muted-foreground">Classes 11 & 12</p>
+            <div className="flex items-center gap-4">
+              <SubscriptionStatus compact showUpgradeButton />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.href = '/pricing'}
+                >
+                  <Crown className="mr-2 h-4 w-4" />
+                  Pricing
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.href = '/subscription'}
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Account
+                </Button>
+              </div>
+              <div className="flex flex-col items-end">
+                <p className="text-sm text-muted-foreground">
+                  Logged in as: {user?.email}
+                </p>
+                <button
+                  className="mt-2 px-6 py-2 bg-red-600 text-white font-bold rounded-lg shadow-md hover:bg-red-700 transition-all"
+                  onClick={onLogout}
+                >
+                  Logout
+                </button>
+                <p className="text-sm text-muted-foreground mt-2">Target: JEE Main & Advanced</p>
+                <p className="text-xs text-muted-foreground">Classes 11 & 12</p>
+              </div>
             </div>
           </div>
         </div>

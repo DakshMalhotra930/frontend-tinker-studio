@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Pricing from "./pages/Pricing";
+import Subscription from "./pages/Subscription";
 import GoogleLogin from "./components/GoogleLogin";
 import { Analytics } from '@vercel/analytics/react';
 
@@ -56,6 +58,8 @@ const App = () => {
                 />
               }
             />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/subscription" element={<Subscription />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

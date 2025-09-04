@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { ProFeatureGate } from './ProFeatureGate';
+import { useSubscription } from '@/hooks/useSubscription';
 
 interface QuizData {
   id: string;
@@ -19,6 +21,18 @@ interface QuizComponentProps {
 export function QuizComponent({ quizData, onNext }: QuizComponentProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
+  const { useTrialSession } = useSubscription();
+
+  const handleUseTrial = async () => {
+    const success = await useTrialSession('advanced_quiz', quizData.id);
+    if (success) {
+      console.log('Trial session used for Advanced Quiz');
+    }
+  };
+
+  const handleUpgrade = () => {
+    window.location.href = '/pricing';
+  };
 
   const handleOptionSelect = (optionIndex: number) => {
     if (!showAnswer) {
@@ -41,8 +55,13 @@ export function QuizComponent({ quizData, onNext }: QuizComponentProps) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <Card>
+    <ProFeatureGate
+      feature="advanced_quiz"
+      onUpgrade={handleUpgrade}
+      onUseTrial={handleUseTrial}
+    >
+      <div className="max-w-4xl mx-auto">
+        <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Practice Question</CardTitle>
         </CardHeader>
@@ -124,5 +143,6 @@ export function QuizComponent({ quizData, onNext }: QuizComponentProps) {
         </CardContent>
       </Card>
     </div>
+    </ProFeatureGate>
   );
 }

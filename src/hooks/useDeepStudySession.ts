@@ -58,6 +58,10 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
         topic: topic || 'General Study', // Use 'General Study' if no specific topic
         mode: 'explain' as const,
         user_id: apiUtils.createUserId(),
+        // Add additional fields that might be required
+        exam_type: 'jee',
+        current_level: 'intermediate',
+        study_hours: 4,
       };
 
       console.log('Starting session with:', sessionData);
