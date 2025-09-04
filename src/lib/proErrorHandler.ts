@@ -1,5 +1,5 @@
 import { APIError } from './api';
-import { toast } from 'sonner';
+import { toast } from '../hooks/use-toast';
 
 export interface ProAccessError {
   isProError: boolean;
@@ -54,27 +54,11 @@ export const handleProAccessError = (error: unknown): ProAccessError => {
 export const showProAccessToast = (proError: ProAccessError) => {
   if (!proError.isProError) return;
   
-  if (proError.trialAvailable) {
-    toast.error(proError.message, {
-      description: proError.upgradePrompt,
-      action: {
-        label: 'Upgrade',
-        onClick: () => {
-          window.location.href = '/pricing';
-        },
-      },
-    });
-  } else {
-    toast.error(proError.message, {
-      description: proError.upgradePrompt,
-      action: {
-        label: 'View Plans',
-        onClick: () => {
-          window.location.href = '/pricing';
-        },
-      },
-    });
-  }
+  toast({
+    title: proError.message,
+    description: proError.upgradePrompt,
+    variant: 'destructive',
+  });
 };
 
 export const handleApiError = (error: unknown) => {
@@ -83,8 +67,10 @@ export const handleApiError = (error: unknown) => {
   if (proError.isProError) {
     showProAccessToast(proError);
   } else {
-    toast.error('Error', {
+    toast({
+      title: 'Error',
       description: proError.message,
+      variant: 'destructive',
     });
   }
 };

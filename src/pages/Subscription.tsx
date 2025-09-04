@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Crown, Settings, CreditCard, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
-import { toast } from 'sonner';
+import { toast } from '../hooks/use-toast';
 import { format } from 'date-fns';
 
 export const Subscription: React.FC = () => {
@@ -21,18 +21,23 @@ export const Subscription: React.FC = () => {
       const success = await cancelSubscription();
       
       if (success) {
-        toast.success('Subscription cancelled', {
+        toast({
+          title: 'Subscription cancelled',
           description: 'Your subscription will remain active until the end of your billing period.',
         });
         await refreshSubscription();
       } else {
-        toast.error('Failed to cancel subscription', {
+        toast({
+          title: 'Failed to cancel subscription',
           description: 'Please try again or contact support.',
+          variant: 'destructive',
         });
       }
     } catch (error) {
-      toast.error('Failed to cancel subscription', {
+      toast({
+        title: 'Failed to cancel subscription',
         description: 'An unexpected error occurred.',
+        variant: 'destructive',
       });
     } finally {
       setCancelling(false);

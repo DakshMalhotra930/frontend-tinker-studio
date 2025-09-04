@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Crown, Check, Sparkles, Zap, Star } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
-import { toast } from 'sonner';
+import { toast } from '../hooks/use-toast';
 
 export const Pricing: React.FC = () => {
   const { pricing, subscription, upgradeSubscription, loading } = useSubscription();
@@ -16,17 +16,22 @@ export const Pricing: React.FC = () => {
       const success = await upgradeSubscription(tier);
       
       if (success) {
-        toast.success('Successfully upgraded to Pro!', {
+        toast({
+          title: 'Successfully upgraded to Pro!',
           description: 'Welcome to the Pro experience!',
         });
       } else {
-        toast.error('Upgrade failed', {
+        toast({
+          title: 'Upgrade failed',
           description: 'Please try again or contact support.',
+          variant: 'destructive',
         });
       }
     } catch (error) {
-      toast.error('Upgrade failed', {
+      toast({
+        title: 'Upgrade failed',
         description: 'An unexpected error occurred.',
+        variant: 'destructive',
       });
     } finally {
       setUpgrading(null);
