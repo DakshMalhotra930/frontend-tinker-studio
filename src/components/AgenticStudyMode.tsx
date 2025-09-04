@@ -11,8 +11,8 @@ import { MarkdownRenderer } from './MarkdownRenderer';
 import { ImageUpload } from './ImageUpload';
 import { StudyPlanChat } from './StudyPlanChat';
 import { ProFeatureGate } from './ProFeatureGate';
-import { useDeepStudySession } from '@/hooks/useDeepStudySession';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useDeepStudySession } from '../hooks/useDeepStudySession';
+import { useSubscription } from '../hooks/useSubscription';
 import { sessionAPI, apiUtils } from '@/lib/api';
 
 interface AgenticStudyModeProps {

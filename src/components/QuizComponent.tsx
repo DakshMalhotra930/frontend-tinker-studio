@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ProFeatureGate } from './ProFeatureGate';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useSubscription } from '../hooks/useSubscription';
 
 interface QuizData {
   id: string;

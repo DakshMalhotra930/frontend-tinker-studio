@@ -5,7 +5,7 @@ import { ContentViewer } from '@/components/ContentViewer';
 import { FeatureRequestForm } from '@/components/ui/FeatureRequestForm';
 import { AgenticSidebar } from '@/components/AgenticSidebar';
 import { AgenticStudyMode } from '@/components/AgenticStudyMode';
-import { SubscriptionStatus } from '@/components/SubscriptionStatus';
+import { SubscriptionStatus } from '../components/SubscriptionStatus';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Crown, Settings } from 'lucide-react';

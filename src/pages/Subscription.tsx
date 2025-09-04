@@ -7,7 +7,7 @@ import { useSubscription } from '../hooks/useSubscription';
 import { toast } from '../hooks/use-toast';
 import { format } from 'date-fns';
 
-export const Subscription: React.FC = () => {
+const Subscription: React.FC = () => {
   const { subscription, loading, cancelSubscription, refreshSubscription } = useSubscription();
   const [cancelling, setCancelling] = useState(false);
 
@@ -267,3 +267,5 @@ export const Subscription: React.FC = () => {
     </div>
   );
 };
+
+export default Subscription;

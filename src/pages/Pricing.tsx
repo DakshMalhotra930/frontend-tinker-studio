@@ -6,7 +6,7 @@ import { Crown, Check, Sparkles, Zap, Star } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
 import { toast } from '../hooks/use-toast';
 
-export const Pricing: React.FC = () => {
+const Pricing: React.FC = () => {
   const { pricing, subscription, upgradeSubscription, loading } = useSubscription();
   const [upgrading, setUpgrading] = useState<string | null>(null);
 
@@ -269,3 +269,5 @@ export const Pricing: React.FC = () => {
     </div>
   );
 };
+
+export default Pricing;
