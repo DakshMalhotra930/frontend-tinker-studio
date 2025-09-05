@@ -110,7 +110,11 @@ export const useSubscription = (): UseSubscriptionReturn => {
       };
       
       console.log('Making trial usage request:', trialRequest);
+      console.log('Request will be sent to: /agentic/subscription/trial/use');
+      console.log('Expected format: { user_id: string, feature: string }');
       const result = await subscriptionAPI.useTrial(trialRequest);
+      
+      console.log('Backend response:', result);
       
       if (result.success) {
         // Update local state with new trial count
@@ -121,9 +125,11 @@ export const useSubscription = (): UseSubscriptionReturn => {
         } : null);
         
         console.log('Trial session used successfully:', result.message);
+        console.log('Trial sessions remaining:', result.trial_sessions_remaining);
         return true;
       } else {
         console.error('Failed to use trial session:', result.message);
+        console.error('Response details:', result);
         return false;
       }
     } catch (err) {
