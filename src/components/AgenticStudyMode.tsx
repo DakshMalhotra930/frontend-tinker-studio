@@ -36,15 +36,20 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
     clearError,
   } = useDeepStudySession({ subject, topic });
 
-  const { useTrialSession, hasTrialSessions } = useSubscription();
+  const { useTrialSession, hasTrialSessions, refreshSubscription } = useSubscription();
 
   const handleUseTrial = async () => {
-    if (currentSession) {
-      const success = await useTrialSession('deep_study_mode', currentSession.session_id);
+    try {
+      const success = await useTrialSession('deep_study_mode', currentSession?.session_id);
       if (success) {
-        // Trial session used successfully, user can now access the feature
+        // Trial session used successfully, refresh subscription data
+        await refreshSubscription();
         console.log('Trial session used for Deep Study Mode');
+      } else {
+        console.error('Failed to use trial session');
       }
+    } catch (error) {
+      console.error('Error using trial session:', error);
     }
   };
 

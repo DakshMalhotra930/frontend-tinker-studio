@@ -293,7 +293,7 @@ export const subscriptionAPI = {
 
   // Use trial session
   useTrial: async (data: TrialUsageRequest): Promise<{ success: boolean; message: string; trial_sessions_remaining: number }> => {
-    return apiRequest<{ success: boolean; message: string; trial_sessions_remaining: number }>('/api/subscription/use-trial', {
+    return apiRequest<{ success: boolean; message: string; trial_sessions_remaining: number }>('/agentic/subscription/trial/use', {
       method: 'POST',
       body: JSON.stringify(data),
     });

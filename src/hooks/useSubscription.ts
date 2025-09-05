@@ -88,25 +88,29 @@ export const useSubscription = (): UseSubscriptionReturn => {
   // Use a trial session for a specific feature
   const useTrialSession = useCallback(async (feature: string, sessionId?: string): Promise<boolean> => {
     try {
-      // For now, simulate trial usage since backend endpoints are not ready
-      if (subscription && subscription.trial_sessions_used_today < subscription.trial_sessions_limit_daily) {
-        // Simulate successful trial usage
+      // Check if user has trial sessions available
+      if (!subscription || subscription.trial_sessions_used_today >= subscription.trial_sessions_limit_daily) {
+        console.log('No trial sessions available');
+        return false;
+      }
+
+      // Call the backend API to consume a trial
+      const result = await subscriptionAPI.useTrial({ feature, session_id: sessionId });
+      
+      if (result.success) {
+        // Update local state with new trial count
         setSubscription(prev => prev ? {
           ...prev,
           trial_sessions_used_today: prev.trial_sessions_used_today + 1,
           features: [...prev.features, feature]
         } : null);
+        
+        console.log('Trial session used successfully:', result.message);
         return true;
+      } else {
+        console.error('Failed to use trial session:', result.message);
+        return false;
       }
-      return false;
-      
-      // TODO: Uncomment when backend endpoints are ready
-      // const result = await subscriptionAPI.useTrial({ feature, session_id: sessionId });
-      // if (result.success) {
-      //   await refreshSubscription();
-      //   return true;
-      // }
-      // return false;
     } catch (err) {
       console.error('Failed to use trial session:', err);
       return false;

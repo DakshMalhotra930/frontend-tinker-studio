@@ -21,12 +21,20 @@ interface QuizComponentProps {
 export function QuizComponent({ quizData, onNext }: QuizComponentProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const { useTrialSession } = useSubscription();
+  const { useTrialSession, refreshSubscription } = useSubscription();
 
   const handleUseTrial = async () => {
-    const success = await useTrialSession('advanced_quiz', quizData.id);
-    if (success) {
-      console.log('Trial session used for Advanced Quiz');
+    try {
+      const success = await useTrialSession('advanced_quiz', quizData.id);
+      if (success) {
+        // Trial session used successfully, refresh subscription data
+        await refreshSubscription();
+        console.log('Trial session used for Advanced Quiz');
+      } else {
+        console.error('Failed to use trial session');
+      }
+    } catch (error) {
+      console.error('Error using trial session:', error);
     }
   };
 

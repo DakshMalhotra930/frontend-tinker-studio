@@ -26,12 +26,20 @@ export function StudyPlanChat() {
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { useTrialSession } = useSubscription();
+  const { useTrialSession, refreshSubscription } = useSubscription();
 
   const handleUseTrial = async () => {
-    const success = await useTrialSession('study_plan');
-    if (success) {
-      console.log('Trial session used for Study Plan Generator');
+    try {
+      const success = await useTrialSession('study_plan');
+      if (success) {
+        // Trial session used successfully, refresh subscription data
+        await refreshSubscription();
+        console.log('Trial session used for Study Plan Generator');
+      } else {
+        console.error('Failed to use trial session');
+      }
+    } catch (error) {
+      console.error('Error using trial session:', error);
     }
   };
 
