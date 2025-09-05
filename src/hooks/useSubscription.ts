@@ -95,7 +95,15 @@ export const useSubscription = (): UseSubscriptionReturn => {
       }
 
       // Call the backend API to consume a trial
-      const result = await subscriptionAPI.useTrial({ feature, session_id: sessionId });
+      const trialRequest = { 
+        feature, 
+        session_id: sessionId,
+        user_id: 'user_' + Date.now(), // Generate a temporary user ID
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('Making trial usage request:', trialRequest);
+      const result = await subscriptionAPI.useTrial(trialRequest);
       
       if (result.success) {
         // Update local state with new trial count
@@ -113,6 +121,9 @@ export const useSubscription = (): UseSubscriptionReturn => {
       }
     } catch (err) {
       console.error('Failed to use trial session:', err);
+      if (err instanceof Error) {
+        console.error('Error details:', err.message);
+      }
       return false;
     }
   }, [subscription]);
