@@ -58,6 +58,8 @@ export const useSubscription = (): UseSubscriptionReturn => {
       setSubscription(defaultSubscription);
       setPricing(defaultPricing);
       
+      console.log('Default subscription set:', defaultSubscription);
+      
       // TODO: Uncomment when backend endpoints are ready
       // const [subscriptionData, pricingData] = await Promise.all([
       //   subscriptionAPI.getStatus(),
@@ -81,7 +83,11 @@ export const useSubscription = (): UseSubscriptionReturn => {
 
   // Check if user has trial sessions available today
   const hasTrialSessions = useCallback((): boolean => {
-    if (!subscription) return false;
+    if (!subscription) {
+      console.log('No subscription data available');
+      return false;
+    }
+    console.log('Trial check - used:', subscription.trial_sessions_used_today, 'limit:', subscription.trial_sessions_limit_daily);
     return subscription.trial_sessions_used_today < subscription.trial_sessions_limit_daily;
   }, [subscription]);
 
@@ -115,6 +121,9 @@ export const useSubscription = (): UseSubscriptionReturn => {
       const result = await subscriptionAPI.useTrial(trialRequest);
       
       console.log('Backend response:', result);
+      console.log('Response success field:', result.success);
+      console.log('Response message:', result.message);
+      console.log('Response trial_sessions_remaining:', result.trial_sessions_remaining);
       
       if (result.success) {
         // Update local state with new trial count
