@@ -39,12 +39,12 @@ export const ProFeatureGate: React.FC<ProFeatureGateProps> = ({
             Try Pro Feature
           </CardTitle>
           <CardDescription className="text-amber-700">
-            You have {subscription?.trial_sessions_limit! - subscription?.trial_sessions_used!} trial sessions remaining
+            You have {subscription?.trial_sessions_limit_daily! - subscription?.trial_sessions_used_today!} trial sessions remaining today
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center space-y-4">
           <p className="text-amber-800">
-            Experience the power of {feature.replace('_', ' ')} with a free trial session!
+            Experience the power of Pro features with daily trial sessions!
           </p>
           <div className="flex gap-2 justify-center">
             <Button

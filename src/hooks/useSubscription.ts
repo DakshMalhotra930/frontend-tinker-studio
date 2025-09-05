@@ -30,9 +30,10 @@ export const useSubscription = (): UseSubscriptionReturn => {
       const defaultSubscription: SubscriptionStatus = {
         status: 'free',
         tier: 'free',
-        trial_sessions_used: 0,
-        trial_sessions_limit: 3,
-        features: ['quick_help', 'study_plan']
+        trial_sessions_used_today: 0,
+        trial_sessions_limit_daily: 10,
+        last_trial_reset_date: new Date().toISOString().split('T')[0], // Today's date
+        features: ['quick_help', 'start_study_session'] // Start Study Session is now free
       };
       
       const defaultPricing: PricingInfo = {
@@ -78,21 +79,21 @@ export const useSubscription = (): UseSubscriptionReturn => {
     return subscription.features.includes(feature);
   }, [subscription]);
 
-  // Check if user has trial sessions available
+  // Check if user has trial sessions available today
   const hasTrialSessions = useCallback((): boolean => {
     if (!subscription) return false;
-    return subscription.trial_sessions_used < subscription.trial_sessions_limit;
+    return subscription.trial_sessions_used_today < subscription.trial_sessions_limit_daily;
   }, [subscription]);
 
   // Use a trial session for a specific feature
   const useTrialSession = useCallback(async (feature: string, sessionId?: string): Promise<boolean> => {
     try {
       // For now, simulate trial usage since backend endpoints are not ready
-      if (subscription && subscription.trial_sessions_used < subscription.trial_sessions_limit) {
+      if (subscription && subscription.trial_sessions_used_today < subscription.trial_sessions_limit_daily) {
         // Simulate successful trial usage
         setSubscription(prev => prev ? {
           ...prev,
-          trial_sessions_used: prev.trial_sessions_used + 1,
+          trial_sessions_used_today: prev.trial_sessions_used_today + 1,
           features: [...prev.features, feature]
         } : null);
         return true;

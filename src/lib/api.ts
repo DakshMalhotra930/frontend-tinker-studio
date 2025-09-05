@@ -47,8 +47,9 @@ export interface QuickHelpResponse {
 export interface SubscriptionStatus {
   status: 'free' | 'pro' | 'trial' | 'expired' | 'cancelled';
   tier: 'free' | 'pro_monthly' | 'pro_yearly' | 'pro_lifetime';
-  trial_sessions_used: number;
-  trial_sessions_limit: number;
+  trial_sessions_used_today: number;
+  trial_sessions_limit_daily: number;
+  last_trial_reset_date: string;
   expires_at?: string;
   features: string[];
 }
@@ -358,8 +359,8 @@ export const apiUtils = {
     
     if (message.includes('trial') && message.includes('limit')) {
       return {
-        message: 'Trial sessions exhausted',
-        upgradePrompt: 'You have used all your trial sessions. Upgrade to Pro for unlimited access.',
+        message: 'Daily trial limit reached',
+        upgradePrompt: 'Daily trial limit reached. Try again tomorrow! Upgrade to Pro for unlimited access.',
       };
     }
     

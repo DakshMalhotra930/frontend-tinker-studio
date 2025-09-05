@@ -6,7 +6,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Send, Loader2, Calendar, Target, BookOpen, Lightbulb, ArrowRight, Sparkles, GraduationCap } from 'lucide-react';
 import { MarkdownRenderer } from './MarkdownRenderer';
+import { ProFeatureGate } from './ProFeatureGate';
 import { studyPlanAPI, apiUtils } from '@/lib/api';
+import { useSubscription } from '@/hooks/useSubscription';
 import { format } from 'date-fns';
 
 interface StudyPlanMessage {
@@ -23,6 +25,19 @@ export function StudyPlanChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { useTrialSession } = useSubscription();
+
+  const handleUseTrial = async () => {
+    const success = await useTrialSession('study_plan');
+    if (success) {
+      console.log('Trial session used for Study Plan Generator');
+    }
+  };
+
+  const handleUpgrade = () => {
+    window.location.href = '/pricing';
+  };
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -137,7 +152,12 @@ Tell me about your exam and what you want to study in natural language. I'll cre
   };
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-card/20">
+    <ProFeatureGate
+      feature="study_plan"
+      onUpgrade={handleUpgrade}
+      onUseTrial={handleUseTrial}
+    >
+      <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-card/20">
       {/* Enhanced Header */}
       <div className="p-6 border-b border-border/50 bg-gradient-to-r from-card to-card/80 backdrop-blur-sm">
         <div className="flex items-center space-x-4">
@@ -340,5 +360,6 @@ Tell me about your exam and what you want to study in natural language. I'll cre
         )}
       </div>
     </div>
+    </ProFeatureGate>
   );
 }
