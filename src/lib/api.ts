@@ -79,10 +79,8 @@ export interface UpgradeRequest {
 }
 
 export interface TrialUsageRequest {
+  user_id: string;
   feature: string;
-  session_id?: string;
-  user_id?: string;
-  timestamp?: string;
 }
 
 // API Error class

@@ -94,12 +94,19 @@ export const useSubscription = (): UseSubscriptionReturn => {
         return false;
       }
 
+      // Map frontend feature names to backend expected names
+      const featureMapping: { [key: string]: string } = {
+        'deep_study_mode': 'Deep Study Mode',
+        'study_plan': 'Study Plan Generator',
+        'advanced_quiz': 'Advanced Quiz'
+      };
+      
+      const backendFeatureName = featureMapping[feature] || feature;
+      
       // Call the backend API to consume a trial
       const trialRequest = { 
-        feature, 
-        session_id: sessionId,
-        user_id: 'user_' + Date.now(), // Generate a temporary user ID
-        timestamp: new Date().toISOString()
+        user_id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        feature: backendFeatureName
       };
       
       console.log('Making trial usage request:', trialRequest);
