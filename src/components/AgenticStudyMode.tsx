@@ -152,177 +152,183 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
 
   if (!subject || !topic) {
     return (
-      <div className="h-full flex flex-col">
-        {/* Header for General Mode */}
-        <div className="p-4 border-b border-border bg-card">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">Deep Study Mode</h1>
-              <p className="text-sm text-muted-foreground">
-                General Study Session
-              </p>
-            </div>
-            {currentSession && (
-              <Badge variant="secondary">
-                Session: {currentSession.session_id.slice(0, 8)}...
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        {/* General Study Interface */}
-        <div className="flex-1 p-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🎓</span>
+      <ProFeatureGate
+        feature="deep_study_mode"
+        onUpgrade={handleUpgrade}
+        onUseTrial={handleUseTrial}
+      >
+        <div className="h-full flex flex-col">
+          {/* Header for General Mode */}
+          <div className="p-4 border-b border-border bg-card">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold">Deep Study Mode</h1>
+                <p className="text-sm text-muted-foreground">
+                  General Study Session
+                </p>
               </div>
-              <h2 className="text-xl font-semibold mb-2">Welcome to Deep Study Mode!</h2>
-              <p className="text-muted-foreground mb-4">
-                I'm here to help you with any subject or topic you want to study.
-              </p>
+              {currentSession && (
+                <Badge variant="secondary">
+                  Session: {currentSession.session_id.slice(0, 8)}...
+                </Badge>
+              )}
             </div>
+          </div>
 
-            <Tabs defaultValue="chat" className="h-full flex flex-col">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="chat">
-                  <MessageSquare className="w-4 h-4 mr-2" />
-                  <span>AI Chat</span>
-                </TabsTrigger>
-                <TabsTrigger value="problems">
-                  <Calculator className="w-4 h-4 mr-2" />
-                  <span>Problem Solver</span>
-                </TabsTrigger>
-                <TabsTrigger value="plans">
-                  <Target className="w-4 h-4 mr-2" />
-                  <span>AI Study Plans</span>
-                </TabsTrigger>
-              </TabsList>
+          {/* General Study Interface */}
+          <div className="flex-1 p-6">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">🎓</span>
+                </div>
+                <h2 className="text-xl font-semibold mb-2">Welcome to Deep Study Mode!</h2>
+                <p className="text-muted-foreground mb-4">
+                  I'm here to help you with any subject or topic you want to study.
+                </p>
+              </div>
 
-              <TabsContent value="chat" className="flex-1 flex flex-col" style={{ height: '600px' }}>
-                <div className="flex-1 flex flex-col" style={{ height: '600px' }}>
-                  {/* Chat Messages Container - Hard Fixed Height with Internal Scroll */}
-                  <div 
-                    className="flex-1 overflow-y-auto p-4 space-y-4"
-                    style={{ 
-                      height: '500px',
-                      maxHeight: '500px',
-                      minHeight: '500px',
-                      overflowY: 'auto'
-                    }}
-                  >
-                    {chatMessages.length === 0 ? (
-                      <div className="text-center py-8">
-                        <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                          <MessageSquare className="w-6 h-6 text-muted-foreground" />
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2">Start Your Study Session</h3>
-                        <p className="text-muted-foreground mb-4">
-                          Ask me anything about any subject or topic you want to study!
-                        </p>
-                        <div className="space-y-2 text-sm text-muted-foreground">
-                          <p>• Ask questions about concepts</p>
-                          <p>• Request step-by-step explanations</p>
-                          <p>• Get help with problem solving</p>
-                          <p>• Take practice quizzes</p>
-                          <p>• Generate study materials</p>
-                        </div>
-                        <p className="text-muted-foreground mt-4">What would you like to explore first?</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {chatMessages.map((msg, index) => (
-                          <div
-                            key={index}
-                            className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}
-                          >
-                            <div
-                              className={`max-w-[80%] p-3 rounded-lg ${
-                                msg.isUser
-                                  ? 'bg-primary text-primary-foreground'
-                                  : 'bg-muted'
-                              }`}
-                            >
-                              <MarkdownRenderer content={msg.text} />
-                            </div>
+              <Tabs defaultValue="chat" className="h-full flex flex-col">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="chat">
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    <span>AI Chat</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="problems">
+                    <Calculator className="w-4 h-4 mr-2" />
+                    <span>Problem Solver</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="plans">
+                    <Target className="w-4 h-4 mr-2" />
+                    <span>AI Study Plans</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="chat" className="flex-1 flex flex-col" style={{ height: '600px' }}>
+                  <div className="flex-1 flex flex-col" style={{ height: '600px' }}>
+                    {/* Chat Messages Container - Hard Fixed Height with Internal Scroll */}
+                    <div 
+                      className="flex-1 overflow-y-auto p-4 space-y-4"
+                      style={{ 
+                        height: '500px',
+                        maxHeight: '500px',
+                        minHeight: '500px',
+                        overflowY: 'auto'
+                      }}
+                    >
+                      {chatMessages.length === 0 ? (
+                        <div className="text-center py-8">
+                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+                            <MessageSquare className="w-6 h-6 text-muted-foreground" />
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Input Field - Fixed at Bottom with Hard Height */}
-                  <div 
-                    className="p-4 border-t border-border bg-background"
-                    style={{ 
-                      height: '100px',
-                      minHeight: '100px',
-                      maxHeight: '100px',
-                      flexShrink: 0
-                    }}
-                  >
-                    <div className="flex space-x-2">
-                      <Input
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyPress={(e) => handleKeyPress(e, handleSendMessage)}
-                        placeholder="Ask me anything about any subject or topic..."
-                        className="flex-1"
-                      />
-                      <Button onClick={handleSendMessage} disabled={isLoading || !message.trim()}>
-                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                      </Button>
+                          <h3 className="text-lg font-semibold mb-2">Start Your Study Session</h3>
+                          <p className="text-muted-foreground mb-4">
+                            Ask me anything about any subject or topic you want to study!
+                          </p>
+                          <div className="space-y-2 text-sm text-muted-foreground">
+                            <p>• Ask questions about concepts</p>
+                            <p>• Request step-by-step explanations</p>
+                            <p>• Get help with problem solving</p>
+                            <p>• Take practice quizzes</p>
+                            <p>• Generate study materials</p>
+                          </div>
+                          <p className="text-muted-foreground mt-4">What would you like to explore first?</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {chatMessages.map((msg, index) => (
+                            <div
+                              key={index}
+                              className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}
+                            >
+                              <div
+                                className={`max-w-[80%] p-3 rounded-lg ${
+                                  msg.isUser
+                                    ? 'bg-primary text-primary-foreground'
+                                    : 'bg-muted'
+                                }`}
+                              >
+                                <MarkdownRenderer content={msg.text} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="problems" className="flex-1 flex flex-col">
-                <div className="flex-1 flex flex-col">
-                  <div className="p-4">
-                    <h3 className="text-lg font-semibold mb-4">Problem Solver</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Upload an image or describe any problem you need help with.
-                    </p>
                     
-                    <div className="space-y-4">
-                      <ImageUpload
-                        onImageSelect={setSelectedImage}
-                        className="w-full"
-                      />
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-2">
-                          Describe your problem
-                        </label>
-                        <Textarea
-                          value={problem}
-                          onChange={(e) => setProblem(e.target.value)}
-                          placeholder="Describe the problem you're facing..."
-                          className="min-h-[100px]"
+                    {/* Input Field - Fixed at Bottom with Hard Height */}
+                    <div 
+                      className="p-4 border-t border-border bg-background"
+                      style={{ 
+                        height: '100px',
+                        minHeight: '100px',
+                        maxHeight: '100px',
+                        flexShrink: 0
+                      }}
+                    >
+                      <div className="flex space-x-2">
+                        <Input
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          onKeyPress={(e) => handleKeyPress(e, handleSendMessage)}
+                          placeholder="Ask me anything about any subject or topic..."
+                          className="flex-1"
                         />
+                        <Button onClick={handleSendMessage} disabled={isLoading || !message.trim()}>
+                          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                        </Button>
                       </div>
-                      
-                      <Button 
-                        onClick={handleSolveProblem} 
-                        disabled={isLoading || (!problem.trim() && !selectedImage)}
-                        className="w-full"
-                      >
-                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Calculator className="w-4 h-4 mr-2" />}
-                        Get Help with Problem
-                      </Button>
                     </div>
                   </div>
-                </div>
-              </TabsContent>
+                </TabsContent>
 
-              <TabsContent value="plans" className="flex-1 flex flex-col">
-                <StudyPlanChat />
-              </TabsContent>
-            </Tabs>
+                <TabsContent value="problems" className="flex-1 flex flex-col">
+                  <div className="flex-1 flex flex-col">
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold mb-4">Problem Solver</h3>
+                      <p className="text-muted-foreground mb-4">
+                        Upload an image or describe any problem you need help with.
+                      </p>
+                      
+                      <div className="space-y-4">
+                        <ImageUpload
+                          onImageSelect={setSelectedImage}
+                          className="w-full"
+                        />
+                        
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Describe your problem
+                          </label>
+                          <Textarea
+                            value={problem}
+                            onChange={(e) => setProblem(e.target.value)}
+                            placeholder="Describe the problem you're facing..."
+                            className="min-h-[100px]"
+                          />
+                        </div>
+                        
+                        <Button 
+                          onClick={handleSolveProblem} 
+                          disabled={isLoading || (!problem.trim() && !selectedImage)}
+                          className="w-full"
+                        >
+                          {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Calculator className="w-4 h-4 mr-2" />}
+                          Get Help with Problem
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="plans" className="flex-1 flex flex-col">
+                  <StudyPlanChat />
+                </TabsContent>
+              </Tabs>
+            </div>
           </div>
         </div>
-      </div>
+      </ProFeatureGate>
     );
   }
 
