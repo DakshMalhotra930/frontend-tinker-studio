@@ -41,10 +41,25 @@ const GoogleLogin = ({ onLogin }) => {
         return res.json();
       })
       .then((data) => {
-        onLogin(data); // Pass user info to parent
-        console.log("Login successful:", data);
+        // Validate that the backend response contains the required fields
+        if (!data.user_id || !data.email || !data.name) {
+          throw new Error("Invalid login response: missing user data");
+        }
+        
+        // Create user object with consistent data structure
+        const userData = {
+          user_id: data.user_id,
+          email: data.email,
+          name: data.name,
+        };
+        
+        onLogin(userData); // Pass user info to parent
+        console.log("Login successful:", userData);
       })
-      .catch(() => alert("Login failed"));
+      .catch((error) => {
+        console.error("Login failed:", error);
+        alert(`Login failed: ${error.message}`);
+      });
       console.log("Google Sign-In response:", response);
   };
 

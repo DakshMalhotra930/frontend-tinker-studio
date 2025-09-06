@@ -10,7 +10,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Crown, Settings } from 'lucide-react';
 
-const Index = ({ user, onLogout }) => {
+interface IndexProps {
+  user: {
+    user_id: string;
+    email: string;
+    name: string;
+  };
+  onLogout: () => void;
+}
+
+const Index = ({ user, onLogout }: IndexProps) => {
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);

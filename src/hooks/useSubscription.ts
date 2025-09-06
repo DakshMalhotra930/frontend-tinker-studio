@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { subscriptionAPI, SubscriptionStatus, PricingInfo, APIError } from '../lib/api';
+import { subscriptionAPI, SubscriptionStatus, PricingInfo, APIError, apiUtils } from '../lib/api';
 
 interface UseSubscriptionReturn {
   subscription: SubscriptionStatus | null;
@@ -94,6 +94,13 @@ export const useSubscription = (): UseSubscriptionReturn => {
   // Use a trial session for a specific feature
   const useTrialSession = useCallback(async (feature: string, sessionId?: string): Promise<boolean> => {
     try {
+      // Check authentication first
+      if (!apiUtils.isAuthenticated()) {
+        console.error('User not authenticated');
+        setError('Authentication required. Please log in.');
+        return false;
+      }
+
       // Check if user has trial sessions available
       if (!subscription || subscription.trial_sessions_used_today >= subscription.trial_sessions_limit_daily) {
         console.log('No trial sessions available');
@@ -111,7 +118,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
       
       // Call the backend API to consume a trial
       const trialRequest = { 
-        user_id: 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+        user_id: apiUtils.getUserId(),
         feature: backendFeatureName
       };
       

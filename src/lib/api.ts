@@ -316,9 +316,50 @@ export const subscriptionAPI = {
 
 // Utility functions
 export const apiUtils = {
-  // Create a user ID (in a real app, this would come from authentication)
-  createUserId: (): string => {
-    return `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  // Check if user is authenticated
+  isAuthenticated: (): boolean => {
+    try {
+      const storedUser = localStorage.getItem('praxis_user');
+      if (!storedUser) return false;
+      const userData = JSON.parse(storedUser);
+      return !!(userData && userData.user_id);
+    } catch {
+      return false;
+    }
+  },
+
+  // Get user ID from localStorage (throws error if not found)
+  getUserId: (): string => {
+    try {
+      const storedUser = localStorage.getItem('praxis_user');
+      if (!storedUser) {
+        throw new APIError('User not authenticated. Please log in.', 401);
+      }
+      const userData = JSON.parse(storedUser);
+      if (!userData.user_id) {
+        throw new APIError('Invalid user data. Please log in again.', 401);
+      }
+      return userData.user_id;
+    } catch (error) {
+      if (error instanceof APIError) {
+        throw error;
+      }
+      console.error('Failed to get user ID:', error);
+      throw new APIError('Authentication required. Please log in.', 401);
+    }
+  },
+
+  // Get user data from localStorage
+  getUserData: (): { user_id: string; email: string; name: string } | null => {
+    try {
+      const storedUser = localStorage.getItem('praxis_user');
+      if (!storedUser) return null;
+      const userData = JSON.parse(storedUser);
+      if (!userData.user_id || !userData.email || !userData.name) return null;
+      return userData;
+    } catch {
+      return null;
+    }
   },
 
   // Format error messages for display

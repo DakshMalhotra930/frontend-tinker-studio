@@ -70,8 +70,14 @@ export function StudyPlanChat() {
     setMessages(prev => [...prev, userMsg]);
 
     try {
+      // Check authentication first
+      if (!apiUtils.isAuthenticated()) {
+        throw new Error('Authentication required. Please log in.');
+      }
+      
       const response = await studyPlanAPI.generateFromChat({
         message: userMessage,
+        user_id: apiUtils.getUserId(),
         currentDateTime: new Date().toISOString(),
       });
 

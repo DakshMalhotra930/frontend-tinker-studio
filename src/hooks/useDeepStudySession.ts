@@ -52,12 +52,18 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
       setError('');
       setIsLoading(true);
       
+      // Check authentication first
+      if (!apiUtils.isAuthenticated()) {
+        setError('Authentication required. Please log in.');
+        return;
+      }
+      
       // Ensure we have valid data for backend
       const sessionData = {
         subject: subject, // This will be 'Chemistry', 'Physics', or 'Mathematics'
         topic: topic || 'General Study', // Use 'General Study' if no specific topic
         mode: 'explain' as const,
-        user_id: apiUtils.createUserId(),
+        user_id: apiUtils.getUserId(),
         // Add additional fields that might be required
         exam_type: 'jee',
         current_level: 'intermediate',
@@ -135,8 +141,15 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
 
     try {
       setError('');
+      
+      // Check authentication first
+      if (!apiUtils.isAuthenticated()) {
+        setError('Authentication required. Please log in.');
+        return;
+      }
+      
       const data = await studyPlanAPI.generate({
-        user_id: apiUtils.createUserId(),
+        user_id: apiUtils.getUserId(),
         subjects: [subject],
         duration_days: 7,
         goals: [`Master ${topic || 'selected topics'}`],

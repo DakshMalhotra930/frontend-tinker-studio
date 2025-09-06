@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,16 +10,39 @@ import Pricing from "./pages/Pricing";
 import Subscription from "./pages/Subscription";
 import GoogleLogin from "./components/GoogleLogin";
 import { Analytics } from '@vercel/analytics/react';
+import { useAuth, User } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
 
 const App = () => {
-  const [user, setUser] = useState(null);
+  const { user, isLoading, isAuthenticated, login, logout } = useAuth();
 
-  const handleLogout = () => setUser(null);
+  const handleLogin = (userData: User) => {
+    login(userData);
+  };
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-900">
+        <div className="bg-zinc-800 rounded-2xl shadow-lg px-10 py-12 flex flex-col items-center">
+          <img
+            src="/praxis-logo-transparent.png"
+            alt="PraxisAI Logo"
+            className="h-20 mb-6"
+          />
+          <div className="text-white text-lg">Loading...</div>
+        </div>
+      </div>
+    );
+  }
 
   // Enhanced, centered login modal using Tailwind
-  if (!user) {
+  if (!isAuthenticated || !user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-900">
         <div className="bg-zinc-800 rounded-2xl shadow-lg px-10 py-12 flex flex-col items-center">
@@ -36,7 +59,7 @@ const App = () => {
           </p>
           {/* You can add scale for Google button if needed */}
           <div className="scale-125">
-            <GoogleLogin onLogin={setUser} />
+            <GoogleLogin onLogin={handleLogin} />
           </div>
         </div>
       </div>
