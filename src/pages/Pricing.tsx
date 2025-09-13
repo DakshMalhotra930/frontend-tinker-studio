@@ -3,20 +3,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
-import { Crown, Check, Sparkles, Zap, Star, BookOpen, Brain, Target, Users, Shield, Clock, ArrowRight, LogIn } from 'lucide-react';
-import { useSubscription } from '../hooks/useSubscription';
+import { Crown, Check, Sparkles, Zap, Star, BookOpen, Brain, Target, Users, Shield, Clock, ArrowRight, LogIn, CheckCircle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { toast } from '../hooks/use-toast';
-import { SubscriptionTier } from '../lib/api';
 import GoogleLogin from '../components/GoogleLogin';
 
 const Pricing: React.FC = () => {
-  const { subscription, upgradeSubscription, loading } = useSubscription();
   const { isAuthenticated, user, login } = useAuth();
-  const [upgrading, setUpgrading] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleUpgrade = async (tier: SubscriptionTier) => {
-    // If user is not authenticated, show login prompt
+  const handleLogin = (userData: any) => {
+    login(userData);
+  };
+
+  const handleUpgrade = () => {
     if (!isAuthenticated) {
       toast({
         title: 'Sign in required',
@@ -25,99 +25,39 @@ const Pricing: React.FC = () => {
       });
       return;
     }
-
-    try {
-      setUpgrading(tier);
-      const success = await upgradeSubscription(tier);
-      
-      if (success) {
-        toast({
-          title: 'Successfully upgraded to Pro!',
-          description: 'Welcome to the Pro experience!',
-        });
-      } else {
-        toast({
-          title: 'Upgrade failed',
-          description: 'Please try again or contact support.',
-          variant: 'destructive',
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Upgrade failed',
-        description: 'An unexpected error occurred.',
-        variant: 'destructive',
-      });
-    } finally {
-      setUpgrading(null);
-    }
+    
+    // TODO: Implement actual upgrade logic
+    toast({
+      title: 'Upgrade to Pro',
+      description: 'Pro upgrade functionality will be implemented soon!',
+    });
   };
 
-  const handleLogin = (userData: any) => {
-    login(userData);
-  };
-
-  if (loading && isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-card/20 flex items-center justify-center">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading pricing information...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const plans = [
-    {
-      name: 'Free',
-      tier: SubscriptionTier.FREE,
-      price: 0,
-      currency: '₹',
-      period: 'forever',
-      description: 'Perfect for getting started with AI tutoring',
-      features: [
-        'Interactive JEE Syllabus Explorer',
-        'Generate Practice Questions (FREE)',
-        'Ask AI Questions & Get Answers',
-        'Problem Solver with Step-by-Step Solutions',
-        'Casual Chat with AI Tutor',
-        'Image-based Problem Solving',
-        '3 Trial Sessions for Pro Features',
-        'Basic Study Plan Generation'
-      ],
-      popular: false,
-      buttonText: isAuthenticated ? 'Current Plan' : 'Get Started Free',
-      buttonVariant: 'outline' as const,
-    },
-    {
-      name: 'Pro',
-      tier: SubscriptionTier.PRO_MONTHLY,
-      price: 99,
-      currency: '₹',
-      period: 'month',
-      description: 'Unlock unlimited AI-powered learning',
-      features: [
-        'Everything in Free Plan',
-        'Unlimited Deep Study Mode Sessions',
-        'Advanced AI Tutoring & Mentoring',
-        'Personalized Study Plans & Roadmaps',
-        'Advanced Problem Solving with Hints',
-        'Unlimited Trial Sessions',
-        'Priority AI Response & Support',
-        'Advanced Quiz Generation',
-        'Progress Tracking & Analytics',
-        'Early Access to New Features'
-      ],
-      popular: true,
-      buttonText: isAuthenticated ? 'Upgrade to Pro' : 'Sign in to Upgrade',
-      buttonVariant: 'default' as const,
-    },
+  const freeFeatures = [
+    'Interactive JEE Syllabus Explorer',
+    'Generate Practice Questions',
+    'Ask AI Questions & Get Answers',
+    'Problem Solver with Step-by-Step Solutions',
+    'Casual Chat with AI Tutor',
+    'Image-based Problem Solving',
+    'Basic Study Plan Generation',
+    '3 Trial Sessions for Pro Features'
   ];
 
-  const isCurrentPlan = (tier: string) => {
-    return subscription?.tier === tier;
-  };
+  const proFeatures = [
+    'Everything in Free Plan',
+    'Unlimited Deep Study Mode Sessions',
+    'Advanced AI Tutoring & Mentoring',
+    'Personalized Study Plans & Roadmaps',
+    'Advanced Problem Solving with Hints',
+    'Unlimited Trial Sessions',
+    'Priority AI Response & Support',
+    'Advanced Quiz Generation',
+    'Progress Tracking & Analytics',
+    'Early Access to New Features',
+    '24/7 Premium Support',
+    'Custom Study Schedules'
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-card/20">
@@ -132,140 +72,146 @@ const Pricing: React.FC = () => {
               </div>
             </div>
             <h1 className="text-5xl font-bold bg-gradient-to-r from-primary via-secondary to-primary bg-clip-text text-transparent mb-6">
-              Choose Your Learning Journey
+              Upgrade to PraxisAI Pro
             </h1>
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-              Unlock the full potential of AI-powered JEE preparation with our comprehensive tutoring platform
+              Unlock unlimited AI-powered JEE preparation with our comprehensive Pro features
             </p>
             
             {/* Current Status */}
-            {isAuthenticated && subscription ? (
+            {isAuthenticated ? (
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-card/50 backdrop-blur-sm rounded-full border border-border/50 mb-8">
-                {subscription.status === 'pro' ? (
-                  <Crown className="h-4 w-4 text-primary" />
-                ) : (
-                  <Sparkles className="h-4 w-4 text-amber-500" />
-                )}
+                <Crown className="h-4 w-4 text-primary" />
                 <span className="text-sm font-medium">
-                  {subscription.status === 'pro' ? 'Pro Member' : 'Free User'}
+                  Welcome back, {user?.name?.split(' ')[0]}!
                 </span>
-                {subscription.status === 'free' && (
-                  <span className="text-xs text-muted-foreground">
-                    • {subscription.trial_sessions_limit - subscription.trial_sessions_used} trials left
-                  </span>
-                )}
               </div>
-            ) : !isAuthenticated ? (
+            ) : (
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-card/50 backdrop-blur-sm rounded-full border border-border/50 mb-8">
                 <LogIn className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm font-medium text-muted-foreground">
-                  Sign in to see your current plan
+                  Sign in to upgrade to Pro
                 </span>
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
 
       {/* Pricing Cards */}
       <div className="container mx-auto px-4 pb-16">
-        <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-          {plans.map((plan) => (
-            <Card
-              key={plan.tier}
-              className={`academic-card relative transition-all duration-300 hover:shadow-xl ${
-                plan.popular
-                  ? 'border-primary/50 bg-gradient-to-br from-primary/5 to-secondary/5 scale-105 shadow-lg'
-                  : 'border-border/50 hover:border-primary/30'
-              }`}
-            >
-              {plan.popular && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-1">
-                    <Star className="mr-1 h-3 w-3" />
-                    Most Popular
-                  </Badge>
-                </div>
-              )}
+        <div className="grid md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* Free Plan */}
+          <Card className="academic-card relative border-border/50 hover:border-primary/30 transition-all duration-300">
+            <CardHeader className="text-center pb-6 pt-8">
+              <div className="flex items-center justify-center mb-4">
+                <BookOpen className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <CardTitle className="text-3xl font-bold mb-2">Free Plan</CardTitle>
+              <CardDescription className="text-base mb-6">
+                Perfect for getting started with AI tutoring
+              </CardDescription>
               
-              <CardHeader className="text-center pb-6 pt-8">
-                <div className="flex items-center justify-center mb-4">
-                  {plan.tier === SubscriptionTier.FREE ? (
-                    <BookOpen className="h-8 w-8 text-muted-foreground" />
-                  ) : (
-                    <Crown className="h-8 w-8 text-primary" />
-                  )}
-                </div>
-                <CardTitle className="text-3xl font-bold mb-2">{plan.name}</CardTitle>
-                <CardDescription className="text-base mb-6">{plan.description}</CardDescription>
-                
-                <div className="flex items-baseline justify-center mb-2">
-                  <span className="text-5xl font-bold text-primary">{plan.currency}</span>
-                  <span className="text-5xl font-bold ml-1">{plan.price}</span>
-                  {plan.period !== 'forever' && (
-                    <span className="text-muted-foreground ml-2 text-lg">/{plan.period}</span>
-                  )}
-                </div>
-                
-                {plan.tier === SubscriptionTier.PRO_MONTHLY && (
-                  <p className="text-sm text-muted-foreground">
-                    Less than ₹3.30 per day • Cancel anytime
-                  </p>
+              <div className="flex items-baseline justify-center mb-2">
+                <span className="text-5xl font-bold text-primary">₹</span>
+                <span className="text-5xl font-bold ml-1">0</span>
+                <span className="text-muted-foreground ml-2 text-lg">/forever</span>
+              </div>
+              
+              <p className="text-sm text-muted-foreground">
+                No credit card required • Start learning immediately
+              </p>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                {freeFeatures.map((feature, index) => (
+                  <div key={index} className="flex items-start">
+                    <Check className="h-5 w-5 text-success mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm leading-relaxed">{feature}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <Separator className="my-6" />
+              
+              <Button
+                variant="outline"
+                className="w-full h-12 text-base font-semibold"
+                disabled
+              >
+                <CheckCircle className="mr-2 h-4 w-4" />
+                Current Plan
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Pro Plan */}
+          <Card className="academic-card relative border-primary/50 bg-gradient-to-br from-primary/5 to-secondary/5 scale-105 shadow-lg transition-all duration-300 hover:shadow-xl">
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <Badge className="bg-gradient-to-r from-primary to-secondary text-white px-4 py-1">
+                <Star className="mr-1 h-3 w-3" />
+                Most Popular
+              </Badge>
+            </div>
+            
+            <CardHeader className="text-center pb-6 pt-8">
+              <div className="flex items-center justify-center mb-4">
+                <Crown className="h-8 w-8 text-primary" />
+              </div>
+              <CardTitle className="text-3xl font-bold mb-2">Pro Plan</CardTitle>
+              <CardDescription className="text-base mb-6">
+                Unlock unlimited AI-powered learning
+              </CardDescription>
+              
+              <div className="flex items-baseline justify-center mb-2">
+                <span className="text-5xl font-bold text-primary">₹</span>
+                <span className="text-5xl font-bold ml-1">99</span>
+                <span className="text-muted-foreground ml-2 text-lg">/month</span>
+              </div>
+              
+              <p className="text-sm text-muted-foreground">
+                Less than ₹3.30 per day • Cancel anytime
+              </p>
+            </CardHeader>
+            
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                {proFeatures.map((feature, index) => (
+                  <div key={index} className="flex items-start">
+                    <Check className="h-5 w-5 text-success mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm leading-relaxed">{feature}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <Separator className="my-6" />
+              
+              <Button
+                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90"
+                onClick={handleUpgrade}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Crown className="mr-2 h-4 w-4" />
+                    {isAuthenticated ? 'Upgrade to Pro' : 'Sign in to Upgrade'}
+                  </>
                 )}
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  {plan.features.map((feature, index) => (
-                    <div key={index} className="flex items-start">
-                      <Check className="h-5 w-5 text-success mr-3 flex-shrink-0 mt-0.5" />
-                      <span className="text-sm leading-relaxed">{feature}</span>
-                    </div>
-                  ))}
-                </div>
-                
-                <Separator className="my-6" />
-                
-                <Button
-                  className={`w-full h-12 text-base font-semibold ${
-                    plan.popular
-                      ? 'bg-gradient-to-r from-primary to-secondary hover:from-primary/90 hover:to-secondary/90'
-                      : ''
-                  }`}
-                  variant={plan.buttonVariant}
-                  onClick={() => !isCurrentPlan(plan.tier) && handleUpgrade(plan.tier)}
-                  disabled={upgrading === plan.tier || isCurrentPlan(plan.tier)}
-                >
-                  {upgrading === plan.tier ? (
-                    <>
-                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                      Upgrading...
-                    </>
-                  ) : isCurrentPlan(plan.tier) ? (
-                    <>
-                      <Check className="mr-2 h-4 w-4" />
-                      {plan.buttonText}
-                    </>
-                  ) : (
-                    <>
-                      {plan.tier === SubscriptionTier.FREE ? (
-                        <BookOpen className="mr-2 h-4 w-4" />
-                      ) : (
-                        <Crown className="mr-2 h-4 w-4" />
-                      )}
-                      {plan.buttonText}
-                    </>
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Feature Comparison */}
         <div className="mt-20 max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Why Choose PraxisAI Pro?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Upgrade to Pro?</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Experience the difference with our advanced AI tutoring features designed specifically for JEE preparation
             </p>
@@ -335,7 +281,7 @@ const Pricing: React.FC = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
             <p className="text-lg text-muted-foreground">
-              Everything you need to know about our pricing and features
+              Everything you need to know about upgrading to Pro
             </p>
           </div>
 

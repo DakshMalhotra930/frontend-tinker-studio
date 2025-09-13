@@ -35,28 +35,47 @@ export const useSubscription = (): UseSubscriptionReturn => {
       
       const userId = apiUtils.getUserId();
       
-      // Load subscription data and pricing
-      const [subscriptionData, pricingData] = await Promise.all([
-        subscriptionAPI.getStatus(userId),
-        subscriptionAPI.getPricing()
-      ]);
+      // Create default free user subscription data
+      const defaultFreeSubscription: SubscriptionResponse = {
+        status: SubscriptionStatus.FREE,
+        tier: SubscriptionTier.FREE,
+        trial_sessions_used: 0,
+        trial_sessions_limit: 3,
+        trial_reset_date: new Date().toISOString().split('T')[0],
+        features: ['syllabus', 'generate_content', 'ask_question', 'problem_solver', 'chat', 'image_solve', 'study_plan'],
+        user_id: userId
+      };
       
-      setSubscription(subscriptionData);
-      setPricing(pricingData);
+      try {
+        // Try to load subscription data from API
+        const [subscriptionData, pricingData] = await Promise.all([
+          subscriptionAPI.getStatus(userId),
+          subscriptionAPI.getPricing()
+        ]);
+        
+        setSubscription(subscriptionData);
+        setPricing(pricingData);
+        
+        console.log('Subscription data loaded from API:', subscriptionData);
+      } catch (apiError) {
+        console.warn('API failed, using default free subscription:', apiError);
+        // Use default free subscription if API fails
+        setSubscription(defaultFreeSubscription);
+        setPricing(null); // Pricing is optional
+      }
       
-      console.log('Subscription data loaded:', subscriptionData);
     } catch (err) {
       console.error('Failed to load subscription data:', err);
       setError(err instanceof APIError ? err.message : 'Failed to load subscription data');
       
-      // Set default values on error
+      // Always provide default free subscription as fallback
       const defaultSubscription: SubscriptionResponse = {
         status: SubscriptionStatus.FREE,
         tier: SubscriptionTier.FREE,
         trial_sessions_used: 0,
         trial_sessions_limit: 3,
         trial_reset_date: new Date().toISOString().split('T')[0],
-        features: ['syllabus', 'generate_content', 'ask_question', 'problem_solver', 'chat', 'image_solve'],
+        features: ['syllabus', 'generate_content', 'ask_question', 'problem_solver', 'chat', 'image_solve', 'study_plan'],
         user_id: apiUtils.getUserId()
       };
       
@@ -68,15 +87,19 @@ export const useSubscription = (): UseSubscriptionReturn => {
 
   // Check if user can access a specific feature
   const canAccessFeature = useCallback((feature: string): boolean => {
-    if (!subscription) return false;
+    if (!subscription) {
+      // If no subscription data, allow basic features for free users
+      const freeFeatures = ['syllabus', 'generate_content', 'ask_question', 'problem_solver', 'chat', 'image_solve', 'study_plan'];
+      return freeFeatures.includes(feature);
+    }
     return subscription.features.includes(feature);
   }, [subscription]);
 
   // Check if user has trial sessions available
   const hasTrialSessions = useCallback((): boolean => {
     if (!subscription) {
-      console.log('No subscription data available');
-      return false;
+      console.log('No subscription data available, assuming free user with trials');
+      return true; // Assume free user with trial sessions if no data
     }
     
     // Only free users can use trial sessions

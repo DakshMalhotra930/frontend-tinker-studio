@@ -23,6 +23,17 @@ export const ProFeatureLock: React.FC<ProFeatureLockProps> = ({
 }) => {
   const { subscription, canAccessFeature, hasTrialSessions } = useSubscription();
 
+  // Define which features are free vs pro
+  const freeFeatures = ['syllabus', 'generate_content', 'ask_question', 'problem_solver', 'chat', 'image_solve', 'study_plan'];
+  const proFeatures = ['deep_study_mode', 'advanced_quiz'];
+  const isFreeFeature = freeFeatures.includes(feature);
+  const isProFeature = proFeatures.includes(feature);
+
+  // If it's a free feature, always show it
+  if (isFreeFeature) {
+    return <>{children}</>;
+  }
+
   // If user has access to the feature, show the children
   if (canAccessFeature(feature)) {
     return <>{children}</>;
@@ -59,13 +70,13 @@ export const ProFeatureLock: React.FC<ProFeatureLockProps> = ({
             </Badge>
 
             {/* Trial option for free users */}
-            {subscription?.status === SubscriptionStatus.FREE && showTrialOption && hasTrialSessions() && (
+            {(!subscription || subscription.status === SubscriptionStatus.FREE) && showTrialOption && hasTrialSessions() && (
               <div className="space-y-3">
                 <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
                   <div className="flex items-center justify-center space-x-2 text-orange-700">
                     <Zap className="w-4 h-4" />
                     <span className="text-sm font-medium">
-                      {subscription.trial_sessions_limit - subscription.trial_sessions_used} trial sessions remaining
+                      {subscription ? (subscription.trial_sessions_limit - subscription.trial_sessions_used) : 3} trial sessions remaining
                     </span>
                   </div>
                 </div>
