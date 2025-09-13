@@ -10,7 +10,8 @@ import { Send, Loader2, MessageSquare, BookOpen, Calculator, AlertCircle, Target
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ImageUpload } from './ImageUpload';
 import { StudyPlanChat } from './StudyPlanChat';
-import { ProFeatureGate } from './ProFeatureGate';
+import { ProFeatureLock } from './ProFeatureLock';
+import { TrialUsage } from './TrialUsage';
 import { useDeepStudySession } from '../hooks/useDeepStudySession';
 import { useSubscription } from '../hooks/useSubscription';
 import { sessionAPI, apiUtils } from '@/lib/api';
@@ -157,7 +158,7 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
 
   if (!subject || !topic) {
     return (
-      <ProFeatureGate
+      <ProFeatureLock
         feature="deep_study_mode"
         onUpgrade={handleUpgrade}
         onUseTrial={handleUseTrial}
@@ -333,12 +334,12 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
             </div>
           </div>
         </div>
-      </ProFeatureGate>
+      </ProFeatureLock>
     );
   }
 
   return (
-    <ProFeatureGate
+    <ProFeatureLock
       feature="deep_study_mode"
       onUpgrade={handleUpgrade}
       onUseTrial={handleUseTrial}
@@ -529,6 +530,6 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
         </Tabs>
       </div>
     </div>
-    </ProFeatureGate>
+    </ProFeatureLock>
   );
 }

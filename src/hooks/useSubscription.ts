@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { subscriptionAPI, SubscriptionStatus, PricingInfo, APIError, apiUtils } from '../lib/api';
+import { subscriptionAPI, SubscriptionResponse, SubscriptionStatus, SubscriptionTier, PricingInfo, APIError, apiUtils } from '../lib/api';
 
 interface UseSubscriptionReturn {
-  subscription: SubscriptionStatus | null;
+  subscription: SubscriptionResponse | null;
   pricing: PricingInfo | null;
   loading: boolean;
   error: string | null;
@@ -10,12 +10,12 @@ interface UseSubscriptionReturn {
   canAccessFeature: (feature: string) => boolean;
   hasTrialSessions: () => boolean;
   useTrialSession: (feature: string, sessionId?: string) => Promise<boolean>;
-  upgradeSubscription: (tier: 'pro_monthly' | 'pro_yearly' | 'pro_lifetime') => Promise<boolean>;
+  upgradeSubscription: (tier: SubscriptionTier) => Promise<boolean>;
   cancelSubscription: () => Promise<boolean>;
 }
 
 export const useSubscription = (): UseSubscriptionReturn => {
-  const [subscription, setSubscription] = useState<SubscriptionStatus | null>(null);
+  const [subscription, setSubscription] = useState<SubscriptionResponse | null>(null);
   const [pricing, setPricing] = useState<PricingInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -26,50 +26,41 @@ export const useSubscription = (): UseSubscriptionReturn => {
       setLoading(true);
       setError(null);
       
-      // For now, set default values since backend endpoints are not ready
-      const defaultSubscription: SubscriptionStatus = {
-        status: 'free',
-        tier: 'free',
-        trial_sessions_used_today: 0,
-        trial_sessions_limit_daily: 10,
-        last_trial_reset_date: new Date().toISOString().split('T')[0], // Today's date
-        features: ['quick_help', 'start_study_session'] // Start Study Session is now free
-      };
+      // Check if user is authenticated
+      if (!apiUtils.isAuthenticated()) {
+        console.log('User not authenticated, skipping subscription load');
+        setLoading(false);
+        return;
+      }
       
-      const defaultPricing: PricingInfo = {
-        monthly: {
-          price: 9.99,
-          currency: 'USD',
-          features: ['Deep Study Mode', 'Advanced Quiz', 'Unlimited Sessions']
-        },
-        yearly: {
-          price: 99.99,
-          currency: 'USD',
-          features: ['Deep Study Mode', 'Advanced Quiz', 'Unlimited Sessions', 'Priority Support'],
-          discount: '17%'
-        },
-        lifetime: {
-          price: 299.99,
-          currency: 'USD',
-          features: ['Deep Study Mode', 'Advanced Quiz', 'Unlimited Sessions', 'Priority Support', 'Lifetime Access']
-        }
-      };
+      const userId = apiUtils.getUserId();
       
-      setSubscription(defaultSubscription);
-      setPricing(defaultPricing);
+      // Load subscription data and pricing
+      const [subscriptionData, pricingData] = await Promise.all([
+        subscriptionAPI.getStatus(userId),
+        subscriptionAPI.getPricing()
+      ]);
       
-      console.log('Default subscription set:', defaultSubscription);
+      setSubscription(subscriptionData);
+      setPricing(pricingData);
       
-      // TODO: Uncomment when backend endpoints are ready
-      // const [subscriptionData, pricingData] = await Promise.all([
-      //   subscriptionAPI.getStatus(),
-      //   subscriptionAPI.getPricing()
-      // ]);
-      // setSubscription(subscriptionData);
-      // setPricing(pricingData);
+      console.log('Subscription data loaded:', subscriptionData);
     } catch (err) {
       console.error('Failed to load subscription data:', err);
       setError(err instanceof APIError ? err.message : 'Failed to load subscription data');
+      
+      // Set default values on error
+      const defaultSubscription: SubscriptionResponse = {
+        status: SubscriptionStatus.FREE,
+        tier: SubscriptionTier.FREE,
+        trial_sessions_used: 0,
+        trial_sessions_limit: 3,
+        trial_reset_date: new Date().toISOString().split('T')[0],
+        features: ['syllabus', 'generate_content', 'ask_question', 'problem_solver', 'chat', 'image_solve'],
+        user_id: apiUtils.getUserId()
+      };
+      
+      setSubscription(defaultSubscription);
     } finally {
       setLoading(false);
     }
@@ -81,14 +72,20 @@ export const useSubscription = (): UseSubscriptionReturn => {
     return subscription.features.includes(feature);
   }, [subscription]);
 
-  // Check if user has trial sessions available today
+  // Check if user has trial sessions available
   const hasTrialSessions = useCallback((): boolean => {
     if (!subscription) {
       console.log('No subscription data available');
       return false;
     }
-    console.log('Trial check - used:', subscription.trial_sessions_used_today, 'limit:', subscription.trial_sessions_limit_daily);
-    return subscription.trial_sessions_used_today < subscription.trial_sessions_limit_daily;
+    
+    // Only free users can use trial sessions
+    if (subscription.status !== SubscriptionStatus.FREE) {
+      return false;
+    }
+    
+    console.log('Trial check - used:', subscription.trial_sessions_used, 'limit:', subscription.trial_sessions_limit);
+    return subscription.trial_sessions_used < subscription.trial_sessions_limit;
   }, [subscription]);
 
   // Use a trial session for a specific feature
@@ -102,7 +99,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
       }
 
       // Check if user has trial sessions available
-      if (!subscription || subscription.trial_sessions_used_today >= subscription.trial_sessions_limit_daily) {
+      if (!subscription || subscription.trial_sessions_used >= subscription.trial_sessions_limit) {
         console.log('No trial sessions available');
         return false;
       }
@@ -136,7 +133,7 @@ export const useSubscription = (): UseSubscriptionReturn => {
         // Update local state with new trial count
         setSubscription(prev => prev ? {
           ...prev,
-          trial_sessions_used_today: prev.trial_sessions_used_today + 1,
+          trial_sessions_used: prev.trial_sessions_used + 1,
           features: [...prev.features, feature]
         } : null);
         
@@ -158,52 +155,35 @@ export const useSubscription = (): UseSubscriptionReturn => {
   }, [subscription]);
 
   // Upgrade subscription
-  const upgradeSubscription = useCallback(async (tier: 'pro_monthly' | 'pro_yearly' | 'pro_lifetime'): Promise<boolean> => {
+  const upgradeSubscription = useCallback(async (tier: SubscriptionTier): Promise<boolean> => {
     try {
-      // For now, simulate upgrade since backend endpoints are not ready
-      setSubscription(prev => prev ? {
-        ...prev,
-        status: 'pro',
-        tier: tier,
-        features: ['quick_help', 'study_plan', 'deep_study_mode', 'advanced_quiz', 'personalized_tutoring', 'unlimited_sessions', 'priority_support']
-      } : null);
-      return true;
-      
-      // TODO: Uncomment when backend endpoints are ready
-      // const result = await subscriptionAPI.upgrade({ tier });
-      // if (result.success) {
-      //   await refreshSubscription();
-      //   return true;
-      // }
-      // return false;
+      const result = await subscriptionAPI.upgrade({ tier: tier as any });
+      if (result.success) {
+        await refreshSubscription();
+        return true;
+      }
+      return false;
     } catch (err) {
       console.error('Failed to upgrade subscription:', err);
       return false;
     }
-  }, []);
+  }, [refreshSubscription]);
 
   // Cancel subscription
   const cancelSubscription = useCallback(async (): Promise<boolean> => {
     try {
-      // For now, simulate cancellation since backend endpoints are not ready
-      setSubscription(prev => prev ? {
-        ...prev,
-        status: 'cancelled'
-      } : null);
-      return true;
-      
-      // TODO: Uncomment when backend endpoints are ready
-      // const result = await subscriptionAPI.cancel();
-      // if (result.success) {
-      //   await refreshSubscription();
-      //   return true;
-      // }
-      // return false;
+      const userId = apiUtils.getUserId();
+      const result = await subscriptionAPI.cancel(userId);
+      if (result.success) {
+        await refreshSubscription();
+        return true;
+      }
+      return false;
     } catch (err) {
       console.error('Failed to cancel subscription:', err);
       return false;
     }
-  }, []);
+  }, [refreshSubscription]);
 
   // Load data on mount
   useEffect(() => {

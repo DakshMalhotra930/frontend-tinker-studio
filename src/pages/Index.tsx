@@ -5,7 +5,7 @@ import { ContentViewer } from '@/components/ContentViewer';
 import { FeatureRequestForm } from '@/components/ui/FeatureRequestForm';
 import { AgenticSidebar } from '@/components/AgenticSidebar';
 import { AgenticStudyMode } from '@/components/AgenticStudyMode';
-import { SubscriptionStatus } from '../components/SubscriptionStatus';
+import { SubscriptionStatusComponent } from '../components/SubscriptionStatus';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Crown, Settings } from 'lucide-react';
@@ -44,7 +44,7 @@ const Index = ({ user, onLogout }: IndexProps) => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <SubscriptionStatus compact showUpgradeButton />
+              <SubscriptionStatusComponent compact showUpgradeButton />
               <div className="flex gap-2">
                 <Button
                   variant="outline"

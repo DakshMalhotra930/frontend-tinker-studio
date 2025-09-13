@@ -3,7 +3,8 @@
 
 // Set your Fly.io backend URL in .env file
 // Example: VITE_API_BASE_URL=https://praxis-ai.fly.dev
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://praxis-ai.fly.dev';
+const AGENTIC_BASE_URL = `${API_BASE_URL}/agentic`;
 
 if (!API_BASE_URL) {
   console.error('VITE_API_BASE_URL is not set. Please set your Fly.io backend URL in .env file');
@@ -44,14 +45,30 @@ export interface QuickHelpResponse {
 }
 
 // Subscription Management Interfaces
-export interface SubscriptionStatus {
-  status: 'free' | 'pro' | 'trial' | 'expired' | 'cancelled';
-  tier: 'free' | 'pro_monthly' | 'pro_yearly' | 'pro_lifetime';
-  trial_sessions_used_today: number;
-  trial_sessions_limit_daily: number;
-  last_trial_reset_date: string;
+export enum SubscriptionStatus {
+  FREE = 'free',
+  PRO = 'pro',
+  TRIAL = 'trial',
+  EXPIRED = 'expired',
+  CANCELLED = 'cancelled'
+}
+
+export enum SubscriptionTier {
+  FREE = 'free',
+  PRO_MONTHLY = 'pro_monthly',
+  PRO_YEARLY = 'pro_yearly',
+  PRO_LIFETIME = 'pro_lifetime'
+}
+
+export interface SubscriptionResponse {
+  status: SubscriptionStatus;
+  tier: SubscriptionTier;
+  trial_sessions_used: number;
+  trial_sessions_limit: number;
+  trial_reset_date: string;
   expires_at?: string;
   features: string[];
+  user_id: string;
 }
 
 export interface PricingInfo {
@@ -155,7 +172,7 @@ async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promi
   }
 }
 
-// Session Management - Using /agentic/ prefix
+// Session Management - Pro-Protected Endpoints
 export const sessionAPI = {
   // Start a new study session
   start: async (data: {
@@ -167,39 +184,39 @@ export const sessionAPI = {
     current_level?: string;
     study_hours?: number;
   }): Promise<StudySession> => {
-    return apiRequest<StudySession>('/agentic/session/start', {
+    return apiRequest<StudySession>(`${AGENTIC_BASE_URL}/session/start`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  // Send a chat message
+  // Send a chat message (Pro-Protected)
   chat: async (data: {
     session_id: string;
     message: string;
     context_hint?: string;
   }): Promise<ChatResponse> => {
-    return apiRequest<ChatResponse>('/agentic/session/chat', {
+    return apiRequest<ChatResponse>(`${AGENTIC_BASE_URL}/session/chat`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  // Solve a problem using dedicated endpoint
+  // Solve a problem using dedicated endpoint (Pro-Protected)
   solve: async (data: {
     session_id: string;
     problem: string;
     step?: number;
     hint_level?: number;
   }): Promise<any> => {
-    return apiRequest<any>('/agentic/session/solve', {
+    return apiRequest<any>(`${AGENTIC_BASE_URL}/session/solve`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 };
 
-// Study Plan Generation - Using /agentic/ prefix
+// Study Plan Generation - Pro-Protected Endpoints
 export const studyPlanAPI = {
   // Generate a personalized study plan (legacy form-based)
   generate: async (data: {
@@ -209,33 +226,95 @@ export const studyPlanAPI = {
     goals: string[];
     current_level?: string;
   }): Promise<StudyPlanResponse> => {
-    return apiRequest<StudyPlanResponse>('/agentic/plan/generate', {
+    return apiRequest<StudyPlanResponse>(`${AGENTIC_BASE_URL}/plan/generate`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  // Generate study plan from natural language chat
+  // Generate study plan from natural language chat (Pro-Protected)
   generateFromChat: async (data: {
     message: string;
     user_id?: string;
     currentDateTime?: string;
   }): Promise<StudyPlanResponse> => {
-    return apiRequest<StudyPlanResponse>('/agentic/chat/study-plan', {
+    return apiRequest<StudyPlanResponse>(`${AGENTIC_BASE_URL}/chat/study-plan`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 };
 
-// Quick Help - Using /agentic/ prefix (as shown in backend docs)
-export const quickHelpAPI = {
-  // Get quick AI help
-  getHelp: async (data: {
-    query: string;
+// Free Endpoints (no Pro access required)
+export const freeAPI = {
+  // Get syllabus data (FREE)
+  getSyllabus: async (): Promise<any> => {
+    return apiRequest<any>(`${API_BASE_URL}/api/syllabus`, {
+      method: 'GET',
+    });
+  },
+
+  // Generate content/questions (FREE)
+  generateContent: async (data: {
+    topic: string;
+    mode: string;
+  }): Promise<any> => {
+    return apiRequest<any>(`${API_BASE_URL}/api/generate-content`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Ask questions (FREE)
+  askQuestion: async (data: {
+    question: string;
     context?: string;
-  }): Promise<QuickHelpResponse> => {
-    return apiRequest<QuickHelpResponse>('/agentic/quick-help', {
+  }): Promise<any> => {
+    return apiRequest<any>(`${API_BASE_URL}/ask-question`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Problem solver (FREE)
+  solveProblem: async (data: {
+    problem: string;
+    subject?: string;
+  }): Promise<any> => {
+    return apiRequest<any>(`${API_BASE_URL}/problem-solver`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Casual chat (FREE)
+  chat: async (data: {
+    message: string;
+    context?: string;
+  }): Promise<any> => {
+    return apiRequest<any>(`${API_BASE_URL}/chat`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Image solving (FREE)
+  solveImage: async (data: {
+    image_url: string;
+    question?: string;
+  }): Promise<any> => {
+    return apiRequest<any>(`${API_BASE_URL}/image-solve`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Base64 image solving (FREE)
+  solveImageBase64: async (data: {
+    image_base64: string;
+    question?: string;
+  }): Promise<any> => {
+    return apiRequest<any>(`${API_BASE_URL}/image-solve-base64`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -267,48 +346,48 @@ export const authAPI = {
   },
 };
 
-// Subscription Management - Using /api/ prefix
+// Subscription Management API
 export const subscriptionAPI = {
-  // Get current subscription status
-  getStatus: async (): Promise<SubscriptionStatus> => {
-    return apiRequest<SubscriptionStatus>('/api/subscription/status', {
+  // Get user subscription status
+  getStatus: async (userId: string): Promise<SubscriptionResponse> => {
+    return apiRequest<SubscriptionResponse>(`${AGENTIC_BASE_URL}/subscription/${userId}`, {
       method: 'GET',
     });
   },
 
   // Upgrade subscription
   upgrade: async (data: UpgradeRequest): Promise<{ success: boolean; message: string }> => {
-    return apiRequest<{ success: boolean; message: string }>('/api/subscription/upgrade', {
+    return apiRequest<{ success: boolean; message: string }>(`${AGENTIC_BASE_URL}/subscription/upgrade`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   // Cancel subscription
-  cancel: async (): Promise<{ success: boolean; message: string }> => {
-    return apiRequest<{ success: boolean; message: string }>('/api/subscription/cancel', {
+  cancel: async (userId: string): Promise<{ success: boolean; message: string }> => {
+    return apiRequest<{ success: boolean; message: string }>(`${AGENTIC_BASE_URL}/subscription/cancel/${userId}`, {
       method: 'POST',
     });
   },
 
   // Use trial session
   useTrial: async (data: TrialUsageRequest): Promise<{ success: boolean; message: string; trial_sessions_remaining: number }> => {
-    return apiRequest<{ success: boolean; message: string; trial_sessions_remaining: number }>('/agentic/subscription/trial/use', {
+    return apiRequest<{ success: boolean; message: string; trial_sessions_remaining: number }>(`${AGENTIC_BASE_URL}/subscription/trial/use`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
   // Get available features for current subscription
-  getFeatures: async (): Promise<{ features: string[] }> => {
-    return apiRequest<{ features: string[] }>('/api/subscription/features', {
+  getFeatures: async (userId: string): Promise<{ features: string[] }> => {
+    return apiRequest<{ features: string[] }>(`${AGENTIC_BASE_URL}/subscription/features/${userId}`, {
       method: 'GET',
     });
   },
 
   // Get pricing information
   getPricing: async (): Promise<PricingInfo> => {
-    return apiRequest<PricingInfo>('/api/subscription/pricing', {
+    return apiRequest<PricingInfo>(`${AGENTIC_BASE_URL}/subscription/pricing`, {
       method: 'GET',
     });
   },

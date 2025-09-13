@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Send, Loader2, Calendar, Target, BookOpen, Lightbulb, ArrowRight, Sparkles, GraduationCap } from 'lucide-react';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { ProFeatureGate } from './ProFeatureGate';
+import { ProFeatureLock } from './ProFeatureLock';
 import { studyPlanAPI, apiUtils } from '@/lib/api';
 import { useSubscription } from '@/hooks/useSubscription';
 import { format } from 'date-fns';
@@ -166,7 +166,7 @@ Tell me about your exam and what you want to study in natural language. I'll cre
   };
 
   return (
-    <ProFeatureGate
+    <ProFeatureLock
       feature="study_plan"
       onUpgrade={handleUpgrade}
       onUseTrial={handleUseTrial}
@@ -374,6 +374,6 @@ Tell me about your exam and what you want to study in natural language. I'll cre
         )}
       </div>
     </div>
-    </ProFeatureGate>
+    </ProFeatureLock>
   );
 }

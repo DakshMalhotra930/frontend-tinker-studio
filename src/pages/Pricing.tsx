@@ -5,12 +5,13 @@ import { Badge } from '../components/ui/badge';
 import { Crown, Check, Sparkles, Zap, Star } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
 import { toast } from '../hooks/use-toast';
+import { SubscriptionTier } from '../lib/api';
 
 const Pricing: React.FC = () => {
   const { pricing, subscription, upgradeSubscription, loading } = useSubscription();
   const [upgrading, setUpgrading] = useState<string | null>(null);
 
-  const handleUpgrade = async (tier: 'pro_monthly' | 'pro_yearly' | 'pro_lifetime') => {
+  const handleUpgrade = async (tier: SubscriptionTier) => {
     try {
       setUpgrading(tier);
       const success = await upgradeSubscription(tier);
@@ -52,7 +53,7 @@ const Pricing: React.FC = () => {
   const plans = [
     {
       name: 'Monthly',
-      tier: 'pro_monthly' as const,
+      tier: SubscriptionTier.PRO_MONTHLY,
       price: pricing.monthly.price,
       currency: pricing.monthly.currency,
       features: pricing.monthly.features,
@@ -60,7 +61,7 @@ const Pricing: React.FC = () => {
     },
     {
       name: 'Yearly',
-      tier: 'pro_yearly' as const,
+      tier: SubscriptionTier.PRO_YEARLY,
       price: pricing.yearly.price,
       currency: pricing.yearly.currency,
       features: pricing.yearly.features,
@@ -69,7 +70,7 @@ const Pricing: React.FC = () => {
     },
     {
       name: 'Lifetime',
-      tier: 'pro_lifetime' as const,
+      tier: SubscriptionTier.PRO_LIFETIME,
       price: pricing.lifetime.price,
       currency: pricing.lifetime.currency,
       features: pricing.lifetime.features,

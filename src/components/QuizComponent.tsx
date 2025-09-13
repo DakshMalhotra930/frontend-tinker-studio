@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { ProFeatureGate } from './ProFeatureGate';
+import { ProFeatureLock } from './ProFeatureLock';
 import { useSubscription } from '../hooks/useSubscription';
 
 interface QuizData {
@@ -63,7 +63,7 @@ export function QuizComponent({ quizData, onNext }: QuizComponentProps) {
   };
 
   return (
-    <ProFeatureGate
+    <ProFeatureLock
       feature="advanced_quiz"
       onUpgrade={handleUpgrade}
       onUseTrial={handleUseTrial}
@@ -151,6 +151,6 @@ export function QuizComponent({ quizData, onNext }: QuizComponentProps) {
         </CardContent>
       </Card>
     </div>
-    </ProFeatureGate>
+    </ProFeatureLock>
   );
 }
