@@ -184,7 +184,7 @@ export const sessionAPI = {
     current_level?: string;
     study_hours?: number;
   }): Promise<StudySession> => {
-    return apiRequest<StudySession>(`${AGENTIC_BASE_URL}/session/start`, {
+    return apiRequest<StudySession>(`/agentic/session/start`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -196,7 +196,7 @@ export const sessionAPI = {
     message: string;
     context_hint?: string;
   }): Promise<ChatResponse> => {
-    return apiRequest<ChatResponse>(`${AGENTIC_BASE_URL}/session/chat`, {
+    return apiRequest<ChatResponse>(`/agentic/session/chat`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -209,7 +209,7 @@ export const sessionAPI = {
     step?: number;
     hint_level?: number;
   }): Promise<any> => {
-    return apiRequest<any>(`${AGENTIC_BASE_URL}/session/solve`, {
+    return apiRequest<any>(`/agentic/session/solve`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -226,7 +226,7 @@ export const studyPlanAPI = {
     goals: string[];
     current_level?: string;
   }): Promise<StudyPlanResponse> => {
-    return apiRequest<StudyPlanResponse>(`${AGENTIC_BASE_URL}/plan/generate`, {
+    return apiRequest<StudyPlanResponse>(`/agentic/plan/generate`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -238,7 +238,7 @@ export const studyPlanAPI = {
     user_id?: string;
     currentDateTime?: string;
   }): Promise<StudyPlanResponse> => {
-    return apiRequest<StudyPlanResponse>(`${AGENTIC_BASE_URL}/chat/study-plan`, {
+    return apiRequest<StudyPlanResponse>(`/agentic/chat/study-plan`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -364,14 +364,14 @@ export const authAPI = {
 export const subscriptionAPI = {
   // Get user subscription status
   getStatus: async (userId: string): Promise<SubscriptionResponse> => {
-    return apiRequest<SubscriptionResponse>(`${AGENTIC_BASE_URL}/subscription/${userId}`, {
+    return apiRequest<SubscriptionResponse>(`/agentic/subscription/${userId}`, {
       method: 'GET',
     });
   },
 
   // Upgrade subscription
   upgrade: async (data: UpgradeRequest): Promise<{ success: boolean; message: string }> => {
-    return apiRequest<{ success: boolean; message: string }>(`${AGENTIC_BASE_URL}/subscription/upgrade`, {
+    return apiRequest<{ success: boolean; message: string }>(`/agentic/subscription/upgrade`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -379,14 +379,14 @@ export const subscriptionAPI = {
 
   // Cancel subscription
   cancel: async (userId: string): Promise<{ success: boolean; message: string }> => {
-    return apiRequest<{ success: boolean; message: string }>(`${AGENTIC_BASE_URL}/subscription/cancel/${userId}`, {
+    return apiRequest<{ success: boolean; message: string }>(`/agentic/subscription/cancel/${userId}`, {
       method: 'POST',
     });
   },
 
   // Use trial session
   useTrial: async (data: TrialUsageRequest): Promise<{ success: boolean; message: string; trial_sessions_remaining: number }> => {
-    return apiRequest<{ success: boolean; message: string; trial_sessions_remaining: number }>(`${AGENTIC_BASE_URL}/subscription/trial/use`, {
+    return apiRequest<{ success: boolean; message: string; trial_sessions_remaining: number }>(`/agentic/subscription/trial/use`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -394,14 +394,14 @@ export const subscriptionAPI = {
 
   // Get available features for current subscription
   getFeatures: async (userId: string): Promise<{ features: string[] }> => {
-    return apiRequest<{ features: string[] }>(`${AGENTIC_BASE_URL}/subscription/features/${userId}`, {
+    return apiRequest<{ features: string[] }>(`/agentic/subscription/features/${userId}`, {
       method: 'GET',
     });
   },
 
   // Get pricing information
   getPricing: async (): Promise<PricingInfo> => {
-    return apiRequest<PricingInfo>(`${AGENTIC_BASE_URL}/subscription/pricing`, {
+    return apiRequest<PricingInfo>(`/agentic/subscription/pricing`, {
       method: 'GET',
     });
   },

@@ -24,8 +24,8 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
     const fetchSyllabus = async () => {
       try {
         setIsLoading(true);
-        // Use environment variable for backend URL
-        const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/syllabus`;
+        // Use centralized API base URL
+        const apiUrl = `${import.meta.env.VITE_API_BASE_URL || 'https://praxis-ai.fly.dev'}/api/syllabus`;
         const response = await fetch(apiUrl);
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);

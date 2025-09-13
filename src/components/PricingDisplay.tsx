@@ -146,7 +146,7 @@ export const PricingDisplay: React.FC<PricingDisplayProps> = ({
                   </div>
                 </CardTitle>
                 <div className="text-2xl font-bold">
-                  ${pricing.monthly.price}
+                  ₹99
                   <span className="text-sm font-normal">/month</span>
                 </div>
               </CardHeader>
@@ -266,11 +266,11 @@ export const PricingDisplay: React.FC<PricingDisplayProps> = ({
                   </div>
                 </CardTitle>
                 <div className="text-2xl font-bold">
-                  ${(pricing.yearly.price / 12).toFixed(2)}
+                  ₹83
                   <span className="text-sm font-normal">/month</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Billed annually (${pricing.yearly.price})
+                  Billed annually (₹999)
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -394,7 +394,7 @@ export const PricingDisplay: React.FC<PricingDisplayProps> = ({
                   </div>
                 </CardTitle>
                 <div className="text-2xl font-bold">
-                  ${pricing.lifetime.price}
+                  ₹2999
                   <span className="text-sm font-normal"> one-time</span>
                 </div>
               </CardHeader>
