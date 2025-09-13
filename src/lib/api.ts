@@ -321,6 +321,20 @@ export const freeAPI = {
   },
 };
 
+// Quick Help API - Free endpoint
+export const quickHelpAPI = {
+  // Get quick AI help (FREE)
+  getHelp: async (data: {
+    query: string;
+    context?: string;
+  }): Promise<QuickHelpResponse> => {
+    return apiRequest<QuickHelpResponse>(`${API_BASE_URL}/ask-question`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 // Content Generation - Using /api/ prefix (as shown in docs)
 export const contentAPI = {
   // Generate content for different modes (Learn, Revise, Practice)
