@@ -5,10 +5,9 @@ import { ContentViewer } from '@/components/ContentViewer';
 import { FeatureRequestForm } from '@/components/ui/FeatureRequestForm';
 import { AgenticSidebar } from '@/components/AgenticSidebar';
 import { AgenticStudyMode } from '@/components/AgenticStudyMode';
-import { SubscriptionStatusComponent } from '../components/SubscriptionStatus';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Crown, Settings } from 'lucide-react';
+import { Settings } from 'lucide-react';
 
 interface IndexProps {
   user: {
@@ -44,16 +43,7 @@ const Index = ({ user, onLogout }: IndexProps) => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <SubscriptionStatusComponent compact showUpgradeButton />
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.location.href = '/pricing'}
-                >
-                  <Crown className="mr-2 h-4 w-4" />
-                  Pricing
-                </Button>
                 <Button
                   variant="outline"
                   size="sm"

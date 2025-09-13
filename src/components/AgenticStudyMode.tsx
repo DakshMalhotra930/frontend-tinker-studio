@@ -10,10 +10,7 @@ import { Send, Loader2, MessageSquare, BookOpen, Calculator, AlertCircle, Target
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ImageUpload } from './ImageUpload';
 import { StudyPlanChat } from './StudyPlanChat';
-import { ProFeatureLock } from './ProFeatureLock';
-import { TrialUsage } from './TrialUsage';
 import { useDeepStudySession } from '../hooks/useDeepStudySession';
-import { useSubscription } from '../hooks/useSubscription';
 import { sessionAPI, apiUtils } from '@/lib/api';
 
 interface AgenticStudyModeProps {
@@ -37,27 +34,7 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
     clearError,
   } = useDeepStudySession({ subject, topic });
 
-  const { useTrialSession, hasTrialSessions, refreshSubscription } = useSubscription();
-
-  const handleUseTrial = async () => {
-    try {
-      const success = await useTrialSession('deep_study_mode', currentSession?.session_id);
-      if (success) {
-        // Trial session used successfully, refresh subscription data
-        await refreshSubscription();
-        console.log('Trial session used for Deep Study Mode');
-      } else {
-        console.error('Failed to use trial session');
-      }
-    } catch (error) {
-      console.error('Error using trial session:', error);
-    }
-  };
-
-  const handleUpgrade = () => {
-    // Navigate to pricing page or show upgrade modal
-    window.location.href = '/pricing';
-  };
+  // Removed subscription logic - all users can access all features
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -158,11 +135,6 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
 
   if (!subject || !topic) {
     return (
-      <ProFeatureLock
-        feature="deep_study_mode"
-        onUpgrade={handleUpgrade}
-        onUseTrial={handleUseTrial}
-      >
         <div className="h-full flex flex-col">
           {/* Header for General Mode */}
           <div className="p-4 border-b border-border bg-card">
@@ -334,16 +306,10 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
             </div>
           </div>
         </div>
-      </ProFeatureLock>
     );
   }
 
   return (
-    <ProFeatureLock
-      feature="deep_study_mode"
-      onUpgrade={handleUpgrade}
-      onUseTrial={handleUseTrial}
-    >
       <div className="h-full flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-border bg-card">
@@ -530,6 +496,5 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
         </Tabs>
       </div>
     </div>
-    </ProFeatureLock>
   );
 }

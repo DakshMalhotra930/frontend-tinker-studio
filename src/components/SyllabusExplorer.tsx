@@ -3,6 +3,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Subject, Chapter, Topic } from '@/data/syllabus'; // We still need the types
+import { syllabusData } from '@/data/syllabus'; // Import local data as fallback
 import { BookOpen, Layers, Target, GraduationCap, ChevronRight, Sparkles } from 'lucide-react';
 
 interface SyllabusExplorerProps {
@@ -24,6 +25,8 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
     const fetchSyllabus = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+        
         // Use centralized API base URL
         const apiUrl = `${import.meta.env.VITE_API_BASE_URL || 'https://praxis-ai.fly.dev'}/api/syllabus`;
         const response = await fetch(apiUrl);
@@ -37,8 +40,13 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
           setSelectedSubject(data[0]);
         }
       } catch (err: any) {
-        setError(err.message);
-        console.error("Failed to fetch syllabus:", err);
+        console.warn("Failed to fetch syllabus from API, using local data:", err);
+        // Fallback to local data instead of showing error
+        setSyllabus(syllabusData);
+        if (syllabusData && syllabusData.length > 0) {
+          setSelectedSubject(syllabusData[0]);
+        }
+        setError(null); // Clear error since we have fallback data
       } finally {
         setIsLoading(false);
       }
@@ -89,18 +97,19 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
     );
   }
 
-  if (error) {
-    return (
-      <div className="h-full flex items-center justify-center">
-        <div className="text-center space-y-4 p-6 bg-destructive/10 rounded-xl border border-destructive/20 max-w-md">
-          <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto">
-            <Target className="w-8 h-8 text-destructive" />
-          </div>
-          <p className="text-destructive font-medium">Error: {error}</p>
-        </div>
-      </div>
-    );
-  }
+  // Remove error display since we have fallback data
+  // if (error) {
+  //   return (
+  //     <div className="h-full flex items-center justify-center">
+  //       <div className="text-center space-y-4 p-6 bg-destructive/10 rounded-xl border border-destructive/20 max-w-md">
+  //         <div className="w-16 h-16 bg-destructive/20 rounded-full flex items-center justify-center mx-auto">
+  //           <Target className="w-8 h-8 text-destructive" />
+  //         </div>
+  //         <p className="text-destructive font-medium">Error: {error}</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-card/20">
