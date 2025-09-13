@@ -41,48 +41,65 @@ const App = () => {
     );
   }
 
-  // Enhanced, centered login modal using Tailwind
-  if (!isAuthenticated || !user) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-900">
-        <div className="bg-zinc-800 rounded-2xl shadow-lg px-10 py-12 flex flex-col items-center">
-          <img
-            src="/praxis-logo-transparent.png"
-            alt="PraxisAI Logo"
-            className="h-20 mb-6"
-          />
-          <h1 className="text-3xl font-extrabold text-white mb-4">
-            Sign In to Your Personal AI Tutor
-          </h1>
-          <p className="text-lg text-zinc-300 mb-8">
-            Log in with Google to continue.
-          </p>
-          {/* You can add scale for Google button if needed */}
-          <div className="scale-125">
-            <GoogleLogin onLogin={handleLogin} />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show rest of app after authentication
+  // Show rest of app with routing
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <BrowserRouter>
           <Routes>
-            <Route
-              path="/"
-              element={
-                <Index
-                  user={user}
-                  onLogout={handleLogout}
-                />
-              }
-            />
+            {/* Public routes - accessible without authentication */}
             <Route path="/pricing" element={<Pricing />} />
-            <Route path="/subscription" element={<Subscription />} />
+            
+            {/* Protected routes - require authentication */}
+            {isAuthenticated && user ? (
+              <>
+                <Route
+                  path="/"
+                  element={
+                    <Index
+                      user={user}
+                      onLogout={handleLogout}
+                    />
+                  }
+                />
+                <Route path="/subscription" element={<Subscription />} />
+              </>
+            ) : (
+              // Show login page for protected routes when not authenticated
+              <Route
+                path="/*"
+                element={
+                  <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-900">
+                    <div className="bg-zinc-800 rounded-2xl shadow-lg px-10 py-12 flex flex-col items-center">
+                      <img
+                        src="/praxis-logo-transparent.png"
+                        alt="PraxisAI Logo"
+                        className="h-20 mb-6"
+                      />
+                      <h1 className="text-3xl font-extrabold text-white mb-4">
+                        Sign In to Your Personal AI Tutor
+                      </h1>
+                      <p className="text-lg text-zinc-300 mb-8">
+                        Log in with Google to continue.
+                      </p>
+                      <div className="scale-125">
+                        <GoogleLogin onLogin={handleLogin} />
+                      </div>
+                      <div className="mt-6 text-center">
+                        <p className="text-zinc-400 mb-2">Want to see our pricing first?</p>
+                        <a 
+                          href="/pricing" 
+                          className="text-primary hover:text-primary/80 underline"
+                        >
+                          View Pricing Plans
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                }
+              />
+            )}
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

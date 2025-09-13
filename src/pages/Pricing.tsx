@@ -3,16 +3,29 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
-import { Crown, Check, Sparkles, Zap, Star, BookOpen, Brain, Target, Users, Shield, Clock, ArrowRight } from 'lucide-react';
+import { Crown, Check, Sparkles, Zap, Star, BookOpen, Brain, Target, Users, Shield, Clock, ArrowRight, LogIn } from 'lucide-react';
 import { useSubscription } from '../hooks/useSubscription';
+import { useAuth } from '../hooks/useAuth';
 import { toast } from '../hooks/use-toast';
 import { SubscriptionTier } from '../lib/api';
+import GoogleLogin from '../components/GoogleLogin';
 
 const Pricing: React.FC = () => {
   const { subscription, upgradeSubscription, loading } = useSubscription();
+  const { isAuthenticated, user, login } = useAuth();
   const [upgrading, setUpgrading] = useState<string | null>(null);
 
   const handleUpgrade = async (tier: SubscriptionTier) => {
+    // If user is not authenticated, show login prompt
+    if (!isAuthenticated) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to upgrade to Pro.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     try {
       setUpgrading(tier);
       const success = await upgradeSubscription(tier);
@@ -40,7 +53,11 @@ const Pricing: React.FC = () => {
     }
   };
 
-  if (loading) {
+  const handleLogin = (userData: any) => {
+    login(userData);
+  };
+
+  if (loading && isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-card/20 flex items-center justify-center">
         <div className="text-center">
@@ -70,7 +87,7 @@ const Pricing: React.FC = () => {
         'Basic Study Plan Generation'
       ],
       popular: false,
-      buttonText: 'Current Plan',
+      buttonText: isAuthenticated ? 'Current Plan' : 'Get Started Free',
       buttonVariant: 'outline' as const,
     },
     {
@@ -93,7 +110,7 @@ const Pricing: React.FC = () => {
         'Early Access to New Features'
       ],
       popular: true,
-      buttonText: 'Upgrade to Pro',
+      buttonText: isAuthenticated ? 'Upgrade to Pro' : 'Sign in to Upgrade',
       buttonVariant: 'default' as const,
     },
   ];
@@ -122,7 +139,7 @@ const Pricing: React.FC = () => {
             </p>
             
             {/* Current Status */}
-            {subscription && (
+            {isAuthenticated && subscription ? (
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-card/50 backdrop-blur-sm rounded-full border border-border/50 mb-8">
                 {subscription.status === 'pro' ? (
                   <Crown className="h-4 w-4 text-primary" />
@@ -138,7 +155,14 @@ const Pricing: React.FC = () => {
                   </span>
                 )}
               </div>
-            )}
+            ) : !isAuthenticated ? (
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-card/50 backdrop-blur-sm rounded-full border border-border/50 mb-8">
+                <LogIn className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">
+                  Sign in to see your current plan
+                </span>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -282,6 +306,29 @@ const Pricing: React.FC = () => {
             </Card>
           </div>
         </div>
+
+        {/* Login Section for Non-Authenticated Users */}
+        {!isAuthenticated && (
+          <div className="mt-20 max-w-2xl mx-auto">
+            <Card className="academic-card border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/5">
+              <CardContent className="p-8 text-center">
+                <div className="p-3 bg-primary/10 rounded-full w-fit mx-auto mb-6">
+                  <LogIn className="h-8 w-8 text-primary" />
+                </div>
+                <h2 className="text-2xl font-bold mb-4">Ready to Get Started?</h2>
+                <p className="text-muted-foreground mb-6">
+                  Sign in with Google to access your personal AI tutor and start your JEE preparation journey.
+                </p>
+                <div className="scale-110">
+                  <GoogleLogin onLogin={handleLogin} />
+                </div>
+                <p className="text-sm text-muted-foreground mt-4">
+                  Free to start • No credit card required • Cancel anytime
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* FAQ Section */}
         <div className="mt-20 max-w-4xl mx-auto">
