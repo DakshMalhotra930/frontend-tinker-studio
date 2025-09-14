@@ -112,7 +112,22 @@ export const useTrialMode = (): UseTrialModeReturn => {
       return data;
     } catch (error) {
       console.error('Failed to check user features:', error);
-      return null;
+      
+      // Set default free user values when API fails
+      const defaultFreeUser: UserFeatures = {
+        user_id: userId,
+        features: ['syllabus', 'generate_content', 'ask_question', 'problem_solver', 'chat', 'image_solve', 'study_plan'],
+        subscription_status: 'FREE',
+        trial_sessions_remaining: 10,
+        has_pro_access: false
+      };
+      
+      setUserFeatures(defaultFreeUser);
+      setTrialSessionsRemaining(10);
+      setSubscriptionStatus('FREE');
+      setHasProAccess(false);
+      
+      return defaultFreeUser;
     }
   }, []);
 
@@ -174,8 +189,13 @@ export const useTrialMode = (): UseTrialModeReturn => {
     
     // Check if it's a pro feature
     if (PRO_FEATURES.includes(featureName)) {
-      // If user has pro access, no trial needed
-      if (hasProAccess) {
+      // Check if user is premium by email
+      const userEmail = apiUtils.getUserId() ? 
+        JSON.parse(localStorage.getItem('praxis_user') || '{}').email : null;
+      const isPremiumByEmail = userEmail === 'dakshmalhotra930@gmail.com';
+      
+      // If user has pro access or is premium by email, no trial needed
+      if (hasProAccess || isPremiumByEmail) {
         return { available: true, requiresTrial: false };
       }
       

@@ -47,8 +47,13 @@ export const TrialStatusDisplay: React.FC<TrialStatusDisplayProps> = ({
     );
   }
 
-  // Pro user display
-  if (hasProAccess || subscriptionStatus === 'PRO') {
+  // Check if user is premium by email
+  const userEmail = currentUserId ? 
+    JSON.parse(localStorage.getItem('praxis_user') || '{}').email : null;
+  const isPremiumByEmail = userEmail === 'dakshmalhotra930@gmail.com';
+
+  // Pro user display - only show if explicitly PRO or premium email
+  if (subscriptionStatus === 'PRO' || hasProAccess || isPremiumByEmail) {
     return (
       <div className="flex items-center space-x-2">
         <Badge variant="default" className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white pro-status">
@@ -62,12 +67,14 @@ export const TrialStatusDisplay: React.FC<TrialStatusDisplayProps> = ({
     );
   }
 
-  // Free user display
+  // Free user display - default to free user if no data
+  const displayTrialCount = trialSessionsRemaining || 10; // Default to 10 if no data
+  
   if (compact) {
     return (
       <div className="flex items-center space-x-2">
         <span className="text-sm text-muted-foreground trial-count">
-          {trialSessionsRemaining} trials
+          {displayTrialCount} trials
         </span>
         {showUpgradeButton && (
           <Button
