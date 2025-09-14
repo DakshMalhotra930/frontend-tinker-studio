@@ -1,3 +1,5 @@
-src/components/AgenticSidebar.tsx
-src/data/syllabus.ts
-[33m7d7cf2f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m feat: Implement Academic Excellence theme for JEE Study App
+[33mb20988c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m feat: Complete user management system with 5 uses per day limit
+[33m10ef262[m fix: Correct trial mode display and premium user detection
+[33m919f3d4[m feat: Implement complete Pro Trial Mode frontend system
+[33m839d56e[m error resolve
+[33m08c317b[m free to pro

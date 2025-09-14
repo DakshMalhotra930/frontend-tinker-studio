@@ -12,6 +12,9 @@ const Pricing: React.FC = () => {
   const { isAuthenticated, user, login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
+  // Debug log
+  console.log('Pricing page loaded, isAuthenticated:', isAuthenticated, 'user:', user);
+
   const handleLogin = (userData: any) => {
     login(userData);
   };

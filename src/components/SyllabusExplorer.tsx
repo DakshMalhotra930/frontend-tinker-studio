@@ -29,15 +29,27 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
         
         // Use centralized API base URL
         const apiUrl = `${import.meta.env.VITE_API_BASE_URL || 'https://praxis-ai.fly.dev'}/api/syllabus`;
-        const response = await fetch(apiUrl);
+        console.log('Fetching syllabus from:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
+        
         const data: Subject[] = await response.json();
-        setSyllabus(data);
-        // Automatically select the first subject once loaded
-        if (data && data.length > 0) {
+        console.log('Syllabus data received:', data);
+        
+        if (data && Array.isArray(data) && data.length > 0) {
+          setSyllabus(data);
           setSelectedSubject(data[0]);
+        } else {
+          throw new Error('Empty or invalid syllabus data received');
         }
       } catch (err: any) {
         console.warn("Failed to fetch syllabus from API, using local data:", err);
@@ -52,7 +64,9 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
       }
     };
 
-    fetchSyllabus();
+    // Add a small delay to ensure component is mounted and add timeout
+    const timeoutId = setTimeout(fetchSyllabus, 100);
+    return () => clearTimeout(timeoutId);
   }, []); // The empty array [] ensures this runs only once when the component mounts.
 
   const handleSubjectClick = (subject: Subject) => {
