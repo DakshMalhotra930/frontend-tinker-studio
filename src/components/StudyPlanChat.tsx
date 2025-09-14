@@ -6,9 +6,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Send, Loader2, Calendar, Target, BookOpen, Lightbulb, ArrowRight, Sparkles, GraduationCap } from 'lucide-react';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { ProFeatureLock } from './ProFeatureLock';
+import { FeatureUsageTracker } from './FeatureUsageTracker';
 import { studyPlanAPI, apiUtils } from '@/lib/api';
-import { useSubscription } from '@/hooks/useSubscription';
+import { useUsageTracking } from '@/hooks/useUsageTracking';
 import { format } from 'date-fns';
 
 interface StudyPlanMessage {
@@ -26,25 +26,11 @@ export function StudyPlanChat() {
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { useTrialSession, refreshSubscription } = useSubscription();
+  const { trackUsage } = useUsageTracking();
 
-  const handleUseTrial = async () => {
-    try {
-      const success = await useTrialSession('study_plan');
-      if (success) {
-        // Trial session used successfully, refresh subscription data
-        await refreshSubscription();
-        console.log('Trial session used for Study Plan Generator');
-      } else {
-        console.error('Failed to use trial session');
-      }
-    } catch (error) {
-      console.error('Error using trial session:', error);
-    }
-  };
-
-  const handleUpgrade = () => {
-    window.location.href = '/pricing';
+  const handleFeatureUse = async () => {
+    // Track usage when study plan is used
+    await trackUsage('study_plan');
   };
 
   // Auto-scroll to bottom
@@ -166,10 +152,9 @@ Tell me about your exam and what you want to study in natural language. I'll cre
   };
 
   return (
-    <ProFeatureLock
-      feature="study_plan"
-      onUpgrade={handleUpgrade}
-      onUseTrial={handleUseTrial}
+    <FeatureUsageTracker
+      featureName="study_plan"
+      onFeatureUse={handleFeatureUse}
     >
       <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-card/20">
       {/* Enhanced Header */}
@@ -374,6 +359,6 @@ Tell me about your exam and what you want to study in natural language. I'll cre
         )}
       </div>
     </div>
-    </ProFeatureLock>
+    </FeatureUsageTracker>
   );
 }

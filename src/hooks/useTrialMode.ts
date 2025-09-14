@@ -118,12 +118,12 @@ export const useTrialMode = (): UseTrialModeReturn => {
         user_id: userId,
         features: ['syllabus', 'generate_content', 'ask_question', 'problem_solver', 'chat', 'image_solve', 'study_plan'],
         subscription_status: 'FREE',
-        trial_sessions_remaining: 10,
+        trial_sessions_remaining: 5, // 5 uses per day
         has_pro_access: false
       };
       
       setUserFeatures(defaultFreeUser);
-      setTrialSessionsRemaining(10);
+      setTrialSessionsRemaining(5); // 5 uses per day
       setSubscriptionStatus('FREE');
       setHasProAccess(false);
       

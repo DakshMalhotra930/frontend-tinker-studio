@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { MarkdownRenderer } from './MarkdownRenderer';
-import { ProFeatureLock } from './ProFeatureLock';
-import { useSubscription } from '../hooks/useSubscription';
+import { FeatureUsageTracker } from './FeatureUsageTracker';
+import { useUsageTracking } from '../hooks/useUsageTracking';
 
 interface QuizData {
   id: string;
@@ -21,25 +21,11 @@ interface QuizComponentProps {
 export function QuizComponent({ quizData, onNext }: QuizComponentProps) {
   const [selectedOption, setSelectedOption] = useState<number | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const { useTrialSession, refreshSubscription } = useSubscription();
+  const { trackUsage } = useUsageTracking();
 
-  const handleUseTrial = async () => {
-    try {
-      const success = await useTrialSession('advanced_quiz', quizData.id);
-      if (success) {
-        // Trial session used successfully, refresh subscription data
-        await refreshSubscription();
-        console.log('Trial session used for Advanced Quiz');
-      } else {
-        console.error('Failed to use trial session');
-      }
-    } catch (error) {
-      console.error('Error using trial session:', error);
-    }
-  };
-
-  const handleUpgrade = () => {
-    window.location.href = '/pricing';
+  const handleFeatureUse = async () => {
+    // Track usage when quiz is used
+    await trackUsage('advanced_quiz', quizData.id);
   };
 
   const handleOptionSelect = (optionIndex: number) => {
@@ -63,10 +49,9 @@ export function QuizComponent({ quizData, onNext }: QuizComponentProps) {
   };
 
   return (
-    <ProFeatureLock
-      feature="advanced_quiz"
-      onUpgrade={handleUpgrade}
-      onUseTrial={handleUseTrial}
+    <FeatureUsageTracker
+      featureName="advanced_quiz"
+      onFeatureUse={handleFeatureUse}
     >
       <div className="max-w-4xl mx-auto">
         <Card>
@@ -151,6 +136,6 @@ export function QuizComponent({ quizData, onNext }: QuizComponentProps) {
         </CardContent>
       </Card>
     </div>
-    </ProFeatureLock>
+    </FeatureUsageTracker>
   );
 }

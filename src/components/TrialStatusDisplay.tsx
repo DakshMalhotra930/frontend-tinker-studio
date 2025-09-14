@@ -68,7 +68,7 @@ export const TrialStatusDisplay: React.FC<TrialStatusDisplayProps> = ({
   }
 
   // Free user display - default to free user if no data
-  const displayTrialCount = trialSessionsRemaining || 10; // Default to 10 if no data
+  const displayTrialCount = trialSessionsRemaining || 5; // Default to 5 if no data
   
   if (compact) {
     return (
@@ -123,9 +123,9 @@ export const TrialStatusDisplay: React.FC<TrialStatusDisplayProps> = ({
 
           {/* Trial Info */}
           <div className="text-xs text-muted-foreground">
-            <p>• 3 trial sessions per feature per day</p>
-            <p>• 10 total trial sessions per day</p>
-            <p>• Trials reset at midnight</p>
+            <p>• 5 uses per day for free users</p>
+            <p>• Resets 24 hours after last use</p>
+            <p>• Upgrade to Pro for unlimited access</p>
           </div>
         </div>
       </CardContent>

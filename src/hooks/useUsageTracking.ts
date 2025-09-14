@@ -21,7 +21,7 @@ interface UseUsageTrackingReturn {
 }
 
 const PREMIUM_EMAIL = 'dakshmalhotra930@gmail.com';
-const FREE_USER_LIMIT = 5;
+const FREE_USER_LIMIT = 5; // 5 uses per day
 
 export const useUsageTracking = (): UseUsageTrackingReturn => {
   const [usageStatus, setUsageStatus] = useState<UsageStatus | null>(null);
@@ -54,7 +54,7 @@ export const useUsageTracking = (): UseUsageTrackingReturn => {
     return resetTime.toISOString();
   }, []);
 
-  // Check if usage should be reset (24 hours passed)
+  // Check if usage should be reset (24 hours passed from last use)
   const shouldResetUsage = useCallback((lastUsedAt: string | null): boolean => {
     if (!lastUsedAt) return true;
     const lastUsed = new Date(lastUsedAt);
@@ -93,7 +93,7 @@ export const useUsageTracking = (): UseUsageTrackingReturn => {
       }
 
       // For free users, check usage from localStorage
-      const usageKey = `usage_${userEmail}`;
+      const usageKey = `daily_usage_${userEmail}`;
       const storedUsage = localStorage.getItem(usageKey);
       
       if (storedUsage) {
@@ -101,7 +101,7 @@ export const useUsageTracking = (): UseUsageTrackingReturn => {
         const shouldReset = shouldResetUsage(usage.lastUsedAt);
         
         if (shouldReset) {
-          // Reset usage
+          // Reset usage after 24 hours from last use
           const resetUsage = {
             count: 0,
             lastUsedAt: null,
@@ -131,7 +131,7 @@ export const useUsageTracking = (): UseUsageTrackingReturn => {
           });
         }
       } else {
-        // First time user
+        // First time user - 5 uses per day
         setUsageStatus({
           userType: 'free',
           usageCount: 0,
@@ -172,7 +172,7 @@ export const useUsageTracking = (): UseUsageTrackingReturn => {
       }
 
       // Update usage count
-      const usageKey = `usage_${userEmail}`;
+      const usageKey = `daily_usage_${userEmail}`;
       const currentUsage = {
         count: (usageStatus?.usageCount || 0) + 1,
         lastUsedAt: new Date().toISOString(),

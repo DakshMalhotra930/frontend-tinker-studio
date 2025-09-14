@@ -8,10 +8,9 @@ import { AgenticStudyMode } from '@/components/AgenticStudyMode';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
-import { UsageDisplay } from '@/components/UsageDisplay';
+import { UsageProgressDisplay } from '@/components/UsageProgressDisplay';
 import { useUsageTracking } from '@/hooks/useUsageTracking';
 import { useUserType } from '@/hooks/useUserType';
-import { TrialStatusDisplay } from '@/components/TrialStatusDisplay';
 
 interface IndexProps {
   user: {
@@ -50,10 +49,14 @@ const Index = ({ user, onLogout }: IndexProps) => {
               </div>
             </div>
             <div className="flex items-center gap-4">
-              <TrialStatusDisplay 
-                userId={user.user_id}
+              <UsageProgressDisplay
+                usageCount={usageStatus?.usageCount || 0}
+                usageLimit={usageStatus?.usageLimit || 5}
+                lastUsedAt={usageStatus?.lastUsedAt || null}
+                resetTime={usageStatus?.resetTime || null}
+                isPremium={usageStatus?.isPremium || false}
+                onUpgrade={() => window.location.href = '/pricing'}
                 compact={true}
-                showUpgradeButton={true}
               />
               <div className="flex gap-2">
                 <Button
