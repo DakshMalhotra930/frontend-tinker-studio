@@ -3,6 +3,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Trial Mode CSS Classes */
+.trial-button {
+  @apply bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+}
+
+.trial-button:disabled {
+  @apply bg-gray-400 text-gray-200 cursor-not-allowed hover:bg-gray-400;
+}
+
+.pro-status {
+  @apply text-blue-600 font-bold;
+}
+
+.trial-count {
+  @apply text-orange-600 font-bold;
+}
+
+.modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+}
+
+.modal-content {
+  @apply bg-white p-6 rounded-lg max-w-md mx-4 text-center shadow-xl;
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 Theme: Academic Excellence - Professional & Trustworthy for JEE Students

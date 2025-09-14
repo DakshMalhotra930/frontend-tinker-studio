@@ -12,6 +12,11 @@ import { ImageUpload } from './ImageUpload';
 import { StudyPlanChat } from './StudyPlanChat';
 import { useDeepStudySession } from '../hooks/useDeepStudySession';
 import { sessionAPI, apiUtils } from '@/lib/api';
+import { FeatureWrapper } from './FeatureWrapper';
+import { useUsageTracking } from '../hooks/useUsageTracking';
+import { useTrialMode } from '../hooks/useTrialMode';
+import { ProFeatureLockModal } from './ProFeatureLockModal';
+import { TrialSuccessModal } from './TrialSuccessModal';
 
 interface AgenticStudyModeProps {
   subject: string | null;
@@ -34,7 +39,43 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
     clearError,
   } = useDeepStudySession({ subject, topic });
 
-  // Removed subscription logic - all users can access all features
+  const { trackUsage } = useUsageTracking();
+  const {
+    trialSessionsRemaining,
+    hasProAccess,
+    isLoadingTrial,
+    showProModal,
+    showTrialModal,
+    lockedFeature,
+    trialMessage,
+    handleFeatureAccess,
+    useTrialSession,
+    setShowProModal,
+    setShowTrialModal,
+    setLockedFeature,
+    setTrialMessage
+  } = useTrialMode();
+
+  // Trial handling functions
+  const handleTrialSuccess = (result: any) => {
+    setTrialMessage(result.message);
+    setShowTrialModal(true);
+  };
+
+  const handleTrialError = (error: string) => {
+    console.error('Trial error:', error);
+    // You could show a toast notification here
+  };
+
+  const handleStartSessionWithTrial = async () => {
+    const userId = apiUtils.getUserId();
+    if (!userId) return;
+
+    const success = await handleFeatureAccess('Deep Study Mode');
+    if (success) {
+      initializeSession();
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -310,7 +351,12 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
   }
 
   return (
-      <div className="h-full flex flex-col">
+    <>
+      <FeatureWrapper 
+        featureName="deep_study_mode" 
+        sessionId={currentSession?.session_id}
+      >
+        <div className="h-full flex flex-col">
         {/* Header */}
         <div className="p-4 border-b border-border bg-card">
           <div className="flex items-center justify-between">
@@ -494,7 +540,30 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
             <StudyPlanChat />
           </TabsContent>
         </Tabs>
+        </div>
       </div>
-    </div>
+      </FeatureWrapper>
+
+      {/* Trial System Modals */}
+      <ProFeatureLockModal
+        isOpen={showProModal}
+        onClose={() => setShowProModal(false)}
+        featureName={lockedFeature || 'Deep Study Mode'}
+        userId={apiUtils.getUserId() || ''}
+        onTrialSuccess={handleTrialSuccess}
+        onTrialError={handleTrialError}
+        trialSessionsRemaining={trialSessionsRemaining}
+        isLoadingTrial={isLoadingTrial}
+        onUseTrial={useTrialSession}
+      />
+
+      <TrialSuccessModal
+        isOpen={showTrialModal}
+        onClose={() => setShowTrialModal(false)}
+        featureName={lockedFeature || 'Deep Study Mode'}
+        trialSessionsRemaining={trialSessionsRemaining}
+        onUpgrade={() => window.location.href = '/pricing'}
+      />
+    </>
   );
 }

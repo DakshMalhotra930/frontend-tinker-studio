@@ -8,6 +8,10 @@ import { AgenticStudyMode } from '@/components/AgenticStudyMode';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Settings } from 'lucide-react';
+import { UsageDisplay } from '@/components/UsageDisplay';
+import { useUsageTracking } from '@/hooks/useUsageTracking';
+import { useUserType } from '@/hooks/useUserType';
+import { TrialStatusDisplay } from '@/components/TrialStatusDisplay';
 
 interface IndexProps {
   user: {
@@ -23,6 +27,9 @@ const Index = ({ user, onLogout }: IndexProps) => {
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [activeTab, setActiveTab] = useState('syllabus');
+  
+  const { usageStatus } = useUsageTracking();
+  const { isPremium } = useUserType();
 
   const handleTopicSelect = (topic, chapter, subject) => {
     setSelectedTopic(topic);
@@ -43,6 +50,11 @@ const Index = ({ user, onLogout }: IndexProps) => {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <TrialStatusDisplay 
+                userId={user.user_id}
+                compact={true}
+                showUpgradeButton={true}
+              />
               <div className="flex gap-2">
                 <Button
                   variant="outline"

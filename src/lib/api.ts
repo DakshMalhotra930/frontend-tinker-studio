@@ -511,3 +511,118 @@ export const apiUtils = {
     };
   },
 };
+
+// Usage Tracking API
+export const usageAPI = {
+  // Track feature usage
+  trackUsage: async (data: {
+    userId: string;
+    featureName: string;
+    sessionId?: string;
+    metadata?: any;
+  }): Promise<{ success: boolean; message: string }> => {
+    return apiRequest<{ success: boolean; message: string }>('/api/usage/track', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Get usage status for user
+  getUsageStatus: async (userId: string): Promise<{
+    userType: 'free' | 'premium';
+    usageCount: number;
+    usageLimit: number;
+    canUseFeature: boolean;
+    lastUsedAt: string | null;
+    resetTime: string | null;
+  }> => {
+    return apiRequest<{
+      userType: 'free' | 'premium';
+      usageCount: number;
+      usageLimit: number;
+      canUseFeature: boolean;
+      lastUsedAt: string | null;
+      resetTime: string | null;
+    }>(`/api/usage/status/${userId}`);
+  },
+
+  // Check if user can use a feature
+  checkUsageLimit: async (data: {
+    userId: string;
+    featureName: string;
+  }): Promise<{ canUse: boolean; usageCount: number; usageLimit: number }> => {
+    return apiRequest<{ canUse: boolean; usageCount: number; usageLimit: number }>('/api/usage/check-limit', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Reset usage for user (admin function)
+  resetUsage: async (userId: string): Promise<{ success: boolean; message: string }> => {
+    return apiRequest<{ success: boolean; message: string }>(`/api/usage/reset/${userId}`, {
+      method: 'POST',
+    });
+  },
+};
+
+// Trial Mode API
+export const trialAPI = {
+  // Check user features
+  checkUserFeatures: async (userId: string): Promise<{
+    user_id: string;
+    features: string[];
+    subscription_status: 'FREE' | 'PRO';
+    trial_sessions_remaining: number;
+    has_pro_access: boolean;
+  }> => {
+    return apiRequest<{
+      user_id: string;
+      features: string[];
+      subscription_status: 'FREE' | 'PRO';
+      trial_sessions_remaining: number;
+      has_pro_access: boolean;
+    }>(`/agentic/subscription/features/${userId}`);
+  },
+
+  // Use trial session
+  useTrialSession: async (data: {
+    user_id: string;
+    feature: string;
+  }): Promise<{
+    success: boolean;
+    message: string;
+    trial_sessions_remaining: number;
+    sessions_remaining: number;
+    feature: string;
+    upgrade_required: boolean;
+  }> => {
+    return apiRequest<{
+      success: boolean;
+      message: string;
+      trial_sessions_remaining: number;
+      sessions_remaining: number;
+      feature: string;
+      upgrade_required: boolean;
+    }>('/agentic/subscription/trial/use', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Get user subscription
+  getUserSubscription: async (userId: string): Promise<{
+    user_id: string;
+    subscription_status: 'FREE' | 'PRO';
+    tier: 'FREE' | 'PRO';
+    trial_sessions_remaining: number;
+    has_pro_access: boolean;
+  }> => {
+    return apiRequest<{
+      user_id: string;
+      subscription_status: 'FREE' | 'PRO';
+      tier: 'FREE' | 'PRO';
+      trial_sessions_remaining: number;
+      has_pro_access: boolean;
+    }>(`/agentic/subscription/${userId}`);
+  },
+};

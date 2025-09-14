@@ -6,6 +6,7 @@ import { Subject, Chapter, Topic } from '@/data/syllabus';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { QuizComponent } from './QuizComponent';
 import { contentAPI } from '@/lib/api';
+import { FeatureWrapper } from './FeatureWrapper';
 
 interface ContentViewerProps {
   topic: Topic | null;
@@ -172,7 +173,8 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
   }
 
   return (
-    <div className="h-full flex flex-col">
+    <FeatureWrapper featureName="content_generation">
+      <div className="h-full flex flex-col">
       <div className="p-4 border-b border-border bg-card flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{topic.name}</h1>
@@ -228,5 +230,6 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
         )}
       </div>
     </div>
+    </FeatureWrapper>
   );
 }
