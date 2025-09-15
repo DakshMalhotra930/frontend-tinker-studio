@@ -100,12 +100,12 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
   // --- NEW: Render loading and error states ---
   if (isLoading) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex items-center justify-center bg-zinc-800">
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-full flex items-center justify-center mx-auto animate-pulse">
-            <BookOpen className="w-8 h-8 text-primary" />
+          <div className="w-16 h-16 bg-gradient-to-br from-purple-600/20 to-purple-400/20 rounded-full flex items-center justify-center mx-auto animate-pulse">
+            <BookOpen className="w-8 h-8 text-purple-400" />
           </div>
-          <p className="text-muted-foreground font-medium">Loading syllabus...</p>
+          <p className="text-zinc-400 font-medium">Loading syllabus...</p>
         </div>
       </div>
     );
@@ -126,15 +126,15 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
   // }
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-background via-background to-card/20">
+    <div className="h-full flex flex-col bg-zinc-800">
       {/* Enhanced Subjects Pane */}
-      <div className="flex-1 border-b border-border/50">
-        <div className="p-5 border-b border-border/50 bg-gradient-to-r from-card to-card/80 backdrop-blur-sm">
+      <div className="flex-1 border-b border-zinc-700">
+        <div className="p-5 border-b border-zinc-700 bg-zinc-800">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-br from-primary to-primary/80 rounded-lg shadow-md">
-              <BookOpen className="w-5 h-5 text-primary-foreground" />
+            <div className="p-2 bg-purple-600 rounded-lg shadow-md">
+              <BookOpen className="w-5 h-5 text-white" />
             </div>
-            <h2 className="font-bold text-xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <h2 className="font-bold text-xl text-white">
               Subjects
             </h2>
           </div>
@@ -148,14 +148,14 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
                 variant="ghost"
                 className={`w-full justify-start mb-2 h-auto p-4 rounded-xl transition-all duration-200 ease-in-out ${
                   selectedSubject?.id === subject.id
-                    ? 'bg-gradient-to-r from-primary to-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/25'
-                    : 'text-foreground hover:bg-muted/50 hover:shadow-md'
+                    ? 'bg-purple-600 text-white font-bold shadow-lg shadow-purple-600/25'
+                    : 'text-zinc-300 hover:bg-zinc-700 hover:shadow-md'
                 }`}
                 onClick={() => handleSubjectClick(subject)}
               >
                 <div className="flex items-center space-x-3 w-full">
                   <div className={`w-3 h-3 rounded-full ${
-                    selectedSubject?.id === subject.id ? 'bg-primary-foreground' : 'bg-primary/40'
+                    selectedSubject?.id === subject.id ? 'bg-white' : 'bg-purple-400'
                   }`} />
                   <span className="text-left">{subject.name}</span>
                   {selectedSubject?.id === subject.id && (
@@ -169,13 +169,13 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
       </div>
 
       {/* Enhanced Chapters Pane */}
-      <div id="chapters-pane" className="flex-1 border-b border-border/50">
-        <div className="p-5 border-b border-border/50 bg-gradient-to-r from-card to-card/80 backdrop-blur-sm">
+      <div id="chapters-pane" className="flex-1 border-b border-zinc-700">
+        <div className="p-5 border-b border-zinc-700 bg-zinc-800">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-br from-secondary to-secondary/80 rounded-lg shadow-md">
-              <Layers className="w-5 h-5 text-secondary-foreground" />
+            <div className="p-2 bg-purple-500 rounded-lg shadow-md">
+              <Layers className="w-5 h-5 text-white" />
             </div>
-            <h2 className="font-bold text-xl bg-gradient-to-r from-secondary to-primary bg-clip-text text-transparent">
+            <h2 className="font-bold text-xl text-white">
               Chapters
             </h2>
           </div>
@@ -186,8 +186,8 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
               Object.entries(groupedChapters).map(([className, chapters]) => (
                 <div key={className} className="mb-6">
                   <div className="flex items-center space-x-2 mb-3 px-3">
-                    <GraduationCap className="w-4 h-4 text-secondary" />
-                    <h3 className="text-sm font-semibold text-secondary bg-gradient-to-r from-secondary to-secondary/80 bg-clip-text text-transparent">
+                    <GraduationCap className="w-4 h-4 text-purple-400" />
+                    <h3 className="text-sm font-semibold text-purple-400">
                       {className}
                     </h3>
                   </div>
@@ -197,14 +197,14 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
                       variant="ghost"
                       className={`w-full justify-start mb-2 h-auto p-4 rounded-xl transition-all duration-200 ease-in-out ${
                         selectedChapter?.id === chapter.id
-                          ? 'bg-gradient-to-r from-secondary to-secondary/90 text-secondary-foreground font-bold shadow-lg shadow-secondary/25'
-                          : 'text-foreground hover:bg-muted/50 hover:shadow-md'
+                          ? 'bg-purple-500 text-white font-bold shadow-lg shadow-purple-500/25'
+                          : 'text-zinc-300 hover:bg-zinc-700 hover:shadow-md'
                       }`}
                       onClick={() => handleChapterClick(chapter)}
                     >
                       <div className="flex items-center space-x-3 w-full">
                         <div className={`w-3 h-3 rounded-full ${
-                          selectedChapter?.id === chapter.id ? 'bg-secondary-foreground' : 'bg-secondary/40'
+                          selectedChapter?.id === chapter.id ? 'bg-white' : 'bg-purple-400'
                         }`} />
                         <div className="text-left">
                           <div className="font-medium">{chapter.name}</div>
@@ -220,10 +220,10 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
               ))
             ) : (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gradient-to-br from-muted/30 to-muted/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Layers className="w-8 h-8 text-muted-foreground" />
+                <div className="w-16 h-16 bg-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Layers className="w-8 h-8 text-zinc-400" />
                 </div>
-                <p className="text-muted-foreground font-medium">Select a subject to view chapters</p>
+                <p className="text-zinc-400 font-medium">Select a subject to view chapters</p>
               </div>
             )}
           </div>
@@ -232,12 +232,12 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
 
       {/* Enhanced Topics Pane */}
       <div id="topics-pane" className="flex-1">
-        <div className="p-5 border-b border-border/50 bg-gradient-to-r from-card to-card/80 backdrop-blur-sm">
+        <div className="p-5 border-b border-zinc-700 bg-zinc-800">
           <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-br from-accent to-accent/80 rounded-lg shadow-md">
-              <Target className="w-5 h-5 text-accent-foreground" />
+            <div className="p-2 bg-purple-400 rounded-lg shadow-md">
+              <Target className="w-5 h-5 text-white" />
             </div>
-            <h2 className="font-bold text-xl bg-gradient-to-r from-accent to-primary bg-clip-text text-transparent">
+            <h2 className="font-bold text-xl text-white">
               Topics
             </h2>
           </div>
@@ -252,14 +252,14 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
                     variant="ghost"
                     className={`w-full justify-start mb-2 h-auto p-4 rounded-xl transition-all duration-200 ease-in-out ${
                       selectedTopic?.id === topic.id
-                        ? 'bg-gradient-to-r from-accent to-accent/90 text-accent-foreground font-bold shadow-lg shadow-accent/25'
-                        : 'text-foreground hover:bg-muted/50 hover:shadow-md'
+                        ? 'bg-purple-400 text-white font-bold shadow-lg shadow-purple-400/25'
+                        : 'text-zinc-300 hover:bg-zinc-700 hover:shadow-md'
                     }`}
                     onClick={() => handleTopicClick(topic)}
                   >
                     <div className="flex items-center space-x-3 w-full">
                       <div className={`w-3 h-3 rounded-full ${
-                        selectedTopic?.id === topic.id ? 'bg-accent-foreground' : 'bg-accent/40'
+                        selectedTopic?.id === topic.id ? 'bg-white' : 'bg-purple-400'
                       }`} />
                       <div className="text-left">
                         <div className="font-medium">{topic.name}</div>
@@ -267,7 +267,7 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
                       </div>
                       {selectedTopic?.id === topic.id && (
                         <div className="ml-auto">
-                          <Badge variant="academic" className="text-xs">
+                          <Badge className="text-xs bg-purple-600 text-white">
                             <Sparkles className="w-3 h-3 mr-1" />
                             Selected
                           </Badge>
@@ -279,10 +279,10 @@ export function SyllabusExplorer({ onTopicSelect }: SyllabusExplorerProps) {
               </div>
             ) : (
               <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gradient-to-br from-muted/30 to-muted/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Target className="w-8 h-8 text-muted-foreground" />
+                <div className="w-16 h-16 bg-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Target className="w-8 h-8 text-zinc-400" />
                 </div>
-                <p className="text-muted-foreground font-medium">Select a chapter to view topics</p>
+                <p className="text-zinc-400 font-medium">Select a chapter to view topics</p>
               </div>
             )}
           </div>

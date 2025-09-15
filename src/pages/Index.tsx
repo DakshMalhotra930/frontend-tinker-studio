@@ -7,7 +7,7 @@ import { AgenticSidebar } from '@/components/AgenticSidebar';
 import { AgenticStudyMode } from '@/components/AgenticStudyMode';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, GraduationCap, Brain, BookOpen, MessageSquare, Calculator, Star, ChevronDown, User } from 'lucide-react';
 import { UsageProgressDisplay } from '@/components/UsageProgressDisplay';
 import { useUsageTracking } from '@/hooks/useUsageTracking';
 import { useUserType } from '@/hooks/useUserType';
@@ -37,122 +37,210 @@ const Index = ({ user, onLogout }: IndexProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b border-border bg-card">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <img src="/praxis-logo-transparent.png" alt="PraxisAI Logo" className="h-10" />
-              <div>
-                <p className="text-sm text-muted-foreground">Your Personal AI Tutor for JEE Prep</p>
-              </div>
+    <div className="min-h-screen bg-zinc-900 flex">
+      {/* Left Sidebar */}
+      <div className="w-80 bg-zinc-800 border-r border-zinc-700 flex flex-col">
+        {/* Logo and Branding */}
+        <div className="p-6 border-b border-zinc-700">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+              <GraduationCap className="w-6 h-6 text-white" />
             </div>
-            <div className="flex items-center gap-4">
-              <UsageProgressDisplay
-                usageCount={usageStatus?.usageCount || 0}
-                usageLimit={usageStatus?.usageLimit || 5}
-                lastUsedAt={usageStatus?.lastUsedAt || null}
-                resetTime={usageStatus?.resetTime || null}
-                isPremium={usageStatus?.isPremium || false}
-                onUpgrade={() => window.location.href = '/pricing'}
-                compact={true}
-              />
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.location.href = '/subscription'}
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  Account
-                </Button>
-              </div>
-              <div className="flex flex-col items-end">
-                <p className="text-sm text-muted-foreground">
-                  Logged in as: {user?.email}
-                </p>
-                <button
-                  className="mt-2 px-6 py-2 bg-red-600 text-white font-bold rounded-lg shadow-md hover:bg-red-700 transition-all"
-                  onClick={onLogout}
-                >
-                  Logout
-                </button>
-                <p className="text-sm text-muted-foreground mt-2">Target: JEE Main & Advanced</p>
-                <p className="text-xs text-muted-foreground">Classes 11 & 12</p>
-              </div>
+            <div>
+              <h1 className="text-xl font-bold text-white">Praxis AI</h1>
+              <p className="text-sm text-zinc-400">JEE Prep Tutor</p>
             </div>
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <div className="flex h-[calc(100vh-80px)]">
-        <div className="w-80 border-r border-border bg-card">
-          <SyllabusExplorer onTopicSelect={handleTopicSelect} />
+        {/* Navigation */}
+        <div className="p-6 border-b border-zinc-700">
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Navigation</h3>
+          <nav className="space-y-2">
+            <button className="w-full flex items-center space-x-3 px-3 py-2 text-white bg-purple-600 rounded-lg">
+              <Settings className="w-5 h-5" />
+              <span>Dashboard</span>
+            </button>
+            <button 
+              onClick={() => window.location.href = '/pricing'}
+              className="w-full flex items-center space-x-3 px-3 py-2 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors"
+            >
+              <Settings className="w-5 h-5" />
+              <span>Pricing</span>
+            </button>
+          </nav>
         </div>
-        <div className="flex-1 flex flex-col">
-          {/* Top Level Tabs - Reduced size */}
-          <div className="border-b border-border bg-card">
-            <div className="px-6 py-2">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                <TabsList className="w-auto">
-                  <TabsTrigger value="syllabus" className="px-4 py-2">Syllabus</TabsTrigger>
-                  <TabsTrigger value="deep-study" className="px-4 py-2">Deep Study</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="syllabus" className="flex-1 flex flex-col">
-                  <ContentViewer
-                    topic={selectedTopic}
-                    chapter={selectedChapter}
-                    subject={selectedSubject}
-                  />
-                  {/* Feature Request Form at bottom */}
-                  <FeatureRequestForm userEmail={user.email} />
 
-                  {/* What's Next Section */}
-                  <section className="mt-8 p-6 bg-card rounded-lg shadow-md text-foreground max-w-4xl mx-auto">
-                    <h2 className="text-2xl font-bold mb-4">What's Next?</h2>
-                    <p className="mb-3">
-                      We are actively improving PraxisAI! Here are some exciting features coming soon:
-                    </p>
-                    <ul className="list-disc list-inside space-y-2">
-                      <li>Expanded syllabus coverage across all JEE subjects</li>
-                      <li>Personalized study plans based on your progress</li>
-                      <li>Advanced AI tutor with natural language Q&A support</li>
-                      <li>Interactive quizzes and practice tests</li>
-                      <li>Mobile app for on-the-go learning</li>
-                    </ul>
-                    <p className="mt-4">
-                      We'd love your feedback and feature requests—keep them coming!
-                    </p>
-                  </section>
-                </TabsContent>
+        {/* Usage Status */}
+        <div className="p-6 border-b border-zinc-700">
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Usage Status</h3>
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-zinc-300">Daily Credits</span>
+                <span className="text-white">{usageStatus?.usageCount || 0}/{usageStatus?.usageLimit || 5}</span>
+              </div>
+              <div className="w-full bg-zinc-700 rounded-full h-2">
+                <div 
+                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${((usageStatus?.usageCount || 0) / (usageStatus?.usageLimit || 5)) * 100}%` }}
+                ></div>
+              </div>
+            </div>
+            <p className="text-xs text-zinc-400">Resets in 24 hours.</p>
+          </div>
+        </div>
 
-                <TabsContent value="deep-study" className="flex-1 flex flex-col">
-                  <div className="p-6">
-                    <div className="max-w-4xl mx-auto">
-                      <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold text-foreground mb-4">
-                          Deep Study Mode
-                        </h1>
-                        <p className="text-muted-foreground text-lg">
-                          Structured study plans, detailed problem solving, and in-depth AI tutoring sessions.
-                        </p>
-                        <div className="mt-4 text-sm text-muted-foreground">
-                          Deep Study Mode {selectedSubject?.name || 'Chemistry'} → {selectedTopic?.name || 'General Study'}
-                        </div>
-                      </div>
-                      <AgenticStudyMode
-                        subject={selectedSubject?.name || 'Chemistry'} // Default to Chemistry to match backend validation
-                        topic={selectedTopic?.name || 'General Study'}
-                      />
+        {/* User Profile */}
+        <div className="mt-auto p-6 border-t border-zinc-700">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 bg-zinc-600 rounded-full flex items-center justify-center">
+              <User className="w-4 h-4 text-zinc-300" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white truncate">{user?.name || 'User'}</p>
+              <p className="text-xs text-zinc-400 truncate">{user?.email}</p>
+            </div>
+            <ChevronDown className="w-4 h-4 text-zinc-400" />
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="bg-zinc-900 border-b border-zinc-700 px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white">Praxis AI Dashboard</h1>
+              <p className="text-zinc-400 mt-1">Your personal AI tutor for JEE preparation. Log in to get started.</p>
+            </div>
+            <Button 
+              onClick={onLogout}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg"
+            >
+              Logout
+            </Button>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-8">
+          {/* Track Your Progress Card */}
+          <div className="bg-zinc-800 rounded-lg p-6 mb-8">
+            <h2 className="text-xl font-semibold text-white mb-2">Track Your Progress</h2>
+            <p className="text-zinc-400">Log in to see your study statistics and track your improvement over time.</p>
+          </div>
+
+          {/* Study Mode Selection */}
+          <div className="mb-8">
+            <div className="flex space-x-4 mb-6">
+              <button
+                onClick={() => setActiveTab('syllabus')}
+                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                  activeTab === 'syllabus'
+                    ? 'bg-purple-600 text-white'
+                    : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                }`}
+              >
+                Syllabus Study
+              </button>
+              <button
+                onClick={() => setActiveTab('deep-study')}
+                className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                  activeTab === 'deep-study'
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'
+                    : 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                }`}
+              >
+                AI Deep Study
+              </button>
+            </div>
+
+            {activeTab === 'syllabus' && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Syllabus Explorer */}
+                <div className="bg-zinc-800 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Syllabus Explorer</h3>
+                  <SyllabusExplorer onTopicSelect={handleTopicSelect} />
+                </div>
+
+                {/* Select Topic Card */}
+                <div className="bg-zinc-800 rounded-lg p-6 flex flex-col items-center justify-center text-center">
+                  <BookOpen className="w-16 h-16 text-zinc-400 mb-4" />
+                  <h3 className="text-lg font-semibold text-white mb-2">Select a Topic to Study</h3>
+                  <p className="text-zinc-400">Choose a subject, chapter, and topic from the syllabus explorer to start learning.</p>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'deep-study' && (
+              <div className="bg-zinc-800 rounded-lg p-8">
+                <div className="text-center mb-8">
+                  <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Brain className="w-10 h-10 text-white" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">AI Deep Study Mode</h2>
+                  <p className="text-zinc-400 mb-6">Get personalized tutoring with AI-powered explanations and problem solving</p>
+                  
+                  {/* Subject Selection */}
+                  <div className="max-w-md mx-auto mb-8">
+                    <select className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-600">
+                      <option>Choose a subject</option>
+                      <option>Physics</option>
+                      <option>Chemistry</option>
+                      <option>Mathematics</option>
+                    </select>
+                  </div>
+
+                  {/* Feature Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div className="bg-zinc-700 rounded-lg p-6 text-center hover:bg-zinc-600 transition-colors">
+                      <MessageSquare className="w-8 h-8 text-purple-400 mx-auto mb-3" />
+                      <h3 className="font-semibold text-white mb-2">Ask Questions</h3>
+                      <p className="text-sm text-zinc-400">Get instant explanations</p>
+                    </div>
+                    <div className="bg-zinc-700 rounded-lg p-6 text-center hover:bg-zinc-600 transition-colors">
+                      <BookOpen className="w-8 h-8 text-purple-400 mx-auto mb-3" />
+                      <h3 className="font-semibold text-white mb-2">Solve Problems</h3>
+                      <p className="text-sm text-zinc-400">Step-by-step solutions</p>
+                    </div>
+                    <div className="bg-zinc-700 rounded-lg p-6 text-center hover:bg-zinc-600 transition-colors">
+                      <Star className="w-8 h-8 text-purple-400 mx-auto mb-3" />
+                      <h3 className="font-semibold text-white mb-2">Personalized</h3>
+                      <p className="text-sm text-zinc-400">Adapts to your level</p>
                     </div>
                   </div>
-                </TabsContent>
-              </Tabs>
-            </div>
+
+                  {/* Start Button */}
+                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-lg text-lg font-semibold">
+                    Start AI Study Session
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
+
+          {/* Content Viewer for Syllabus Mode */}
+          {activeTab === 'syllabus' && (selectedTopic || selectedChapter || selectedSubject) && (
+            <div className="bg-zinc-800 rounded-lg p-6">
+              <ContentViewer
+                topic={selectedTopic}
+                chapter={selectedChapter}
+                subject={selectedSubject}
+              />
+            </div>
+          )}
+
+          {/* Deep Study Mode Content */}
+          {activeTab === 'deep-study' && (
+            <div className="bg-zinc-800 rounded-lg">
+              <AgenticStudyMode
+                subject={selectedSubject?.name || 'Chemistry'}
+                topic={selectedTopic?.name || 'General Study'}
+              />
+            </div>
+          )}
         </div>
       </div>
 

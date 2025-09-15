@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Loader2, MessageSquare, BookOpen, Calculator, AlertCircle, Target } from 'lucide-react';
+import { Send, Loader2, MessageSquare, BookOpen, Calculator, AlertCircle, Target, Brain } from 'lucide-react';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { ImageUpload } from './ImageUpload';
 import { StudyPlanChat } from './StudyPlanChat';
@@ -143,18 +143,18 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
 
   if (!subject || !topic) {
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col bg-zinc-800">
           {/* Header for General Mode */}
-          <div className="p-4 border-b border-border bg-card">
+          <div className="p-6 border-b border-zinc-700 bg-zinc-800">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold">Deep Study Mode</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="text-2xl font-bold text-white">Deep Study Mode</h1>
+                <p className="text-sm text-zinc-400">
                   General Study Session
                 </p>
               </div>
               {currentSession && (
-                <Badge variant="secondary">
+                <Badge variant="secondary" className="bg-zinc-700 text-zinc-300">
                   Session: {currentSession.session_id.slice(0, 8)}...
                 </Badge>
               )}
@@ -165,26 +165,26 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
           <div className="flex-1 p-6">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">🎓</span>
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Brain className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-xl font-semibold mb-2">Welcome to Deep Study Mode!</h2>
-                <p className="text-muted-foreground mb-4">
+                <h2 className="text-xl font-semibold text-white mb-2">Welcome to Deep Study Mode!</h2>
+                <p className="text-zinc-400 mb-4">
                   I'm here to help you with any subject or topic you want to study.
                 </p>
               </div>
 
               <Tabs defaultValue="chat" className="h-full flex flex-col">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="chat">
+                <TabsList className="grid w-full grid-cols-3 bg-zinc-700">
+                  <TabsTrigger value="chat" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
                     <MessageSquare className="w-4 h-4 mr-2" />
                     <span>AI Chat</span>
                   </TabsTrigger>
-                  <TabsTrigger value="problems">
+                  <TabsTrigger value="problems" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
                     <Calculator className="w-4 h-4 mr-2" />
                     <span>Problem Solver</span>
                   </TabsTrigger>
-                  <TabsTrigger value="plans">
+                  <TabsTrigger value="plans" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white">
                     <Target className="w-4 h-4 mr-2" />
                     <span>AI Study Plans</span>
                   </TabsTrigger>
@@ -204,21 +204,21 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                     >
                       {chatMessages.length === 0 ? (
                         <div className="text-center py-8">
-                          <div className="w-12 h-12 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                            <MessageSquare className="w-6 h-6 text-muted-foreground" />
+                          <div className="w-12 h-12 bg-zinc-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <MessageSquare className="w-6 h-6 text-zinc-400" />
                           </div>
-                          <h3 className="text-lg font-semibold mb-2">Start Your Study Session</h3>
-                          <p className="text-muted-foreground mb-4">
+                          <h3 className="text-lg font-semibold text-white mb-2">Start Your Study Session</h3>
+                          <p className="text-zinc-400 mb-4">
                             Ask me anything about any subject or topic you want to study!
                           </p>
-                          <div className="space-y-2 text-sm text-muted-foreground">
+                          <div className="space-y-2 text-sm text-zinc-400">
                             <p>• Ask questions about concepts</p>
                             <p>• Request step-by-step explanations</p>
                             <p>• Get help with problem solving</p>
                             <p>• Take practice quizzes</p>
                             <p>• Generate study materials</p>
                           </div>
-                          <p className="text-muted-foreground mt-4">What would you like to explore first?</p>
+                          <p className="text-zinc-400 mt-4">What would you like to explore first?</p>
                         </div>
                       ) : (
                         <div className="space-y-4">
@@ -230,8 +230,8 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                               <div
                                 className={`max-w-[80%] p-3 rounded-lg ${
                                   msg.isUser
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted'
+                                    ? 'bg-purple-600 text-white'
+                                    : 'bg-zinc-700 text-zinc-300'
                                 }`}
                               >
                                 <MarkdownRenderer content={msg.text} />
@@ -244,7 +244,7 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                     
                     {/* Input Field - Fixed at Bottom with Hard Height */}
                     <div 
-                      className="p-4 border-t border-border bg-background"
+                      className="p-4 border-t border-zinc-700 bg-zinc-800"
                       style={{ 
                         height: '100px',
                         minHeight: '100px',
@@ -258,9 +258,13 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                           onChange={(e) => setMessage(e.target.value)}
                           onKeyPress={(e) => handleKeyPress(e, handleSendMessage)}
                           placeholder="Ask me anything about any subject or topic..."
-                          className="flex-1"
+                          className="flex-1 bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400"
                         />
-                        <Button onClick={handleSendMessage} disabled={isLoading || !message.trim()}>
+                        <Button 
+                          onClick={handleSendMessage} 
+                          disabled={isLoading || !message.trim()}
+                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                        >
                           {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                         </Button>
                       </div>
@@ -271,8 +275,8 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                 <TabsContent value="problems" className="flex-1 flex flex-col">
                   <div className="flex-1 flex flex-col">
                     <div className="p-4">
-                      <h3 className="text-lg font-semibold mb-4">Problem Solver</h3>
-                      <p className="text-muted-foreground mb-4">
+                      <h3 className="text-lg font-semibold text-white mb-4">Problem Solver</h3>
+                      <p className="text-zinc-400 mb-4">
                         Upload an image or describe any problem you need help with.
                       </p>
                       
@@ -283,21 +287,21 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                         />
                         
                         <div>
-                          <label className="block text-sm font-medium mb-2">
+                          <label className="block text-sm font-medium text-white mb-2">
                             Describe your problem
                           </label>
                           <Textarea
                             value={problem}
                             onChange={(e) => setProblem(e.target.value)}
                             placeholder="Describe the problem you're facing..."
-                            className="min-h-[100px]"
+                            className="min-h-[100px] bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400"
                           />
                         </div>
                         
                         <Button 
                           onClick={handleSolveProblem} 
                           disabled={isLoading || (!problem.trim() && !selectedImage)}
-                          className="w-full"
+                          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                         >
                           {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Calculator className="w-4 h-4 mr-2" />}
                           Get Help with Problem
@@ -323,18 +327,18 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
       sessionId={currentSession?.session_id}
       onFeatureUse={handleFeatureUse}
     >
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-col bg-zinc-800">
         {/* Header */}
-        <div className="p-4 border-b border-border bg-card">
+        <div className="p-6 border-b border-zinc-700 bg-zinc-800">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold">Deep Study Mode</h1>
-              <p className="text-sm text-muted-foreground">
+              <h1 className="text-2xl font-bold text-white">Deep Study Mode</h1>
+              <p className="text-sm text-zinc-400">
                 {subject} → {topic}
               </p>
             </div>
             {currentSession && (
-              <Badge variant="secondary">
+              <Badge variant="secondary" className="bg-zinc-700 text-zinc-300">
                 Session: {currentSession.session_id.slice(0, 8)}...
               </Badge>
             )}
@@ -343,11 +347,11 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
 
         {/* Error Display */}
         {error && (
-          <div className="p-4 bg-destructive/10 border border-destructive/20">
+          <div className="p-4 bg-red-900/20 border border-red-700/30">
             <div className="flex items-center space-x-2">
-              <AlertCircle className="w-4 h-4 text-destructive" />
-              <span className="text-sm text-destructive">{error}</span>
-              <Button variant="ghost" size="sm" onClick={clearError}>
+              <AlertCircle className="w-4 h-4 text-red-400" />
+              <span className="text-sm text-red-300">{error}</span>
+              <Button variant="ghost" size="sm" onClick={clearError} className="text-red-300 hover:text-red-200">
                 Dismiss
               </Button>
             </div>
@@ -357,16 +361,16 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
         {/* Main Content */}
         <div className="flex-1 overflow-hidden h-full">
           <Tabs defaultValue="chat" className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-3 flex-shrink-0">
-              <TabsTrigger value="chat" className="flex items-center space-x-2">
+            <TabsList className="grid w-full grid-cols-3 flex-shrink-0 bg-zinc-700">
+              <TabsTrigger value="chat" className="flex items-center space-x-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
                 <MessageSquare className="w-4 h-4" />
                 <span>AI Chat</span>
               </TabsTrigger>
-              <TabsTrigger value="problems" className="flex items-center space-x-2">
+              <TabsTrigger value="problems" className="flex items-center space-x-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
                 <Calculator className="w-4 h-4" />
                 <span>Problem Solver</span>
               </TabsTrigger>
-              <TabsTrigger value="plans" className="flex items-center space-x-2">
+              <TabsTrigger value="plans" className="flex items-center space-x-2 data-[state=active]:bg-purple-600 data-[state=active]:text-white">
                 <Target className="w-4 h-4" />
                 <span>AI Study Plans</span>
               </TabsTrigger>
@@ -395,8 +399,8 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                       <div
                         className={`max-w-[80%] rounded-lg p-3 ${
                           msg.isUser
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted'
+                            ? 'bg-purple-600 text-white'
+                            : 'bg-zinc-700 text-zinc-300'
                         }`}
                       >
                         <MarkdownRenderer content={msg.text} />
@@ -408,10 +412,10 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                   ))}
                   {isLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-muted rounded-lg p-3">
+                      <div className="bg-zinc-700 rounded-lg p-3">
                         <div className="flex items-center space-x-2">
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span className="text-sm">AI is thinking...</span>
+                          <span className="text-sm text-zinc-300">AI is thinking...</span>
                         </div>
                       </div>
                     </div>
@@ -420,7 +424,7 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
               </div>
               
               {/* Input Field - Fixed at Bottom */}
-              <div className="p-4 border-t border-border bg-background flex-shrink-0">
+              <div className="p-4 border-t border-zinc-700 bg-zinc-800 flex-shrink-0">
                 <div className="flex space-x-2">
                   <Input
                     value={message}
@@ -428,8 +432,13 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                     onKeyPress={(e) => handleKeyPress(e, handleSendMessage)}
                     placeholder="Ask me anything about this topic..."
                     disabled={isLoading}
+                    className="bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400"
                   />
-                  <Button onClick={handleSendMessage} disabled={isLoading || !message.trim()}>
+                  <Button 
+                    onClick={handleSendMessage} 
+                    disabled={isLoading || !message.trim()}
+                    className="bg-purple-600 hover:bg-purple-700 text-white"
+                  >
                     <Send className="w-4 h-4" />
                   </Button>
                 </div>
@@ -447,20 +456,21 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                 />
                 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Problem Description</label>
+                  <label className="text-sm font-medium text-white">Problem Description</label>
                   <Textarea
                     value={problem}
                     onChange={(e) => setProblem(e.target.value)}
                     placeholder="Describe the problem you need help with..."
                     rows={4}
                     disabled={isLoading}
+                    className="bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400"
                   />
                 </div>
 
                 <Button
                   onClick={handleSolveProblem}
                   disabled={isLoading || (!problem.trim() && !selectedImage)}
-                  className="w-full"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                 >
                   {isLoading ? (
                     <>
@@ -485,9 +495,9 @@ export function AgenticStudyMode({ subject, topic }: AgenticStudyModeProps) {
                       const solutionMsg = chatMessages[index + 1];
                       if (solutionMsg && !solutionMsg.isUser) {
                         return (
-                          <Card key={msg.id}>
+                          <Card key={msg.id} className="bg-zinc-700 border-zinc-600">
                             <CardHeader>
-                              <CardTitle className="text-lg">Problem Solution</CardTitle>
+                              <CardTitle className="text-lg text-white">Problem Solution</CardTitle>
                             </CardHeader>
                             <CardContent>
                               <MarkdownRenderer content={solutionMsg.text} />
