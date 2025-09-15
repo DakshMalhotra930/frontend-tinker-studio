@@ -10,6 +10,7 @@ import { toast } from '../hooks/use-toast';
 import GoogleLogin from '../components/GoogleLogin';
 
 const Pricing: React.FC = () => {
+  // Pricing page component
   const { isAuthenticated, user, login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const { usageStatus } = useUsageTracking();
