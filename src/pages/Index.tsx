@@ -126,11 +126,6 @@ const Index = ({ user, onLogout }: IndexProps) => {
 
         {/* Main Content */}
         <div className="flex-1 p-8">
-          {/* Track Your Progress Card */}
-          <div className="bg-zinc-800 rounded-lg p-6 mb-8">
-            <h2 className="text-xl font-semibold text-white mb-2">Track Your Progress</h2>
-            <p className="text-zinc-400">Log in to see your study statistics and track your improvement over time.</p>
-          </div>
 
           {/* Study Mode Selection */}
           <div className="mb-8">
