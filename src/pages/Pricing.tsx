@@ -2,17 +2,20 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Crown, Check, Zap, Star, BookOpen, Brain, Target, Users, Shield, Clock, ArrowRight, LogIn, CheckCircle, GraduationCap, ChevronDown, User, Settings } from 'lucide-react';
+import { Crown, Check, Zap, Star, BookOpen, Brain, Target, Users, Shield, Clock, ArrowRight, LogIn, CheckCircle, GraduationCap, ChevronDown, User, Settings, QrCode } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { useUsageTracking } from '../hooks/useUsageTracking';
 import { useUserType } from '../hooks/useUserType';
 import { toast } from '../hooks/use-toast';
 import GoogleLogin from '../components/GoogleLogin';
+import QRPaymentModal from '../components/QRPaymentModal';
 
 const Pricing: React.FC = () => {
   // Pricing page component
   const { isAuthenticated, user, login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showQRPayment, setShowQRPayment] = useState(false);
+  const [selectedTier, setSelectedTier] = useState<'pro_monthly' | 'pro_yearly' | 'pro_lifetime'>('pro_monthly');
   const { usageStatus } = useUsageTracking();
   const { isPremium } = useUserType();
 
@@ -20,7 +23,7 @@ const Pricing: React.FC = () => {
     login(userData);
   };
 
-  const handleUpgrade = () => {
+  const handleUpgrade = (tier: 'pro_monthly' | 'pro_yearly' | 'pro_lifetime') => {
     if (!isAuthenticated) {
       toast({
         title: 'Sign in required',
@@ -30,11 +33,18 @@ const Pricing: React.FC = () => {
       return;
     }
     
-    // TODO: Implement actual upgrade logic
+    setSelectedTier(tier);
+    setShowQRPayment(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    setShowQRPayment(false);
     toast({
-      title: 'Upgrade to Pro',
-      description: 'Pro upgrade functionality will be implemented soon!',
+      title: 'Upgrade Successful!',
+      description: 'Welcome to Pro! You now have access to all premium features.',
     });
+    // Refresh subscription status
+    window.location.reload();
   };
 
   const freeFeatures = [
@@ -208,23 +218,46 @@ const Pricing: React.FC = () => {
                     ))}
                   </div>
                   
-                  <Button
-                    className="w-full h-12 text-base font-semibold bg-white text-purple-600 hover:bg-zinc-100"
-                    onClick={handleUpgrade}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-purple-600 border-t-transparent mr-2" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="mr-2 h-4 w-4" />
-                        Upgrade to Pro
-                      </>
-                    )}
-                  </Button>
+                  <div className="space-y-3">
+                    <Button
+                      className="w-full h-12 text-base font-semibold bg-white text-purple-600 hover:bg-zinc-100"
+                      onClick={() => handleUpgrade('pro_monthly')}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-purple-600 border-t-transparent mr-2" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <QrCode className="mr-2 h-4 w-4" />
+                          Pay ₹99/month
+                        </>
+                      )}
+                    </Button>
+                    
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline"
+                        className="h-10 text-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
+                        onClick={() => handleUpgrade('pro_yearly')}
+                        disabled={isLoading}
+                      >
+                        <QrCode className="mr-1 h-3 w-3" />
+                        ₹990/year
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="h-10 text-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
+                        onClick={() => handleUpgrade('pro_lifetime')}
+                        disabled={isLoading}
+                      >
+                        <QrCode className="mr-1 h-3 w-3" />
+                        ₹2999/lifetime
+                      </Button>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -238,6 +271,17 @@ const Pricing: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* QR Payment Modal */}
+      {isAuthenticated && user && (
+        <QRPaymentModal
+          isOpen={showQRPayment}
+          onClose={() => setShowQRPayment(false)}
+          onSuccess={handlePaymentSuccess}
+          tier={selectedTier}
+          userId={user.user_id}
+        />
+      )}
     </div>
   );
 };

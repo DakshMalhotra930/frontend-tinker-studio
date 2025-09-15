@@ -565,6 +565,76 @@ export const usageAPI = {
   },
 };
 
+// Payment API - QR Code Payment System
+export const paymentAPI = {
+  // Create QR payment
+  createQRPayment: async (data: {
+    amount: number;
+    currency: string;
+    user_id: string;
+    tier: string;
+  }): Promise<{
+    qr_code: string;
+    payment_id: string;
+    amount: number;
+    currency: string;
+    upi_link: string;
+    expires_at: string;
+  }> => {
+    return apiRequest<{
+      qr_code: string;
+      payment_id: string;
+      amount: number;
+      currency: string;
+      upi_link: string;
+      expires_at: string;
+    }>('/agentic/payment/qr/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Verify QR payment
+  verifyQRPayment: async (data: {
+    qr_code: string;
+    payment_id: string;
+  }): Promise<{
+    success: boolean;
+    status: 'pending' | 'completed' | 'failed' | 'expired';
+    message: string;
+    transaction_id?: string;
+  }> => {
+    return apiRequest<{
+      success: boolean;
+      status: 'pending' | 'completed' | 'failed' | 'expired';
+      message: string;
+      transaction_id?: string;
+    }>('/agentic/payment/qr/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Check payment status
+  checkPaymentStatus: async (qrCode: string): Promise<{
+    status: 'pending' | 'completed' | 'failed' | 'expired';
+    amount: number;
+    currency: string;
+    created_at: string;
+    expires_at: string;
+    transaction_id?: string;
+  }> => {
+    return apiRequest<{
+      status: 'pending' | 'completed' | 'failed' | 'expired';
+      amount: number;
+      currency: string;
+      created_at: string;
+      expires_at: string;
+      transaction_id?: string;
+    }>(`/agentic/payment/qr/status/${qrCode}`);
+  },
+};
+
 // Trial Mode API
 export const trialAPI = {
   // Check user features
