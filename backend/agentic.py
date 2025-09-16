@@ -2936,7 +2936,6 @@ I'm your dedicated JEE tutor, here to help you master any subject or topic for y
         raise HTTPException(status_code=500, detail="Failed to start study session")
 
 @router.post("/session/chat")
-@require_pro_access("Deep Study Mode")
 async def chat_message(request: ChatMessageRequest):
     """Send a message in an active study session"""
     try:
@@ -3115,7 +3114,6 @@ Once you provide these details, I'll give you a comprehensive JEE-level solution
         raise HTTPException(status_code=500, detail="Failed to process chat message")
 
 @router.post("/session/solve")
-@require_pro_access("Deep Study Mode")
 async def problem_solve(request: ProblemSolveRequest):
     """Get step-by-step problem solving assistance"""
     try:
