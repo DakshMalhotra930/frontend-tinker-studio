@@ -1,0 +1,42 @@
+# fly.toml app configuration file generated for praxis-ai on 2025-08-30T10:01:39Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'praxis-ai'
+primary_region = 'bom'
+
+[build]
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0  # Allow all machines to stop when not in use
+  processes = ["app"]
+  
+  # Auto-scaling configuration for cost optimization
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
+  
+  # Scale down to 0 machines when no traffic
+  [http_service.scale]
+    min = 0
+    max = 2
+
+  [[http_service.checks]]
+    grace_period = "60s"    # Reduced grace period for faster shutdown
+    interval = "60s"        # Check every minute to reduce overhead
+    timeout = "15s"         # Reduced timeout for faster health checks
+    method = "GET"
+    path = "/health"        # Use the /health endpoint for health checks
+    port = 8080             # Specify the port for health checks
+
+[[vm]]
+  memory = "2gb"           # Reduced memory for cost optimization
+  cpu_kind = "shared"
+  cpus = 1                 # Reduced to 1 CPU for cost savings
+  memory_mb = 2048         # Reduced memory to 2GB
