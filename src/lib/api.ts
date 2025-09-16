@@ -126,12 +126,15 @@ async function apiRequest<T>(
 
     try {
       const errorData = await response.json();
-      errorMessage = errorData.detail || errorMessage;
+      errorMessage = errorData.detail || errorData.message || errorMessage;
       errorDetails = errorData;
-    } catch {
+      console.error('API Error Details:', errorData);
+    } catch (e) {
       // If error response is not JSON, use default message
+      console.error('Failed to parse error response:', e);
     }
 
+    console.error(`API Request failed: ${url}`, { status: response.status, errorMessage, errorDetails });
     throw new APIError(errorMessage, response.status, errorDetails);
   }
 
@@ -221,27 +224,41 @@ export const contentAPI = {
     topic: string;
     mode: string;
   }): Promise<any> => {
-    // First, start a session for the topic
-    const sessionData = await sessionAPI.start({
-      subject: 'Chemistry', // You might want to make this dynamic
-      topic: data.topic,
-      mode: data.mode,
-      user_id: apiUtils.getUserId() || 'anonymous'
-    });
+    try {
+      console.log('Starting content generation for:', data);
+      
+      const userId = apiUtils.getUserId() || 'anonymous';
+      console.log('Using user ID:', userId);
+      
+      // First, start a session for the topic
+      console.log('Starting session...');
+      const sessionData = await sessionAPI.start({
+        subject: 'Chemistry', // You might want to make this dynamic
+        topic: data.topic,
+        mode: data.mode,
+        user_id: userId
+      });
+      console.log('Session started:', sessionData);
 
-    // Then send a chat message to get content
-    const chatResponse = await sessionAPI.chat({
-      session_id: sessionData.session_id,
-      message: `Please provide ${data.mode} content for the topic: ${data.topic}`,
-      context_hint: data.mode
-    });
+      // Then send a chat message to get content
+      console.log('Sending chat message...');
+      const chatResponse = await sessionAPI.chat({
+        session_id: sessionData.session_id,
+        message: `Please provide ${data.mode} content for the topic: ${data.topic}`,
+        context_hint: data.mode
+      });
+      console.log('Chat response received:', chatResponse);
 
-    return {
-      content: chatResponse.response,
-      session_id: sessionData.session_id,
-      source_name: 'AI Tutor',
-      source_level: 'Generated'
-    };
+      return {
+        content: chatResponse.response,
+        session_id: sessionData.session_id,
+        source_name: 'AI Tutor',
+        source_level: 'Generated'
+      };
+    } catch (error) {
+      console.error('Content generation failed:', error);
+      throw error;
+    }
   },
 };
 
