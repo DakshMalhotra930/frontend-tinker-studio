@@ -172,6 +172,20 @@ export const studyPlanAPI = {
   },
 };
 
+// Content Generation
+export const contentAPI = {
+  // Generate educational content for a topic
+  generateContent: async (data: {
+    topic: string;
+    mode: string;
+  }): Promise<any> => {
+    return apiRequest<any>('/content/generate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
 // Utility functions
 export const apiUtils = {
   // Create a user ID (in a real app, this would come from authentication)
