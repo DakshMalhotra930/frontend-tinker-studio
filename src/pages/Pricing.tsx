@@ -387,3 +387,5 @@ export const Pricing: React.FC = () => {
     </div>
   );
 };
+
+export default Pricing;
