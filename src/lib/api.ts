@@ -50,6 +50,15 @@ export interface StudyPlanResponse {
   progress: any;
 }
 
+export interface CreditStatus {
+  user_id: string;
+  credits_used: number;
+  credits_remaining: number;
+  credits_limit: number;
+  credits_date: string;
+  is_pro_user: boolean;
+}
+
 // API Error class
 export class APIError extends Error {
   constructor(
@@ -180,6 +189,50 @@ export const contentAPI = {
     mode: string;
   }): Promise<any> => {
     return apiRequest<any>('/content/generate', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// Credit Management
+export const creditAPI = {
+  // Get user's credit status
+  getCreditStatus: async (userId: string): Promise<CreditStatus> => {
+    return apiRequest<CreditStatus>(`/credits/status/${userId}`, {
+      method: 'GET',
+    });
+  },
+
+  // Consume a credit for a feature
+  consumeCredit: async (data: {
+    user_id: string;
+    feature_name: string;
+    session_id?: string;
+  }): Promise<{ success: boolean; credits_remaining: number }> => {
+    return apiRequest<{ success: boolean; credits_remaining: number }>('/credits/consume', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// Pro Subscription Management
+export const proSubscriptionAPI = {
+  // Check if user has active pro subscription
+  checkSubscription: async (userId: string): Promise<{ is_pro: boolean; expires_at?: string }> => {
+    return apiRequest<{ is_pro: boolean; expires_at?: string }>(`/subscription/status/${userId}`, {
+      method: 'GET',
+    });
+  },
+
+  // Create a new pro subscription
+  createSubscription: async (data: {
+    user_id: string;
+    plan_type: string;
+    payment_method: string;
+  }): Promise<{ success: boolean; subscription_id: string }> => {
+    return apiRequest<{ success: boolean; subscription_id: string }>('/subscription/create', {
       method: 'POST',
       body: JSON.stringify(data),
     });
