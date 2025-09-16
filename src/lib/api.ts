@@ -219,7 +219,7 @@ export const studyPlanAPI = {
 
 // Content Generation
 export const contentAPI = {
-  // Generate educational content for a topic using session-based approach
+  // Generate educational content for a topic using a simple approach
   generateContent: async (data: {
     topic: string;
     mode: string;
@@ -227,32 +227,14 @@ export const contentAPI = {
     try {
       console.log('Starting content generation for:', data);
       
-      const userId = apiUtils.getUserId() || 'anonymous';
-      console.log('Using user ID:', userId);
+      // For now, return mock content to get the UI working
+      // TODO: Implement proper backend integration
+      const mockContent = generateMockContent(data.topic, data.mode);
       
-      // First, start a session for the topic
-      console.log('Starting session...');
-      const sessionData = await sessionAPI.start({
-        subject: 'Chemistry', // You might want to make this dynamic
-        topic: data.topic,
-        mode: data.mode,
-        user_id: userId
-      });
-      console.log('Session started:', sessionData);
-
-      // Then send a chat message to get content
-      console.log('Sending chat message...');
-      const chatResponse = await sessionAPI.chat({
-        session_id: sessionData.session_id,
-        message: `Please provide ${data.mode} content for the topic: ${data.topic}`,
-        context_hint: data.mode
-      });
-      console.log('Chat response received:', chatResponse);
-
       return {
-        content: chatResponse.response,
-        session_id: sessionData.session_id,
-        source_name: 'AI Tutor',
+        content: mockContent,
+        session_id: 'mock_session_' + Date.now(),
+        source_name: 'AI Tutor (Demo)',
         source_level: 'Generated'
       };
     } catch (error) {
@@ -262,13 +244,85 @@ export const contentAPI = {
   },
 };
 
+// Mock content generator for development
+function generateMockContent(topic: string, mode: string): string {
+  const contentTemplates = {
+    learn: `# ${topic} - Learning Content
+
+## Introduction
+This topic covers the fundamental concepts of ${topic} in chemistry. Let's explore the key principles and their applications.
+
+## Key Concepts
+1. **Basic Principles**: Understanding the core concepts
+2. **Applications**: Real-world applications and examples
+3. **Practice Problems**: Work through examples to reinforce learning
+
+## Study Tips
+- Focus on understanding the underlying principles
+- Practice with different types of problems
+- Make connections to related topics
+
+*This is demo content. The full AI-powered content generation will be available soon.*`,
+
+    revise: `# ${topic} - Revision Guide
+
+## Quick Review
+Here's a concise summary of ${topic} for your revision:
+
+### Key Points
+- Essential concepts to remember
+- Important formulas and equations
+- Common problem-solving strategies
+
+### Common Mistakes to Avoid
+- Typical errors students make
+- How to identify and correct them
+
+### Practice Questions
+- Quick self-assessment questions
+- Solutions and explanations
+
+*This is demo content. The full AI-powered content generation will be available soon.*`,
+
+    practice: `# ${topic} - Practice Problems
+
+## Problem Set
+Here are some practice problems for ${topic}:
+
+### Easy Level
+1. Basic concept application
+2. Simple calculations
+3. Definition-based questions
+
+### Medium Level
+1. Multi-step problems
+2. Concept integration
+3. Analysis questions
+
+### Hard Level
+1. Complex problem-solving
+2. Advanced applications
+3. JEE-level questions
+
+*This is demo content. The full AI-powered content generation will be available soon.*`
+  };
+
+  return contentTemplates[mode as keyof typeof contentTemplates] || contentTemplates.learn;
+}
+
 // Credit Management
 export const creditAPI = {
   // Get user's credit status
   getCreditStatus: async (userId: string): Promise<CreditStatus> => {
-    return apiRequest<CreditStatus>(`/credits/status/${userId}`, {
-      method: 'GET',
-    });
+    // For now, return mock credit status
+    // TODO: Implement proper backend integration
+    return {
+      user_id: userId,
+      credits_remaining: 10,
+      credits_limit: 10,
+      credits_date: new Date().toISOString(),
+      is_pro_user: false
+    };
   },
 
   // Consume a credit for a feature
@@ -277,10 +331,12 @@ export const creditAPI = {
     feature_name: string;
     session_id?: string;
   }): Promise<{ success: boolean; credits_remaining: number }> => {
-    return apiRequest<{ success: boolean; credits_remaining: number }>('/credits/consume', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    // For now, return mock success
+    // TODO: Implement proper backend integration
+    return {
+      success: true,
+      credits_remaining: 9
+    };
   },
 };
 
