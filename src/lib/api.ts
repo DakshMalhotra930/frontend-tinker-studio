@@ -219,7 +219,7 @@ export const studyPlanAPI = {
 
 // Content Generation
 export const contentAPI = {
-  // Generate educational content for a topic using session-based approach
+  // Generate educational content for a topic using direct API call
   generateContent: async (data: {
     topic: string;
     mode: string;
@@ -227,34 +227,14 @@ export const contentAPI = {
     try {
       console.log('Starting content generation for:', data);
       
-      const userId = apiUtils.getUserId() || 'anonymous';
-      console.log('Using user ID:', userId);
+      // Call the direct content generation endpoint
+      const response = await apiRequest<any>('/api/generate-content', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
       
-      // First, start a session for the topic
-      console.log('Starting session...');
-      const sessionData = await sessionAPI.start({
-        subject: 'Chemistry', // You might want to make this dynamic
-        topic: data.topic,
-        mode: data.mode,
-        user_id: userId
-      });
-      console.log('Session started:', sessionData);
-
-      // Then send a chat message to get content
-      console.log('Sending chat message...');
-      const chatResponse = await sessionAPI.chat({
-        session_id: sessionData.session_id,
-        message: `Please provide ${data.mode} content for the topic: ${data.topic}`,
-        context_hint: data.mode
-      });
-      console.log('Chat response received:', chatResponse);
-
-      return {
-        content: chatResponse.response,
-        session_id: sessionData.session_id,
-        source_name: 'AI Tutor',
-        source_level: 'Generated'
-      };
+      console.log('Content generation response:', response);
+      return response;
     } catch (error) {
       console.error('Content generation failed:', error);
       throw error;
