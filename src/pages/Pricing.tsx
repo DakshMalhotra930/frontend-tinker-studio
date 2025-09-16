@@ -1,289 +1,389 @@
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { Crown, Check, Zap, Star, BookOpen, Brain, Target, Users, Shield, Clock, ArrowRight, LogIn, CheckCircle, GraduationCap, ChevronDown, User, Settings, QrCode } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
-import { useUsageTracking } from '../hooks/useUsageTracking';
-import { useUserType } from '../hooks/useUserType';
-import { toast } from '../hooks/use-toast';
-import GoogleLogin from '../components/GoogleLogin';
-import QRPaymentModal from '../components/QRPaymentModal';
+import { Separator } from '../components/ui/separator';
+import { Check, Crown, Zap, Star, ArrowRight } from 'lucide-react';
+import { PaymentModal } from '../components/PaymentModal';
+import { CreditDisplay } from '../components/CreditDisplay';
+import { apiUtils } from '../lib/api';
 
-const Pricing: React.FC = () => {
-  // Pricing page component
-  const { isAuthenticated, user, login } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [showQRPayment, setShowQRPayment] = useState(false);
+interface PricingInfo {
+  monthly: {
+    price: number;
+    currency: string;
+    features: string[];
+  };
+  yearly: {
+    price: number;
+    currency: string;
+    features: string[];
+    discount: string;
+  };
+  lifetime: {
+    price: number;
+    currency: string;
+    features: string[];
+  };
+  features: string[];
+  free_features: string[];
+}
+
+export const Pricing: React.FC = () => {
+  const [pricingInfo, setPricingInfo] = useState<PricingInfo | null>(null);
+  const [loading, setLoading] = useState(true);
   const [selectedTier, setSelectedTier] = useState<'pro_monthly' | 'pro_yearly' | 'pro_lifetime'>('pro_monthly');
-  const { usageStatus } = useUsageTracking();
-  const { isPremium } = useUserType();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const handleLogin = (userData: any) => {
-    login(userData);
+  useEffect(() => {
+    loadPricingInfo();
+    setIsAuthenticated(apiUtils.isAuthenticated());
+  }, []);
+
+  const loadPricingInfo = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/pricing`);
+      if (!response.ok) {
+        throw new Error('Failed to load pricing info');
+      }
+      const data = await response.json();
+      setPricingInfo(data);
+    } catch (error) {
+      console.error('Error loading pricing info:', error);
+      // Fallback pricing data
+      setPricingInfo({
+        monthly: {
+          price: 99,
+          currency: 'INR',
+          features: [
+            'Unlimited Deep Study Mode',
+            'Unlimited Study Plan Generator',
+            'Unlimited Problem Generator',
+            'Unlimited Pro AI Chat',
+            'Priority Support'
+          ]
+        },
+        yearly: {
+          price: 999,
+          currency: 'INR',
+          features: [
+            'Everything in Monthly',
+            '2 months free',
+            'Priority Support',
+            'Advanced Analytics'
+          ],
+          discount: '17% off'
+        },
+        lifetime: {
+          price: 2999,
+          currency: 'INR',
+          features: [
+            'Everything in Yearly',
+            'Lifetime access',
+            'Premium Support',
+            'Early access to new features'
+          ]
+        },
+        features: [
+          'Deep Study Mode - Advanced AI tutoring with context memory',
+          'Study Plan Generator - AI-powered personalized study plans',
+          'Problem Generator - AI-generated JEE practice problems',
+          'Pro AI Chat - Advanced AI chat with specialized JEE knowledge'
+        ],
+        free_features: [
+          'Syllabus Browser - Browse JEE syllabus and topics',
+          'Quick Help - Quick AI help for simple questions',
+          'Standard Chat - Basic AI chat functionality',
+          'Resource Browser - Browse educational resources',
+          '5 Daily Pro Credits - Try Pro features for free'
+        ]
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpgrade = (tier: 'pro_monthly' | 'pro_yearly' | 'pro_lifetime') => {
     if (!isAuthenticated) {
-      toast({
-        title: 'Sign in required',
-        description: 'Please sign in to upgrade to Pro.',
-        variant: 'destructive',
-      });
+      // Redirect to login or show login modal
+      alert('Please log in to upgrade to Pro');
       return;
     }
-    
     setSelectedTier(tier);
-    setShowQRPayment(true);
+    setShowPaymentModal(true);
   };
 
   const handlePaymentSuccess = () => {
-    setShowQRPayment(false);
-    toast({
-      title: 'Upgrade Successful!',
-      description: 'Welcome to Pro! You now have access to all premium features.',
-    });
-    // Refresh subscription status
+    setShowPaymentModal(false);
+    // Refresh the page or update user state
     window.location.reload();
   };
 
-  const freeFeatures = [
-    '5 Daily AI Credits',
-    'Access to All Subjects',
-    'Standard Study Content',
-    'Community Support'
-  ];
-
-  const proFeatures = [
-    'Unlimited AI Credits',
-    'AI Deep Study Sessions',
-    'Personalized Study Plans',
-    'Advanced Problem Solving',
-    'Priority Support'
-  ];
-
+  if (loading) {
   return (
-    <div className="min-h-screen bg-zinc-900 flex">
-      {/* Left Sidebar */}
-      <div className="w-80 bg-zinc-800 border-r border-zinc-700 flex flex-col">
-        {/* Logo and Branding */}
-        <div className="p-6 border-b border-zinc-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-white">Praxis AI</h1>
-              <p className="text-sm text-zinc-400">JEE Prep Tutor</p>
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-64 mx-auto mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-96 mx-auto mb-8"></div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="bg-white rounded-lg p-6">
+                    <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+                    <div className="h-8 bg-gray-200 rounded w-24 mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-16 mb-6"></div>
+                    <div className="space-y-2">
+                      {[1, 2, 3, 4].map((j) => (
+                        <div key={j} className="h-4 bg-gray-200 rounded"></div>
+                      ))}
             </div>
           </div>
-        </div>
-
-        {/* Navigation */}
-        <div className="p-6 border-b border-zinc-700">
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Navigation</h3>
-          <nav className="space-y-2">
-            <button 
-              onClick={() => window.location.href = '/'}
-              className="w-full flex items-center space-x-3 px-3 py-2 text-zinc-400 hover:text-white hover:bg-zinc-700 rounded-lg transition-colors"
-            >
-              <Settings className="w-5 h-5" />
-              <span>Dashboard</span>
-            </button>
-            <button className="w-full flex items-center space-x-3 px-3 py-2 text-white bg-purple-600 rounded-lg">
-              <Crown className="w-5 h-5" />
-              <span>Pricing</span>
-            </button>
-          </nav>
-        </div>
-
-        {/* Usage Status */}
-        <div className="p-6 border-b border-zinc-700">
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Usage Status</h3>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-zinc-300">Daily Credits</span>
-                <span className="text-white">{usageStatus?.usageCount || 0}/{usageStatus?.usageLimit || 5}</span>
-              </div>
-              <div className="w-full bg-zinc-700 rounded-full h-2">
-                <div 
-                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${((usageStatus?.usageCount || 0) / (usageStatus?.usageLimit || 5)) * 100}%` }}
-                ></div>
+                ))}
               </div>
             </div>
-            <p className="text-xs text-zinc-400">Resets in 24 hours.</p>
-          </div>
-        </div>
-
-        {/* User Profile */}
-        <div className="mt-auto p-6 border-t border-zinc-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-zinc-600 rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-zinc-300" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-white truncate">{user?.name || 'User'}</p>
-              <p className="text-xs text-zinc-400 truncate">{user?.email}</p>
-            </div>
-            <ChevronDown className="w-4 h-4 text-zinc-400" />
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-zinc-900 border-b border-zinc-700 px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-white">Choose Your Plan</h1>
-              <p className="text-zinc-400 mt-1">Unlock your full potential with Praxis AI. Select a plan that fits your study needs and start acing your exams.</p>
-            </div>
-            {!isAuthenticated && (
-              <div className="scale-110">
-                <GoogleLogin onLogin={handleLogin} />
-              </div>
-            )}
+  if (!pricingInfo) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-gray-900 mb-4">Pricing</h1>
+            <p className="text-gray-600">Failed to load pricing information</p>
           </div>
         </div>
+      </div>
+    );
+  }
 
-        {/* Main Content */}
-        <div className="flex-1 p-8">
+  return (
+    <div className="min-h-screen bg-gray-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+            Choose Your Plan
+          </h1>
+          <p className="text-xl text-gray-600 mb-8">
+            Get unlimited access to all Pro features with our flexible pricing
+          </p>
+          
+          {/* Credit Display for authenticated users */}
+          {isAuthenticated && (
+            <div className="max-w-md mx-auto mb-8">
+              <CreditDisplay onUpgrade={() => handleUpgrade('pro_monthly')} />
+              </div>
+            )}
+        </div>
+
           {/* Pricing Cards */}
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Free Plan */}
-              <Card className="bg-zinc-800 border-zinc-700">
-                <CardHeader className="text-center pb-6 pt-8">
-                  <CardTitle className="text-3xl font-bold text-white mb-2">Free</CardTitle>
-                  <CardDescription className="text-zinc-400 mb-6">
-                    For casual learners to get a taste of AI-powered studying.
-                  </CardDescription>
-                  
-                  <div className="flex items-baseline justify-center mb-2">
-                    <span className="text-5xl font-bold text-white">₹0</span>
-                    <span className="text-zinc-400 ml-2 text-lg">/ month</span>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          {/* Monthly Plan */}
+          <Card className="relative">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Zap className="h-5 w-5 text-blue-500" />
+                <span>Monthly</span>
+              </CardTitle>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-3xl font-bold">₹{pricingInfo.monthly.price}</span>
+                <span className="text-gray-500">/month</span>
                   </div>
                 </CardHeader>
-                
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    {freeFeatures.map((feature, index) => (
-                      <div key={index} className="flex items-start">
-                        <Check className="h-5 w-5 text-green-500 mr-3 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-zinc-300">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
+            <CardContent>
+              <ul className="space-y-3 mb-6">
+                {pricingInfo.monthly.features.map((feature, index) => (
+                  <li key={index} className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
                   <Button
+                onClick={() => handleUpgrade('pro_monthly')}
+                className="w-full"
                     variant="outline"
-                    className="w-full h-12 text-base font-semibold border-zinc-600 text-zinc-400 bg-zinc-700 hover:bg-zinc-600"
-                    disabled
                   >
-                    Your Current Plan
+                Get Started
+                <ArrowRight className="h-4 w-4 ml-2" />
                   </Button>
                 </CardContent>
               </Card>
 
-              {/* Pro Plan */}
-              <Card className="bg-gradient-to-br from-purple-600 to-purple-700 border-purple-500 relative">
-                <div className="absolute -top-3 right-6">
-                  <Badge className="bg-purple-500 text-white px-3 py-1 text-xs">
-                    BEST VALUE
+          {/* Yearly Plan - Most Popular */}
+          <Card className="relative border-2 border-blue-500">
+            <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+              <Badge className="bg-blue-500 text-white px-4 py-1">
+                <Star className="h-3 w-3 mr-1" />
+                Most Popular
                   </Badge>
                 </div>
-                
-                <CardHeader className="text-center pb-6 pt-8">
-                  <CardTitle className="text-3xl font-bold text-white mb-2">Pro</CardTitle>
-                  <CardDescription className="text-zinc-200 mb-6">
-                    For serious students who want unlimited access to our most powerful AI tools.
-                  </CardDescription>
-                  
-                  <div className="flex items-baseline justify-center mb-2">
-                    <span className="text-5xl font-bold text-white">₹99</span>
-                    <span className="text-zinc-200 ml-2 text-lg">/ month</span>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Crown className="h-5 w-5 text-yellow-500" />
+                <span>Yearly</span>
+                <Badge variant="secondary" className="ml-2">
+                  {pricingInfo.yearly.discount}
+                </Badge>
+              </CardTitle>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-3xl font-bold">₹{pricingInfo.yearly.price}</span>
+                <span className="text-gray-500">/year</span>
                   </div>
+              <p className="text-sm text-gray-600">
+                Save ₹189 compared to monthly billing
+              </p>
                 </CardHeader>
-                
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    {proFeatures.map((feature, index) => (
-                      <div key={index} className="flex items-start">
-                        <Check className="h-5 w-5 text-white mr-3 flex-shrink-0 mt-0.5" />
-                        <span className="text-sm text-white">{feature}</span>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="space-y-3">
+            <CardContent>
+              <ul className="space-y-3 mb-6">
+                {pricingInfo.yearly.features.map((feature, index) => (
+                  <li key={index} className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
                     <Button
-                      className="w-full h-12 text-base font-semibold bg-white text-purple-600 hover:bg-zinc-100"
-                      onClick={() => handleUpgrade('pro_monthly')}
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <>
-                          <div className="h-4 w-4 animate-spin rounded-full border-2 border-purple-600 border-t-transparent mr-2" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <QrCode className="mr-2 h-4 w-4" />
-                          Pay ₹99/month
-                        </>
-                      )}
+                onClick={() => handleUpgrade('pro_yearly')}
+                className="w-full bg-blue-600 hover:bg-blue-700"
+              >
+                Get Started
+                <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
-                    
-                    <div className="grid grid-cols-2 gap-2">
+            </CardContent>
+          </Card>
+
+          {/* Lifetime Plan */}
+          <Card className="relative">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Crown className="h-5 w-5 text-purple-500" />
+                <span>Lifetime</span>
+              </CardTitle>
+              <div className="flex items-baseline space-x-2">
+                <span className="text-3xl font-bold">₹{pricingInfo.lifetime.price}</span>
+                <span className="text-gray-500">one-time</span>
+              </div>
+              <p className="text-sm text-gray-600">
+                Best value for long-term users
+              </p>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3 mb-6">
+                {pricingInfo.lifetime.features.map((feature, index) => (
+                  <li key={index} className="flex items-center space-x-2">
+                    <Check className="h-4 w-4 text-green-500" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
                       <Button
+                onClick={() => handleUpgrade('pro_lifetime')}
+                className="w-full"
                         variant="outline"
-                        className="h-10 text-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
-                        onClick={() => handleUpgrade('pro_yearly')}
-                        disabled={isLoading}
                       >
-                        <QrCode className="mr-1 h-3 w-3" />
-                        ₹990/year
+                Get Started
+                <ArrowRight className="h-4 w-4 ml-2" />
                       </Button>
-                      <Button
-                        variant="outline"
-                        className="h-10 text-sm bg-white/10 border-white/20 text-white hover:bg-white/20"
-                        onClick={() => handleUpgrade('pro_lifetime')}
-                        disabled={isLoading}
-                      >
-                        <QrCode className="mr-1 h-3 w-3" />
-                        ₹2999/lifetime
-                      </Button>
+            </CardContent>
+          </Card>
                     </div>
-                  </div>
+
+        {/* Features Comparison */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Pro Features */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Crown className="h-5 w-5 text-yellow-500" />
+                <span>Pro Features</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                {pricingInfo.features.map((feature, index) => (
+                  <li key={index} className="flex items-start space-x-3">
+                    <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+
+          {/* Free Features */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Zap className="h-5 w-5 text-blue-500" />
+                <span>Always Free</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3">
+                {pricingInfo.free_features.map((feature, index) => (
+                  <li key={index} className="flex items-start space-x-3">
+                    <Check className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
                 </CardContent>
               </Card>
             </div>
 
-            {/* Footer Text */}
-            <div className="text-center mt-8">
-              <p className="text-sm text-zinc-400">
-                Prices are listed in INR. You can cancel your subscription at any time.
+        {/* FAQ Section */}
+        <div className="mt-16">
+          <h2 className="text-3xl font-bold text-center text-gray-900 mb-8">
+            Frequently Asked Questions
+          </h2>
+          <div className="max-w-3xl mx-auto space-y-6">
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="font-semibold mb-2">What are daily credits?</h3>
+              <p className="text-gray-600 text-sm">
+                All users get 5 free Pro credits every day. Each credit allows you to use one Pro feature 
+                (Deep Study Mode, Study Plan Generator, or Problem Generator). Credits reset at midnight IST.
+              </p>
+            </div>
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="font-semibold mb-2">What happens when I upgrade to Pro?</h3>
+              <p className="text-gray-600 text-sm">
+                With Pro, you get unlimited access to all Pro features without any daily limits. 
+                You can use Deep Study Mode, Study Plan Generator, and Problem Generator as much as you want.
+              </p>
+            </div>
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="font-semibold mb-2">Can I cancel my subscription anytime?</h3>
+              <p className="text-gray-600 text-sm">
+                Yes, you can cancel your subscription anytime. You'll continue to have Pro access until 
+                the end of your current billing period, then return to the free plan with daily credits.
+              </p>
+            </div>
+            <div className="bg-white rounded-lg p-6">
+              <h3 className="font-semibold mb-2">What payment methods do you accept?</h3>
+              <p className="text-gray-600 text-sm">
+                We accept UPI payments through QR codes. You can pay using any UPI app like Google Pay, 
+                PhonePe, Paytm, or BHIM. We're working on adding more payment methods soon.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* QR Payment Modal */}
-      {isAuthenticated && user && (
-        <QRPaymentModal
-          isOpen={showQRPayment}
-          onClose={() => setShowQRPayment(false)}
+      {/* Payment Modal */}
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
           onSuccess={handlePaymentSuccess}
           tier={selectedTier}
-          userId={user.user_id}
         />
-      )}
     </div>
   );
 };
-
-export default Pricing;

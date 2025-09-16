@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+pydantic
+psycopg2-binary
+python-dotenv
+requests
+sentence-transformers
+together
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-generativeai
+httpx
+python-multipart
+Pillow
+qrcode[pil]
+

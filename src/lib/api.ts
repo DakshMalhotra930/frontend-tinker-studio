@@ -635,7 +635,180 @@ export const paymentAPI = {
   },
 };
 
-// Trial Mode API
+// Credit System API
+export const creditAPI = {
+  // Get credit status
+  getCreditStatus: async (userId: string): Promise<{
+    user_id: string;
+    credits_used: number;
+    credits_remaining: number;
+    credits_limit: number;
+    credits_date: string;
+    is_pro_user: boolean;
+  }> => {
+    return apiRequest<{
+      user_id: string;
+      credits_used: number;
+      credits_remaining: number;
+      credits_limit: number;
+      credits_date: string;
+      is_pro_user: boolean;
+    }>(`/api/credits/status/${userId}`);
+  },
+
+  // Consume credit
+  consumeCredit: async (data: {
+    user_id: string;
+    feature_name: string;
+    session_id?: string;
+  }): Promise<{
+    success: boolean;
+    credits_remaining: number;
+    message: string;
+  }> => {
+    return apiRequest<{
+      success: boolean;
+      credits_remaining: number;
+      message: string;
+    }>('/api/credits/consume', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+};
+
+// Pro Subscription API
+export const proSubscriptionAPI = {
+  // Get subscription status
+  getSubscriptionStatus: async (userId: string): Promise<{
+    user_id: string;
+    subscription_status: 'free' | 'pro' | 'expired' | 'cancelled';
+    subscription_tier: 'free' | 'pro_monthly' | 'pro_yearly' | 'pro_lifetime';
+    subscribed_at?: string;
+    expires_at?: string;
+    is_pro_user: boolean;
+  }> => {
+    return apiRequest<{
+      user_id: string;
+      subscription_status: 'free' | 'pro' | 'expired' | 'cancelled';
+      subscription_tier: 'free' | 'pro_monthly' | 'pro_yearly' | 'pro_lifetime';
+      subscribed_at?: string;
+      expires_at?: string;
+      is_pro_user: boolean;
+    }>(`/api/subscription/${userId}`);
+  },
+
+  // Create payment
+  createPayment: async (data: {
+    user_id: string;
+    amount: number;
+    currency: string;
+    tier: string;
+  }): Promise<{
+    payment_id: string;
+    qr_code: string;
+    upi_link: string;
+    amount: number;
+    currency: string;
+    expires_at: string;
+  }> => {
+    return apiRequest<{
+      payment_id: string;
+      qr_code: string;
+      upi_link: string;
+      amount: number;
+      currency: string;
+      expires_at: string;
+    }>('/api/payment/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Verify payment
+  verifyPayment: async (data: {
+    payment_id: string;
+    transaction_id?: string;
+    webhook_data?: any;
+  }): Promise<{
+    success: boolean;
+    message: string;
+  }> => {
+    return apiRequest<{
+      success: boolean;
+      message: string;
+    }>('/api/payment/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Get payment status
+  getPaymentStatus: async (paymentId: string): Promise<{
+    payment_id: string;
+    status: 'pending' | 'completed' | 'failed' | 'expired';
+    amount: number;
+    currency: string;
+    created_at: string;
+    expires_at: string;
+    transaction_id?: string;
+  }> => {
+    return apiRequest<{
+      payment_id: string;
+      status: 'pending' | 'completed' | 'failed' | 'expired';
+      amount: number;
+      currency: string;
+      created_at: string;
+      expires_at: string;
+      transaction_id?: string;
+    }>(`/api/payment/status/${paymentId}`);
+  },
+
+  // Get pricing info
+  getPricingInfo: async (): Promise<{
+    monthly: {
+      price: number;
+      currency: string;
+      features: string[];
+    };
+    yearly: {
+      price: number;
+      currency: string;
+      features: string[];
+      discount: string;
+    };
+    lifetime: {
+      price: number;
+      currency: string;
+      features: string[];
+    };
+    features: string[];
+    free_features: string[];
+  }> => {
+    return apiRequest<{
+      monthly: {
+        price: number;
+        currency: string;
+        features: string[];
+      };
+      yearly: {
+        price: number;
+        currency: string;
+        features: string[];
+        discount: string;
+      };
+      lifetime: {
+        price: number;
+        currency: string;
+        features: string[];
+      };
+      features: string[];
+      free_features: string[];
+    }>('/api/pricing');
+  },
+};
+
+// Trial Mode API (Legacy - keeping for backward compatibility)
 export const trialAPI = {
   // Check user features
   checkUserFeatures: async (userId: string): Promise<{

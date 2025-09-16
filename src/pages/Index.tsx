@@ -9,8 +9,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Settings, GraduationCap, Brain, BookOpen, MessageSquare, Calculator, Star, ChevronDown, User } from 'lucide-react';
 import { UsageProgressDisplay } from '@/components/UsageProgressDisplay';
+import { CreditDisplay } from '@/components/CreditDisplay';
 import { useUsageTracking } from '@/hooks/useUsageTracking';
 import { useUserType } from '@/hooks/useUserType';
+import { useCredits } from '@/hooks/useCredits';
 
 interface IndexProps {
   user: {
@@ -29,6 +31,7 @@ const Index = ({ user, onLogout }: IndexProps) => {
   
   const { usageStatus } = useUsageTracking();
   const { isPremium } = useUserType();
+  const { creditStatus, isProUser } = useCredits();
 
   const handleTopicSelect = (topic, chapter, subject) => {
     setSelectedTopic(topic);
@@ -71,24 +74,15 @@ const Index = ({ user, onLogout }: IndexProps) => {
           </nav>
         </div>
 
-        {/* Usage Status */}
+        {/* Credit Status */}
         <div className="p-6 border-b border-zinc-700">
-          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">Usage Status</h3>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-zinc-300">Daily Credits</span>
-                <span className="text-white">{usageStatus?.usageCount || 0}/{usageStatus?.usageLimit || 5}</span>
-              </div>
-              <div className="w-full bg-zinc-700 rounded-full h-2">
-                <div 
-                  className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${((usageStatus?.usageCount || 0) / (usageStatus?.usageLimit || 5)) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-            <p className="text-xs text-zinc-400">Resets in 24 hours.</p>
-          </div>
+          <h3 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-4">
+            {isProUser ? 'Pro Status' : 'Daily Credits'}
+          </h3>
+          <CreditDisplay 
+            compact={true}
+            onUpgrade={() => window.location.href = '/pricing'}
+          />
         </div>
 
         {/* User Profile */}
