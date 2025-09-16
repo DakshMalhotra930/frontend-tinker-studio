@@ -52,11 +52,44 @@ export interface StudyPlanResponse {
 
 export interface CreditStatus {
   user_id: string;
-  credits_used: number;
   credits_remaining: number;
   credits_limit: number;
   credits_date: string;
   is_pro_user: boolean;
+}
+
+// Subscription Types
+export enum SubscriptionStatus {
+  FREE = 'FREE',
+  PRO = 'PRO',
+  TRIAL = 'TRIAL',
+  EXPIRED = 'EXPIRED',
+  CANCELLED = 'CANCELLED'
+}
+
+export enum SubscriptionTier {
+  FREE = 'FREE',
+  PRO_MONTHLY = 'PRO_MONTHLY',
+  PRO_YEARLY = 'PRO_YEARLY',
+  PRO_LIFETIME = 'PRO_LIFETIME'
+}
+
+export interface SubscriptionResponse {
+  status: SubscriptionStatus;
+  tier: SubscriptionTier;
+  expires_at?: string;
+  trial_sessions_used?: number;
+  trial_sessions_limit?: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PricingInfo {
+  monthly_price: number;
+  yearly_price: number;
+  lifetime_price: number;
+  currency: string;
+  features: string[];
 }
 
 // API Error class
@@ -235,6 +268,52 @@ export const proSubscriptionAPI = {
     return apiRequest<{ success: boolean; subscription_id: string }>('/subscription/create', {
       method: 'POST',
       body: JSON.stringify(data),
+    });
+  },
+};
+
+// Subscription Management
+export const subscriptionAPI = {
+  // Get user's subscription status
+  getStatus: async (userId: string): Promise<SubscriptionResponse> => {
+    return apiRequest<SubscriptionResponse>(`/subscription/status/${userId}`, {
+      method: 'GET',
+    });
+  },
+
+  // Get pricing information
+  getPricing: async (): Promise<PricingInfo> => {
+    return apiRequest<PricingInfo>('/subscription/pricing', {
+      method: 'GET',
+    });
+  },
+
+  // Use a trial session
+  useTrial: async (data: {
+    user_id: string;
+    feature_name: string;
+  }): Promise<{ success: boolean; sessions_remaining: number }> => {
+    return apiRequest<{ success: boolean; sessions_remaining: number }>('/subscription/trial', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Upgrade subscription
+  upgrade: async (data: {
+    tier: SubscriptionTier;
+    user_id?: string;
+  }): Promise<{ success: boolean; subscription_id: string }> => {
+    return apiRequest<{ success: boolean; subscription_id: string }>('/subscription/upgrade', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Cancel subscription
+  cancel: async (userId: string): Promise<{ success: boolean }> => {
+    return apiRequest<{ success: boolean }>(`/subscription/cancel/${userId}`, {
+      method: 'POST',
     });
   },
 };
