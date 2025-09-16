@@ -5,6 +5,8 @@ import { Brain, Sparkles, FileText, Loader2, AlertTriangle } from 'lucide-react'
 import { Subject, Chapter, Topic } from '@/data/syllabus';
 import { MarkdownRenderer } from './MarkdownRenderer';
 import { QuizComponent } from './QuizComponent';
+import { contentAPI } from '@/lib/api';
+import { FeatureUsageTracker } from './FeatureUsageTracker';
 
 interface ContentViewerProps {
   topic: Topic | null;
@@ -55,25 +57,18 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
     console.log(`Fetching content for mode: ${selectedMode}`);
 
     try {
-      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/api/generate-content`;
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic: topic.name, mode: selectedMode }),
+      // Use the new contentAPI from the updated api.ts
+      const data = await contentAPI.generateContent({
+        topic: topic.name,
+        mode: selectedMode
       });
 
-      console.log("Response status:", response.status);
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log("Backend error:", errorData);
-        throw new Error(errorData.detail || `HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
       console.log("Backend data received:", data);
       setContent(data);
-      setSourceInfo({ name: data.source_name, level: data.source_level });
+      setSourceInfo({ 
+        name: data.source_name || 'AI Tutor', 
+        level: data.source_level || 'Generated' 
+      });
     } catch (err: any) {
       setError(err.message);
       console.error(`Failed to fetch ${selectedMode} content:`, err);
@@ -110,12 +105,12 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
   if (!topic || !chapter || !subject) {
     console.log("No topic/chapter/subject selected.");
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex items-center justify-center bg-zinc-800">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-4 text-muted-foreground">
+          <h2 className="text-2xl font-semibold mb-4 text-zinc-300">
             Select a topic to get started
           </h2>
-          <p className="text-muted-foreground">
+          <p className="text-zinc-400">
             Choose a subject, chapter, and topic from the left panel to begin studying
           </p>
         </div>
@@ -126,40 +121,40 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
   if (!mode) {
     console.log("No mode selected yet, showing mode options.");
     return (
-      <div className="h-full p-8">
+      <div className="h-full p-8 bg-zinc-800">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-2">{topic.name}</h1>
-          <p className="text-muted-foreground mb-6">{subject.name} → {chapter.name}</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => fetchContent('learn')}>
+          <h1 className="text-4xl font-bold mb-2 text-white">{topic.name}</h1>
+          <p className="text-zinc-400 mb-6">{subject.name} → {chapter.name}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="hover:bg-zinc-700 transition-colors cursor-pointer bg-zinc-700 border-zinc-600" onClick={() => fetchContent('learn')}>
               <CardHeader className="text-center">
-                <Brain className="w-12 h-12 mx-auto mb-4 text-primary" />
-                <CardTitle className="text-xl">🧠 Learn</CardTitle>
+                <Brain className="w-12 h-12 mx-auto mb-4 text-purple-400" />
+                <CardTitle className="text-xl text-white">🧠 Learn</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-center">
+                <p className="text-zinc-400 text-center">
                   Comprehensive explanation of concepts with detailed examples
                 </p>
               </CardContent>
             </Card>
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => fetchContent('revise')}>
+            <Card className="hover:bg-zinc-700 transition-colors cursor-pointer bg-zinc-700 border-zinc-600" onClick={() => fetchContent('revise')}>
               <CardHeader className="text-center">
-                <Sparkles className="w-12 h-12 mx-auto mb-4 text-primary" />
-                <CardTitle className="text-xl">✨ Revise</CardTitle>
+                <Sparkles className="w-12 h-12 mx-auto mb-4 text-purple-400" />
+                <CardTitle className="text-xl text-white">✨ Revise</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-center">
+                <p className="text-zinc-400 text-center">
                   Quick summary with key formulas and important points
                 </p>
               </CardContent>
             </Card>
-            <Card className="hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => fetchContent('practice')}>
+            <Card className="hover:bg-zinc-700 transition-colors cursor-pointer bg-zinc-700 border-zinc-600" onClick={() => fetchContent('practice')}>
               <CardHeader className="text-center">
-                <FileText className="w-12 h-12 mx-auto mb-4 text-primary" />
-                <CardTitle className="text-xl">📝 Practice</CardTitle>
+                <FileText className="w-12 h-12 mx-auto mb-4 text-purple-400" />
+                <CardTitle className="text-xl text-white">📝 Practice</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground text-center">
+                <p className="text-zinc-400 text-center">
                   Interactive quiz questions to test your understanding
                 </p>
               </CardContent>
@@ -178,15 +173,16 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-border bg-card flex items-center justify-between">
+    <FeatureUsageTracker featureName="content_generation">
+      <div className="h-full flex flex-col bg-zinc-800">
+      <div className="p-4 border-b border-zinc-700 bg-zinc-800 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">{topic.name}</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="text-2xl font-bold text-white">{topic.name}</h1>
+          <p className="text-sm text-zinc-400">
             {subject.name} → {chapter.name}
           </p>
         </div>
-        <Button variant="outline" onClick={() => setMode(null)}>
+        <Button variant="outline" onClick={() => setMode(null)} className="border-zinc-600 text-zinc-300 hover:bg-zinc-700 hover:text-white">
           Back to Topic
         </Button>
       </div>
@@ -194,16 +190,16 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
       <div className="flex-1 overflow-auto p-8">
         {isLoading && (
           <div className="flex items-center justify-center h-full">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            <p className="ml-4 text-muted-foreground">Generating content...</p>
+            <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
+            <p className="ml-4 text-zinc-400">Generating content...</p>
           </div>
         )}
 
         {error && !isLoading && (
           <div className="flex flex-col items-center justify-center h-full text-center">
-            <AlertTriangle className="w-12 h-12 text-destructive mb-4" />
-            <h3 className="text-xl font-semibold text-destructive">Failed to generate content</h3>
-            <p className="text-muted-foreground mt-2">{error}</p>
+            <AlertTriangle className="w-12 h-12 text-red-400 mb-4" />
+            <h3 className="text-xl font-semibold text-red-400">Failed to generate content</h3>
+            <p className="text-zinc-400 mt-2">{error}</p>
           </div>
         )}
 
@@ -220,13 +216,13 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
                   />
                 )
                 : (
-                  <div className="text-center text-muted-foreground">
+                  <div className="text-center text-zinc-400">
                     This is a Theoretical Concept no Practice Questions available.
                   </div>
                 )
             )}
-            <div className="mt-8 pt-4 border-t border-border">
-              <p className="text-sm text-muted-foreground italic text-center">
+            <div className="mt-8 pt-4 border-t border-zinc-700">
+              <p className="text-sm text-zinc-400 italic text-center">
                 Source: {sourceInfo.name} ({sourceInfo.level} Context)
               </p>
             </div>
@@ -234,5 +230,6 @@ export function ContentViewer({ topic, chapter, subject }: ContentViewerProps) {
         )}
       </div>
     </div>
+    </FeatureUsageTracker>
   );
 }

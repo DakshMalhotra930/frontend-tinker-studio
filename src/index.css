@@ -3,12 +3,39 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Trial Mode CSS Classes */
+.trial-button {
+  @apply bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+}
+
+.trial-button:disabled {
+  @apply bg-gray-400 text-gray-200 cursor-not-allowed hover:bg-gray-400;
+}
+
+.pro-status {
+  @apply text-blue-600 font-bold;
+}
+
+.trial-count {
+  @apply text-orange-600 font-bold;
+}
+
+.modal-overlay {
+  @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+}
+
+.modal-content {
+  @apply bg-white p-6 rounded-lg max-w-md mx-4 text-center shadow-xl;
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
+Theme: Academic Excellence - Professional & Trustworthy for JEE Students
 */
 
 @layer base {
   :root {
+    /* Academic Excellence Color Palette */
     --background: 222 15% 7%;
     --foreground: 0 0% 98%;
 
@@ -18,38 +45,55 @@ All colors MUST be HSL.
     --popover: 222 15% 9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 180 100% 50%;
-    --primary-foreground: 222 15% 7%;
+    /* Primary: Deep Academic Blue */
+    --primary: 221 83% 53%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 259 94% 51%;
-    --secondary-foreground: 0 0% 98%;
+    /* Secondary: Academic Gold */
+    --secondary: 43 96% 56%;
+    --secondary-foreground: 222 15% 7%;
 
     --muted: 222 15% 15%;
     --muted-foreground: 222 5% 65%;
 
-    --accent: 180 100% 50%;
-    --accent-foreground: 222 15% 7%;
+    /* Accent: Light Academic Blue */
+    --accent: 221 83% 53%;
+    --accent-foreground: 0 0% 98%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
 
+    /* Success: Academic Green */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 98%;
 
+    /* Warning: Academic Orange */
+    --warning: 25 95% 53%;
+    --warning-foreground: 222 15% 7%;
+
     --border: 222 15% 20%;
     --input: 222 15% 15%;
-    --ring: 180 100% 50%;
+    --ring: 221 83% 53%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
+    /* Enhanced Sidebar with Academic Theme */
     --sidebar-background: 222 15% 5%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 180 100% 50%;
-    --sidebar-primary-foreground: 222 15% 7%;
+    --sidebar-primary: 221 83% 53%;
+    --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 222 15% 12%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 222 15% 20%;
-    --sidebar-ring: 180 100% 50%;
+    --sidebar-ring: 221 83% 53%;
+
+    /* Academic Excellence Specific Colors */
+    --academic-blue: 221 83% 53%;
+    --academic-gold: 43 96% 56%;
+    --academic-slate: 222 15% 20%;
+    --academic-light-blue: 214 95% 93%;
+    --academic-success: 142 76% 36%;
+    --academic-warning: 25 95% 53%;
   }
 }
 
@@ -61,5 +105,83 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    font-variation-settings: normal;
+  }
+
+  /* Enhanced Typography for Academic Content */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    font-weight: 700;
+  }
+
+  h2 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    font-weight: 600;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+  }
+
+  /* Academic Content Styling */
+  .academic-content {
+    @apply text-foreground leading-relaxed;
+  }
+
+  .academic-content p {
+    @apply mb-4 text-base;
+  }
+
+  .academic-content ul, .academic-content ol {
+    @apply mb-4 ml-6 space-y-2;
+  }
+
+  .academic-content li {
+    @apply text-base;
+  }
+
+  .academic-content strong {
+    @apply font-semibold text-primary;
+  }
+
+  .academic-content em {
+    @apply italic text-secondary;
+  }
+
+  .academic-content code {
+    @apply px-2 py-1 bg-muted rounded text-sm font-mono text-primary;
+  }
+
+  .academic-content blockquote {
+    @apply border-l-4 border-primary pl-4 italic text-muted-foreground mb-4;
+  }
+}
+
+/* Enhanced Component Animations */
+@layer components {
+  .academic-card {
+    @apply bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 ease-in-out;
+  }
+
+  .academic-button {
+    @apply transition-all duration-200 ease-in-out transform hover:scale-105 active:scale-95;
+  }
+
+  .academic-input {
+    @apply transition-all duration-200 ease-in-out focus:ring-2 focus:ring-primary focus:ring-opacity-50;
+  }
+
+  .academic-hover {
+    @apply transition-all duration-200 ease-in-out hover:bg-accent hover:text-accent-foreground;
   }
 }

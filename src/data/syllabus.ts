@@ -151,6 +151,110 @@ Integrating: $v^2 = u^2 + 2as$
 - **Projectile**: $a_x = 0$, $a_y = -g$
 - **Incline**: $a = g\\sin\\theta$`
             }
+          },
+          {
+            id: "thermodynamics",
+            name: "Thermodynamics",
+            class: 11,
+            topics: [
+              {
+                id: "thermodynamic-terms",
+                name: "THERMODYNAMIC TERMS",
+                content: {
+                  learn: `# Thermodynamic Terms
+
+## Introduction
+Thermodynamics is the branch of physics that deals with heat, work, and energy transformations.
+
+## Key Concepts
+
+### System and Surroundings
+- **System**: The part of the universe under study
+- **Surroundings**: Everything else outside the system
+- **Boundary**: The surface separating system from surroundings
+
+### Types of Systems
+1. **Open System**: Can exchange both matter and energy with surroundings
+2. **Closed System**: Can exchange energy but not matter with surroundings
+3. **Isolated System**: Cannot exchange matter or energy with surroundings
+
+### State Variables
+- **Intensive Properties**: Independent of system size (temperature, pressure, density)
+- **Extensive Properties**: Depend on system size (mass, volume, energy)
+
+### Thermodynamic Processes
+- **Isothermal**: Constant temperature
+- **Isobaric**: Constant pressure
+- **Isochoric**: Constant volume
+- **Adiabatic**: No heat exchange`,
+                  revise: `# Thermodynamic Terms - Quick Review
+
+## System Types
+- **Open**: Matter + Energy exchange
+- **Closed**: Energy only exchange
+- **Isolated**: No exchange
+
+## Properties
+- **Intensive**: T, P, ρ (independent of size)
+- **Extensive**: m, V, E (depends on size)
+
+## Processes
+- Isothermal: T = constant
+- Isobaric: P = constant
+- Isochoric: V = constant
+- Adiabatic: Q = 0`
+                }
+              },
+              {
+                id: "thermodynamic-processes",
+                name: "THERMODYNAMIC PROCESSES",
+                content: {
+                  learn: `# Thermodynamic Processes
+
+## Introduction
+A thermodynamic process is a change in the state of a system from one equilibrium state to another.
+
+## Types of Processes
+
+### 1. Isothermal Process
+- **Definition**: Process occurring at constant temperature
+- **Characteristics**: ΔT = 0
+- **Work Done**: W = nRT ln(V₂/V₁)
+- **Heat Exchange**: Q = W (for ideal gas)
+
+### 2. Isobaric Process
+- **Definition**: Process occurring at constant pressure
+- **Characteristics**: ΔP = 0
+- **Work Done**: W = PΔV
+- **Heat Exchange**: Q = ΔH (enthalpy change)
+
+### 3. Isochoric Process
+- **Definition**: Process occurring at constant volume
+- **Characteristics**: ΔV = 0
+- **Work Done**: W = 0
+- **Heat Exchange**: Q = ΔU (internal energy change)
+
+### 4. Adiabatic Process
+- **Definition**: Process with no heat exchange
+- **Characteristics**: Q = 0
+- **Work Done**: W = -ΔU
+- **Temperature Change**: T₁V₁^(γ-1) = T₂V₂^(γ-1)`,
+                  revise: `# Thermodynamic Processes - Summary
+
+## Process Types
+1. **Isothermal**: T = constant, W = nRT ln(V₂/V₁)
+2. **Isobaric**: P = constant, W = PΔV
+3. **Isochoric**: V = constant, W = 0
+4. **Adiabatic**: Q = 0, W = -ΔU
+
+## Key Equations
+- Isothermal: PV = constant
+- Adiabatic: PV^γ = constant
+- Isobaric: V/T = constant
+- Isochoric: P/T = constant`
+                }
+              }
+            ]
           }
         ]
       },
