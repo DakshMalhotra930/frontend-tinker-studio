@@ -219,7 +219,7 @@ export const studyPlanAPI = {
 
 // Content Generation
 export const contentAPI = {
-  // Generate educational content for a topic using a simple approach
+  // Generate educational content for a topic using session-based approach
   generateContent: async (data: {
     topic: string;
     mode: string;
@@ -227,14 +227,32 @@ export const contentAPI = {
     try {
       console.log('Starting content generation for:', data);
       
-      // For now, return mock content to get the UI working
-      // TODO: Implement proper backend integration
-      const mockContent = generateMockContent(data.topic, data.mode);
+      const userId = apiUtils.getUserId() || 'anonymous';
+      console.log('Using user ID:', userId);
       
+      // First, start a session for the topic
+      console.log('Starting session...');
+      const sessionData = await sessionAPI.start({
+        subject: 'Chemistry', // You might want to make this dynamic
+        topic: data.topic,
+        mode: data.mode,
+        user_id: userId
+      });
+      console.log('Session started:', sessionData);
+
+      // Then send a chat message to get content
+      console.log('Sending chat message...');
+      const chatResponse = await sessionAPI.chat({
+        session_id: sessionData.session_id,
+        message: `Please provide ${data.mode} content for the topic: ${data.topic}`,
+        context_hint: data.mode
+      });
+      console.log('Chat response received:', chatResponse);
+
       return {
-        content: mockContent,
-        session_id: 'mock_session_' + Date.now(),
-        source_name: 'AI Tutor (Demo)',
+        content: chatResponse.response,
+        session_id: sessionData.session_id,
+        source_name: 'AI Tutor',
         source_level: 'Generated'
       };
     } catch (error) {
@@ -314,15 +332,9 @@ Here are some practice problems for ${topic}:
 export const creditAPI = {
   // Get user's credit status
   getCreditStatus: async (userId: string): Promise<CreditStatus> => {
-    // For now, return mock credit status
-    // TODO: Implement proper backend integration
-    return {
-      user_id: userId,
-      credits_remaining: 10,
-      credits_limit: 10,
-      credits_date: new Date().toISOString(),
-      is_pro_user: false
-    };
+    return apiRequest<CreditStatus>(`/credits/status/${userId}`, {
+      method: 'GET',
+    });
   },
 
   // Consume a credit for a feature
@@ -331,12 +343,10 @@ export const creditAPI = {
     feature_name: string;
     session_id?: string;
   }): Promise<{ success: boolean; credits_remaining: number }> => {
-    // For now, return mock success
-    // TODO: Implement proper backend integration
-    return {
-      success: true,
-      credits_remaining: 9
-    };
+    return apiRequest<{ success: boolean; credits_remaining: number }>('/credits/consume', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   },
 };
 
