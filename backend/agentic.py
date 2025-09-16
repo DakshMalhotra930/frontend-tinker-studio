@@ -55,6 +55,9 @@ async def check_and_consume_credit(user_id: str, feature_name: str, session_id: 
     Check if user can consume a credit for a Pro feature
     Returns: (can_use, message, credits_remaining)
     """
+    # Temporarily bypass credit check for development - always allow access
+    return True, "Development mode - unlimited access", 999
+    
     try:
         conn = get_db_connection()
         if not conn:

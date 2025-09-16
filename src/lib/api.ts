@@ -372,6 +372,53 @@ export const proSubscriptionAPI = {
   },
 };
 
+// Payment Management
+export const paymentAPI = {
+  // Create QR payment
+  createQRPayment: async (data: {
+    amount: number;
+    currency: string;
+    user_id: string;
+  }): Promise<{ qr_code: string; payment_id: string }> => {
+    return apiRequest<{ qr_code: string; payment_id: string }>('/payment/qr/create', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Verify payment
+  verifyPayment: async (payment_id: string): Promise<{ success: boolean; status: string }> => {
+    return apiRequest<{ success: boolean; status: string }>(`/payment/qr/verify/${payment_id}`, {
+      method: 'POST',
+    });
+  },
+};
+
+// Trial Management
+export const trialAPI = {
+  // Use trial session
+  useTrial: async (data: {
+    user_id: string;
+    feature_name: string;
+  }): Promise<{ success: boolean; sessions_remaining: number }> => {
+    return apiRequest<{ success: boolean; sessions_remaining: number }>('/subscription/trial', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Get trial status
+  getTrialStatus: async (userId: string): Promise<{ 
+    sessions_used: number; 
+    sessions_limit: number; 
+    is_trial_active: boolean 
+  }> => {
+    return apiRequest<{ sessions_used: number; sessions_limit: number; is_trial_active: boolean }>(`/subscription/trial/${userId}`, {
+      method: 'GET',
+    });
+  },
+};
+
 // Subscription Management
 export const subscriptionAPI = {
   // Get user's subscription status
