@@ -216,15 +216,32 @@ export const studyPlanAPI = {
 
 // Content Generation
 export const contentAPI = {
-  // Generate educational content for a topic
+  // Generate educational content for a topic using session-based approach
   generateContent: async (data: {
     topic: string;
     mode: string;
   }): Promise<any> => {
-    return apiRequest<any>('/content/generate', {
-      method: 'POST',
-      body: JSON.stringify(data),
+    // First, start a session for the topic
+    const sessionData = await sessionAPI.start({
+      subject: 'Chemistry', // You might want to make this dynamic
+      topic: data.topic,
+      mode: data.mode,
+      user_id: apiUtils.getUserId() || 'anonymous'
     });
+
+    // Then send a chat message to get content
+    const chatResponse = await sessionAPI.chat({
+      session_id: sessionData.session_id,
+      message: `Please provide ${data.mode} content for the topic: ${data.topic}`,
+      context_hint: data.mode
+    });
+
+    return {
+      content: chatResponse.response,
+      session_id: sessionData.session_id,
+      source_name: 'AI Tutor',
+      source_level: 'Generated'
+    };
   },
 };
 
@@ -323,6 +340,18 @@ export const apiUtils = {
   // Create a user ID (in a real app, this would come from authentication)
   createUserId: (): string => {
     return `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  },
+
+  // Get user ID (for compatibility)
+  getUserId: (): string | null => {
+    // In a real app, this would get the user ID from authentication context
+    // For now, we'll create a consistent user ID stored in localStorage
+    let userId = localStorage.getItem('praxis_user_id');
+    if (!userId) {
+      userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('praxis_user_id', userId);
+    }
+    return userId;
   },
 
   // Format error messages for display
