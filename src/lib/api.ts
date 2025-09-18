@@ -312,7 +312,7 @@ Here are some practice problems for ${topic}:
 export const creditAPI = {
   // Get user's credit status
   getCreditStatus: async (userId: string): Promise<CreditStatus> => {
-    return apiRequest<CreditStatus>(`/credits/status/${userId}`, {
+    return apiRequest<CreditStatus>(`/api/credits/status/${userId}`, {
       method: 'GET',
     });
   },
@@ -323,7 +323,7 @@ export const creditAPI = {
     feature_name: string;
     session_id?: string;
   }): Promise<{ success: boolean; credits_remaining: number }> => {
-    return apiRequest<{ success: boolean; credits_remaining: number }>('/credits/consume', {
+    return apiRequest<{ success: boolean; credits_remaining: number }>('/api/credits/consume', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -334,7 +334,7 @@ export const creditAPI = {
 export const proSubscriptionAPI = {
   // Check if user has active pro subscription
   checkSubscription: async (userId: string): Promise<{ is_pro: boolean; expires_at?: string }> => {
-    return apiRequest<{ is_pro: boolean; expires_at?: string }>(`/subscription/status/${userId}`, {
+    return apiRequest<{ is_pro: boolean; expires_at?: string }>(`/api/subscription/${userId}`, {
       method: 'GET',
     });
   },
@@ -345,7 +345,7 @@ export const proSubscriptionAPI = {
     plan_type: string;
     payment_method: string;
   }): Promise<{ success: boolean; subscription_id: string }> => {
-    return apiRequest<{ success: boolean; subscription_id: string }>('/subscription/create', {
+    return apiRequest<{ success: boolean; subscription_id: string }>('/api/payment/create', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -360,7 +360,7 @@ export const paymentAPI = {
     currency: string;
     user_id: string;
   }): Promise<{ qr_code: string; payment_id: string }> => {
-    return apiRequest<{ qr_code: string; payment_id: string }>('/payment/qr/create', {
+    return apiRequest<{ qr_code: string; payment_id: string }>('/api/payment/create', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -368,8 +368,9 @@ export const paymentAPI = {
 
   // Verify payment
   verifyPayment: async (payment_id: string): Promise<{ success: boolean; status: string }> => {
-    return apiRequest<{ success: boolean; status: string }>(`/payment/qr/verify/${payment_id}`, {
+    return apiRequest<{ success: boolean; status: string }>(`/api/payment/verify`, {
       method: 'POST',
+      body: JSON.stringify({ payment_id }),
     });
   },
 };
@@ -381,7 +382,7 @@ export const trialAPI = {
     user_id: string;
     feature_name: string;
   }): Promise<{ success: boolean; sessions_remaining: number }> => {
-    return apiRequest<{ success: boolean; sessions_remaining: number }>('/subscription/trial', {
+    return apiRequest<{ success: boolean; sessions_remaining: number }>('/api/subscription/trial', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -393,7 +394,7 @@ export const trialAPI = {
     sessions_limit: number; 
     is_trial_active: boolean 
   }> => {
-    return apiRequest<{ sessions_used: number; sessions_limit: number; is_trial_active: boolean }>(`/subscription/trial/${userId}`, {
+    return apiRequest<{ sessions_used: number; sessions_limit: number; is_trial_active: boolean }>(`/api/subscription/trial/${userId}`, {
       method: 'GET',
     });
   },
@@ -403,14 +404,14 @@ export const trialAPI = {
 export const subscriptionAPI = {
   // Get user's subscription status
   getStatus: async (userId: string): Promise<SubscriptionResponse> => {
-    return apiRequest<SubscriptionResponse>(`/subscription/status/${userId}`, {
+    return apiRequest<SubscriptionResponse>(`/api/subscription/${userId}`, {
       method: 'GET',
     });
   },
 
   // Get pricing information
   getPricing: async (): Promise<PricingInfo> => {
-    return apiRequest<PricingInfo>('/subscription/pricing', {
+    return apiRequest<PricingInfo>('/api/pricing', {
       method: 'GET',
     });
   },
@@ -420,7 +421,7 @@ export const subscriptionAPI = {
     user_id: string;
     feature_name: string;
   }): Promise<{ success: boolean; sessions_remaining: number }> => {
-    return apiRequest<{ success: boolean; sessions_remaining: number }>('/subscription/trial', {
+    return apiRequest<{ success: boolean; sessions_remaining: number }>('/api/subscription/trial', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -431,7 +432,7 @@ export const subscriptionAPI = {
     tier: SubscriptionTier;
     user_id?: string;
   }): Promise<{ success: boolean; subscription_id: string }> => {
-    return apiRequest<{ success: boolean; subscription_id: string }>('/subscription/upgrade', {
+    return apiRequest<{ success: boolean; subscription_id: string }>('/api/subscription/upgrade', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -439,7 +440,7 @@ export const subscriptionAPI = {
 
   // Cancel subscription
   cancel: async (userId: string): Promise<{ success: boolean }> => {
-    return apiRequest<{ success: boolean }>(`/subscription/cancel/${userId}`, {
+    return apiRequest<{ success: boolean }>(`/api/subscription/cancel/${userId}`, {
       method: 'POST',
     });
   },
