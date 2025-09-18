@@ -1,6 +1,6 @@
 // API service layer for Deep Study Mode backend integration
 
-const API_BASE_URL = 'https://praxis-ai.fly.dev/agentic';
+const API_BASE_URL = 'https://praxis-ai.fly.dev';
 
 export interface StudySession {
   session_id: string;
@@ -150,7 +150,7 @@ export const sessionAPI = {
     mode: string;
     user_id: string;
   }): Promise<StudySession> => {
-    return apiRequest<StudySession>('/session/start', {
+    return apiRequest<StudySession>('/agentic/session/start', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -162,7 +162,7 @@ export const sessionAPI = {
     message: string;
     context_hint?: string;
   }): Promise<ChatResponse> => {
-    return apiRequest<ChatResponse>('/session/chat', {
+    return apiRequest<ChatResponse>('/agentic/session/chat', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -178,7 +178,7 @@ export const problemAPI = {
     step?: number;
     hint_level?: number;
   }): Promise<ProblemSolveResponse> => {
-    return apiRequest<ProblemSolveResponse>('/session/solve', {
+    return apiRequest<ProblemSolveResponse>('/agentic/session/solve', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -193,7 +193,7 @@ export const quizAPI = {
     difficulty?: string;
     question_count?: number;
   }): Promise<QuizResponse> => {
-    return apiRequest<QuizResponse>('/session/quiz', {
+    return apiRequest<QuizResponse>('/agentic/session/quiz', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -210,7 +210,7 @@ export const studyPlanAPI = {
     goals: string[];
     current_level?: string;
   }): Promise<StudyPlanResponse> => {
-    return apiRequest<StudyPlanResponse>('/plan/generate', {
+    return apiRequest<StudyPlanResponse>('/agentic/plan/generate', {
       method: 'POST',
       body: JSON.stringify(data),
     });
