@@ -105,8 +105,12 @@ class AskQuestionRequest(BaseModel):
 
 app = FastAPI()
 
-# Deploy database functions on startup
-deploy_database_functions()
+# Deploy database functions on startup (non-blocking)
+try:
+    deploy_database_functions()
+except Exception as e:
+    print(f"⚠️ Database function deployment failed: {e}")
+    print("⚠️ Backend will continue with fallback SQL queries...")
 
 # Register Agentic Study Room API routes
 app.include_router(agentic_router, prefix="/agentic", tags=["Agentic Study Room"])
