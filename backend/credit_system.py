@@ -18,6 +18,7 @@ from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import psycopg2
+import psycopg2.errors
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -154,8 +155,12 @@ async def get_credit_status(user_id: str):
                         credits_date=result[4].strftime("%Y-%m-%d"),
                         is_pro_user=result[5]
                     )
+            except psycopg2.errors.UndefinedFunction:
+                print("Database function get_daily_credits not available, using fallback SQL")
+                # Fallback to direct SQL if function doesn't exist
+                pass
             except Exception as func_error:
-                print(f"Database function not available, using fallback: {func_error}")
+                print(f"Database function error, using fallback: {func_error}")
                 # Fallback to direct SQL if function doesn't exist
                 pass
             
