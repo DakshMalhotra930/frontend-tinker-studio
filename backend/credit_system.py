@@ -140,7 +140,14 @@ async def get_credit_status(user_id: str):
     
     try:
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM get_daily_credits(%s)", (user_id,))
+            # Try to get existing credit record
+            cur.execute("""
+                SELECT dc.user_id, dc.credits_used, dc.credits_limit, dc.credits_date,
+                       COALESCE(ps.subscription_status = 'pro', false) as is_pro_user
+                FROM daily_credits dc
+                LEFT JOIN pro_subscriptions ps ON dc.user_id = ps.user_id
+                WHERE dc.user_id = %s AND dc.credits_date = CURRENT_DATE
+            """, (user_id,))
             result = cur.fetchone()
             
             if not result:
@@ -161,13 +168,14 @@ async def get_credit_status(user_id: str):
                     is_pro_user=False
                 )
             
+            credits_remaining = result[2] - result[1]  # credits_limit - credits_used
             return CreditStatus(
                 user_id=result[0],
                 credits_used=result[1],
-                credits_remaining=result[2],
-                credits_limit=result[3],
-                credits_date=result[4].strftime("%Y-%m-%d"),
-                is_pro_user=result[5]
+                credits_remaining=credits_remaining,
+                credits_limit=result[2],
+                credits_date=result[3].strftime("%Y-%m-%d"),
+                is_pro_user=result[4]
             )
     except Exception as e:
         print(f"Error getting credit status: {e}")
