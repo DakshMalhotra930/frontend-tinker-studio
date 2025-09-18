@@ -24,6 +24,21 @@ from agentic import router as agentic_router  # Added import for Agentic Study R
 from aiquickhelp import router as aiquickhelp_router  # Import your new Quick AI Help router
 from credit_system import router as credit_router  # Import credit system and Pro mode routes
 
+# Import database deployment function
+def deploy_database_functions():
+    """Deploy required database functions on startup"""
+    try:
+        from deploy_database_functions import deploy_functions
+        print("🔄 Deploying database functions on startup...")
+        success = deploy_functions()
+        if success:
+            print("✅ Database functions deployed successfully!")
+        else:
+            print("⚠️ Database function deployment failed, but continuing...")
+    except Exception as e:
+        print(f"⚠️ Could not deploy database functions: {e}")
+        print("⚠️ Continuing without function deployment...")
+
 # --- DEBUG: Print environment variables containing sensitive info keys ---
 print("---- ENVIRONMENT VARIABLES ----")
 for key, value in os.environ.items():
@@ -89,6 +104,9 @@ class AskQuestionRequest(BaseModel):
     topic_context: Optional[str] = None  # Add topic context
 
 app = FastAPI()
+
+# Deploy database functions on startup
+deploy_database_functions()
 
 # Register Agentic Study Room API routes
 app.include_router(agentic_router, prefix="/agentic", tags=["Agentic Study Room"])
