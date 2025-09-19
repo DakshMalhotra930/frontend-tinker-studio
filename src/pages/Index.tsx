@@ -28,6 +28,7 @@ const Index = ({ user, onLogout }: IndexProps) => {
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [activeTab, setActiveTab] = useState('syllabus');
+  const [isQuickHelpOpen, setIsQuickHelpOpen] = useState(false);
   
   const { usageStatus } = useUsageTracking();
   const { isPremium } = useUserType();
@@ -188,10 +189,24 @@ const Index = ({ user, onLogout }: IndexProps) => {
         </div>
       </div>
 
+      {/* Quick Help AI Floating Button */}
+      {!isQuickHelpOpen && (
+        <div className="fixed right-6 bottom-6 z-50">
+          <Button
+            onClick={() => setIsQuickHelpOpen(true)}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-full p-4 shadow-lg hover:shadow-xl transition-all duration-300"
+            size="lg"
+          >
+            <MessageSquare className="w-6 h-6 mr-2" />
+            <span className="font-medium">Quick Help AI</span>
+          </Button>
+        </div>
+      )}
+
       {/* Quick AI Help Sidebar */}
       <AgenticSidebar 
-        isOpen={false}
-        onClose={() => {}}
+        isOpen={isQuickHelpOpen}
+        onClose={() => setIsQuickHelpOpen(false)}
         topic={selectedTopic}
         chapter={selectedChapter}
         subject={selectedSubject}

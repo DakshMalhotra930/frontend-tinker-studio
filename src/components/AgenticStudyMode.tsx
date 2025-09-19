@@ -261,12 +261,8 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
             </TabsContent>
 
             <TabsContent value="study-plans" className="h-full flex flex-col m-0 p-6">
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6">
                 <h2 className="text-xl font-semibold">Study Plan Chat</h2>
-                <Button onClick={handleCreateStudyPlan} className="flex items-center space-x-2" disabled={!currentSession}>
-                  <Plus className="w-4 h-4" />
-                  <span>Auto Generate Plan</span>
-                </Button>
               </div>
 
               <ScrollArea className="flex-1 pr-4 mb-4">
