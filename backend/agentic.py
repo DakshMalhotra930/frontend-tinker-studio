@@ -3141,7 +3141,7 @@ async def problem_solve(request: ProblemSolveRequest):
         # Check and consume credit for Problem Solver
         user_id = session.user_id
         can_use, message, credits_remaining = await check_and_consume_credit(
-            user_id, "problem_solver", request.session_id
+            user_id, "problem_generator", request.session_id
         )
         
         if not can_use:
