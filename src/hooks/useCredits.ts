@@ -39,6 +39,7 @@ export const useCredits = (): UseCreditsReturn => {
       }
 
       const status = await creditAPI.getCreditStatus(userId);
+      console.log('📊 Fresh credit status from server:', status);
       setCreditStatus(status);
     } catch (err) {
       console.error('Error loading credit status:', err);
@@ -55,8 +56,12 @@ export const useCredits = (): UseCreditsReturn => {
         throw new Error('User not authenticated');
       }
 
+      console.log('🔄 Starting credit consumption for:', featureName);
+      console.log('🔄 Current credit status before consumption:', creditStatus);
+
       // If user is Pro, no need to consume credits
       if (creditStatus?.is_pro_user) {
+        console.log('👑 Pro user - skipping credit consumption');
         return true;
       }
 
@@ -77,8 +82,10 @@ export const useCredits = (): UseCreditsReturn => {
         } : null);
         
         // Also refresh the credit status from server to ensure consistency
-        setTimeout(() => {
-          loadCreditStatus();
+        setTimeout(async () => {
+          console.log('🔄 Refreshing credit status from server...');
+          await loadCreditStatus();
+          console.log('🔄 Credit status refreshed:', creditStatus);
         }, 100);
         
         return true;
