@@ -9,9 +9,7 @@ import {
   X, 
   Zap, 
   MessageCircle, 
-  BookOpen, 
   Send,
-  ArrowRight,
   Loader2,
   AlertCircle
 } from 'lucide-react';
@@ -141,14 +139,7 @@ export function AgenticSidebar({ isOpen, onClose, topic, chapter, subject, onOpe
                 <CardContent>
                   <ScrollArea className="h-32 mb-4">
                     <div className="text-sm text-muted-foreground">
-                      {topic ? (
-                        <>
-                          I'm ready to help you with <strong>{topic.name}</strong>. 
-                          You can ask me to explain concepts, show examples, create practice problems, or anything else!
-                        </>
-                      ) : (
-                        'Select a topic from the syllabus and I\'ll be ready to help with explanations, examples, and practice problems!'
-                      )}
+                      I'm ready to help you with quick questions! You can ask me to explain concepts, show examples, create practice problems, or anything else related to JEE preparation.
                     </div>
                   </ScrollArea>
                 </CardContent>
@@ -159,14 +150,14 @@ export function AgenticSidebar({ isOpen, onClose, topic, chapter, subject, onOpe
               <Input
                 value={quickMessage}
                 onChange={(e) => setQuickMessage(e.target.value)}
-                placeholder={topic ? `Ask about ${topic.name}...` : "Select a topic first..."}
+                placeholder="Ask me anything for quick help..."
                 onKeyPress={(e) => e.key === 'Enter' && sendQuickMessage()}
-                disabled={!topic || isLoading}
+                disabled={isLoading}
               />
               <Button 
                 onClick={sendQuickMessage}
                 className="w-full flex items-center space-x-2"
-                disabled={!topic || !quickMessage.trim() || isLoading}
+                disabled={!quickMessage.trim() || isLoading}
               >
                 {isLoading ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -222,23 +213,6 @@ export function AgenticSidebar({ isOpen, onClose, topic, chapter, subject, onOpe
             </div>
           )}
 
-          {/* Deep Study Mode CTA */}
-          <div className="p-4 border-t border-border bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30">
-            <Button 
-              onClick={onOpenDeepStudy}
-              className="w-full flex items-center justify-between bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg"
-              disabled={!topic}
-            >
-              <div className="flex items-center space-x-2">
-                <BookOpen className="w-4 h-4" />
-                <span className="text-sm font-medium">Explore in Deep Study Mode</span>
-              </div>
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-            <p className="text-xs text-center text-muted-foreground mt-2">
-              Structured study plans, detailed problem solving, and in-depth AI tutoring sessions.
-            </p>
-          </div>
         </div>
       </div>
     </>
