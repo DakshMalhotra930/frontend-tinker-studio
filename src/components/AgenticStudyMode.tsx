@@ -80,12 +80,7 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
       return;
     }
 
-    const creditConsumed = await consumeCredit('AI Chat', currentSession?.session_id);
-    if (!creditConsumed && !isProUser) {
-      setShowUpgradePrompt(true);
-      return;
-    }
-
+    // Credit consumption is now handled by the backend
     await sendMessage(inputMessage);
     setInputMessage('');
   };
@@ -99,12 +94,7 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
       return;
     }
 
-    const creditConsumed = await consumeCredit('Problem Solver', currentSession?.session_id);
-    if (!creditConsumed && !isProUser) {
-      setShowUpgradePrompt(true);
-      return;
-    }
-
+    // Credit consumption is now handled by the backend
     await solveProblem(problemInput);
     setProblemInput('');
   };
@@ -116,12 +106,7 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
       return;
     }
 
-    const creditConsumed = await consumeCredit('Study Plan Generator', currentSession?.session_id);
-    if (!creditConsumed && !isProUser) {
-      setShowUpgradePrompt(true);
-      return;
-    }
-
+    // Credit consumption is now handled by the backend
     await createStudyPlan();
   };
 
@@ -134,11 +119,7 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
       return;
     }
 
-    const creditConsumed = await consumeCredit('Study Plan Generator', currentSession?.session_id);
-    if (!creditConsumed && !isProUser) {
-      setShowUpgradePrompt(true);
-      return;
-    }
+    // Credit consumption is now handled by the backend
 
     // Send the message through the study plan chat system
     await sendStudyPlanMessage(studyPlanInput);

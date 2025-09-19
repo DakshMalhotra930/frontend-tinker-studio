@@ -55,8 +55,6 @@ async def check_and_consume_credit(user_id: str, feature_name: str, session_id: 
     Check if user can consume a credit for a Pro feature
     Returns: (can_use, message, credits_remaining)
     """
-    # Temporarily bypass credit check for development - always allow access
-    return True, "Development mode - unlimited access", 999
     
     try:
         conn = get_db_connection()
@@ -2961,6 +2959,18 @@ async def chat_message(request: ChatMessageRequest):
         # Update activity
         session_manager.update_session_activity(request.session_id)
         
+        # Check and consume credit for AI Chat
+        user_id = session.user_id
+        can_use, message, credits_remaining = await check_and_consume_credit(
+            user_id, "pro_ai_chat", request.session_id
+        )
+        
+        if not can_use:
+            print(f"❌ Credit check failed: {message}")
+            raise HTTPException(status_code=402, detail=message)
+        
+        print(f"✅ Credit consumed successfully. Credits remaining: {credits_remaining}")
+        
         # 🖼️ IMAGE ROUTING LOGIC: Check if this is an image problem and route accordingly
         if request.image_data:
             print("🖼️ Image detected in Deep Study Mode - using Gemini 1.5 Flash")
@@ -3127,6 +3137,18 @@ async def problem_solve(request: ProblemSolveRequest):
         
         # Update activity
         session_manager.update_session_activity(request.session_id)
+        
+        # Check and consume credit for Problem Solver
+        user_id = session.user_id
+        can_use, message, credits_remaining = await check_and_consume_credit(
+            user_id, "problem_solver", request.session_id
+        )
+        
+        if not can_use:
+            print(f"❌ Credit check failed: {message}")
+            raise HTTPException(status_code=402, detail=message)
+        
+        print(f"✅ Credit consumed successfully. Credits remaining: {credits_remaining}")
         
         # Create problem-solving prompt
         hint_levels = {
