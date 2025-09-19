@@ -65,14 +65,19 @@ export const useCredits = (): UseCreditsReturn => {
         feature_name: featureName,
         session_id: sessionId
       });
+      
+      console.log('💳 Credit consumption API response:', result);
 
       if (result.success) {
+        console.log('✅ Credit consumed successfully! New credits remaining:', result.credits_remaining);
         // Update local state
         setCreditStatus(prev => prev ? {
           ...prev,
           credits_remaining: result.credits_remaining
         } : null);
         return true;
+      } else {
+        console.log('❌ Credit consumption failed:', result);
       }
 
       return false;
