@@ -60,7 +60,7 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
         subject: sessionSubject,
         topic: sessionTopic,
         mode: 'explain',
-        user_id: apiUtils.createUserId(),
+        user_id: apiUtils.getUserId() || apiUtils.createUserId(),
       });
       
       setCurrentSession(data);
@@ -240,7 +240,7 @@ What's your exam timeline and current preparation status?`,
     try {
       setError('');
       const data = await studyPlanAPI.generate({
-        user_id: apiUtils.createUserId(),
+        user_id: apiUtils.getUserId() || apiUtils.createUserId(),
         subjects: [subject],
         duration_days: 7,
         goals: [`Master ${topic || 'selected topics'}`],

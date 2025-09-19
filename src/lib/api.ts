@@ -453,16 +453,18 @@ export const apiUtils = {
     return `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   },
 
-  // Get user ID (for compatibility)
+  // Get user ID from the logged-in user data
   getUserId: (): string | null => {
-    // In a real app, this would get the user ID from authentication context
-    // For now, we'll create a consistent user ID stored in localStorage
-    let userId = localStorage.getItem('praxis_user_id');
-    if (!userId) {
-      userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('praxis_user_id', userId);
+    try {
+      const userData = localStorage.getItem('praxis_user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        return user.user_id;
+      }
+    } catch (error) {
+      console.error('Failed to get user ID from storage:', error);
     }
-    return userId;
+    return null;
   },
 
   // Format error messages for display
