@@ -27,7 +27,7 @@ interface QRPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  tier: 'pro_monthly' | 'pro_yearly' | 'pro_lifetime';
+  tier: 'pro_monthly' | 'pro_yearly';
   userId: string;
 }
 
@@ -48,7 +48,6 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
   const tierInfo = {
     pro_monthly: { name: 'Pro Monthly', price: 99, period: 'month' },
     pro_yearly: { name: 'Pro Yearly', price: 990, period: 'year' },
-    pro_lifetime: { name: 'Pro Lifetime', price: 2999, period: 'lifetime' }
   };
 
   const currentTier = tierInfo[tier];

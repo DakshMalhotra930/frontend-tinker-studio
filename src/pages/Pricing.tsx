@@ -20,11 +20,6 @@ interface PricingInfo {
     features: string[];
     discount: string;
   };
-  lifetime: {
-    price: number;
-    currency: string;
-    features: string[];
-  };
   features: string[];
   free_features: string[];
 }
@@ -32,7 +27,7 @@ interface PricingInfo {
 export const Pricing: React.FC = () => {
   const [pricingInfo, setPricingInfo] = useState<PricingInfo | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedTier, setSelectedTier] = useState<'pro_monthly' | 'pro_yearly' | 'pro_lifetime'>('pro_monthly');
+  const [selectedTier, setSelectedTier] = useState<'pro_monthly' | 'pro_yearly'>('pro_monthly');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
@@ -76,16 +71,6 @@ export const Pricing: React.FC = () => {
           ],
           discount: '17% off'
         },
-        lifetime: {
-          price: 2999,
-          currency: 'INR',
-          features: [
-            'Everything in Yearly',
-            'Lifetime access',
-            'Premium Support',
-            'Early access to new features'
-          ]
-        },
         features: [
           'Deep Study Mode - Advanced AI tutoring with context memory',
           'Study Plan Generator - AI-powered personalized study plans',
@@ -105,7 +90,7 @@ export const Pricing: React.FC = () => {
     }
   };
 
-  const handleUpgrade = (tier: 'pro_monthly' | 'pro_yearly' | 'pro_lifetime') => {
+  const handleUpgrade = (tier: 'pro_monthly' | 'pro_yearly') => {
     if (!isAuthenticated) {
       // Redirect to login or show login modal
       alert('Please log in to upgrade to Pro');
@@ -260,40 +245,6 @@ export const Pricing: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Lifetime Plan */}
-          <Card className="relative">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Crown className="h-5 w-5 text-purple-500" />
-                <span>Lifetime</span>
-              </CardTitle>
-              <div className="flex items-baseline space-x-2">
-                <span className="text-3xl font-bold">₹{pricingInfo.lifetime.price}</span>
-                <span className="text-gray-500">one-time</span>
-              </div>
-              <p className="text-sm text-gray-600">
-                Best value for long-term users
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-3 mb-6">
-                {pricingInfo.lifetime.features.map((feature, index) => (
-                  <li key={index} className="flex items-center space-x-2">
-                    <Check className="h-4 w-4 text-green-500" />
-                    <span className="text-sm">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-                      <Button
-                onClick={() => handleUpgrade('pro_lifetime')}
-                className="w-full"
-                        variant="outline"
-                      >
-                Get Started
-                <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-            </CardContent>
-          </Card>
                     </div>
 
         {/* Features Comparison */}

@@ -20,7 +20,7 @@ interface PaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  tier?: 'pro_monthly' | 'pro_yearly' | 'pro_lifetime';
+  tier?: 'pro_monthly' | 'pro_yearly';
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({ 
@@ -38,7 +38,6 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const pricing = {
     pro_monthly: { price: 99, currency: 'INR', period: 'month' },
     pro_yearly: { price: 999, currency: 'INR', period: 'year' },
-    pro_lifetime: { price: 2999, currency: 'INR', period: 'lifetime' }
   };
 
   const currentPricing = pricing[tier];

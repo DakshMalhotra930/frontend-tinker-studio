@@ -88,7 +88,6 @@ export interface SubscriptionResponse {
 export interface PricingInfo {
   monthly_price: number;
   yearly_price: number;
-  lifetime_price: number;
   currency: string;
   features: string[];
 }

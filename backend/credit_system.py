@@ -112,7 +112,6 @@ class PaymentVerificationRequest(BaseModel):
 class PricingInfo(BaseModel):
     monthly: Dict[str, Any]
     yearly: Dict[str, Any]
-    lifetime: Dict[str, Any]
     features: List[str]
     free_features: List[str]
 
@@ -430,16 +429,6 @@ async def get_pricing_info():
                 "Advanced Analytics"
             ],
             "discount": "17% off"
-        },
-        lifetime={
-            "price": 2999,
-            "currency": "INR",
-            "features": [
-                "Everything in Yearly",
-                "Lifetime access",
-                "Premium Support",
-                "Early access to new features"
-            ]
         },
         features=[
             "Deep Study Mode - Advanced AI tutoring with context memory",
