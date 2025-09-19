@@ -10,6 +10,7 @@ import { MarkdownRenderer } from '@/components/MarkdownRenderer';
 import { 
   GraduationCap, 
   MessageCircle, 
+  MessageSquare,
   BookOpen, 
   Brain, 
   Send, 
