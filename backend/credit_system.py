@@ -115,6 +115,27 @@ class PricingInfo(BaseModel):
     features: List[str]
     free_features: List[str]
 
+# QR Payment Models
+class QRCodePaymentRequest(BaseModel):
+    """Request model for QR code payment generation"""
+    user_id: str
+    tier: SubscriptionTier
+    amount: float = Field(..., description="Payment amount")
+
+class QRCodePaymentResponse(BaseModel):
+    """Response model for QR code payment"""
+    qr_code: str
+    qr_image: str  # Base64 encoded QR code image
+    amount: float
+    tier: str
+    expires_at: datetime
+    payment_id: str
+
+class QRPaymentVerificationRequest(BaseModel):
+    """Request model for QR payment verification"""
+    qr_code: str
+    user_id: str
+
 # Database connection function
 def get_db_connection():
     try:
@@ -588,4 +609,232 @@ async def get_pro_features():
         raise HTTPException(status_code=500, detail="Failed to get features")
     finally:
         conn.close()
+
+# QR Payment Functions
+def _generate_qr_code(data: str) -> str:
+    """Generate QR code image and return as base64 string"""
+    try:
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=5
+        )
+        qr.add_data(data)
+        qr.make(fit=True)
+        
+        # Create QR code image
+        qr_img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Convert to base64
+        import io
+        buffer = io.BytesIO()
+        qr_img.save(buffer, format='PNG')
+        qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+        
+        return qr_base64
+    except Exception as e:
+        print(f"❌ Error generating QR code: {e}")
+        return ""
+
+async def create_qr_payment(user_id: str, tier: SubscriptionTier, amount: float) -> QRCodePaymentResponse:
+    """Create QR code payment for pro mode upgrade"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            raise HTTPException(status_code=500, detail="Database connection failed")
+        
+        with conn.cursor() as cursor:
+            # Generate unique payment ID and QR code
+            payment_id = f"QR_{uuid.uuid4().hex[:12].upper()}"
+            qr_code = f"PAY_{payment_id}"
+            
+            # Calculate expiry time (30 minutes from now)
+            expires_at = datetime.now() + timedelta(minutes=30)
+            
+            # Insert payment record
+            cursor.execute("""
+                INSERT INTO payment_qr_codes (qr_code, amount, tier, user_id, status, expires_at, payment_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """, (qr_code, amount, tier.value, user_id, 'pending', expires_at, payment_id))
+            
+            conn.commit()
+            cursor.close()
+            
+            # Generate QR code image with UPI payment details
+            qr_data = f"upi://pay?pa=dakshmalhotra930@oksbi&pn=AI%20Tutor%20Pro&tr={payment_id}&am={int(amount)}&cu=INR&tn=Pro%20Mode%20Upgrade"
+            qr_image = _generate_qr_code(qr_data)
+            
+            print(f"✅ QR payment created: {payment_id} for user {user_id}")
+            
+            return QRCodePaymentResponse(
+                qr_code=qr_code,
+                qr_image=qr_image,
+                amount=amount,
+                tier=tier.value,
+                expires_at=expires_at,
+                payment_id=payment_id
+            )
+            
+    except Exception as e:
+        print(f"❌ Error creating QR payment: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create QR payment")
+
+async def verify_qr_payment(qr_code: str, user_id: str) -> Dict[str, Any]:
+    """Verify QR code payment and upgrade subscription"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            raise HTTPException(status_code=500, detail="Database connection failed")
+        
+        with conn.cursor() as cursor:
+            # Check if payment exists and is pending
+            cursor.execute("""
+                SELECT * FROM payment_qr_codes 
+                WHERE qr_code = %s AND user_id = %s AND status = 'pending'
+            """, (qr_code, user_id))
+            
+            payment_record = cursor.fetchone()
+            
+            if not payment_record:
+                return {
+                    "success": False,
+                    "message": "Payment not found or already processed"
+                }
+            
+            # Check if payment is expired
+            if payment_record['expires_at'] < datetime.now():
+                return {
+                    "success": False,
+                    "message": "Payment has expired"
+                }
+            
+            # Mark payment as completed
+            cursor.execute("""
+                UPDATE payment_qr_codes 
+                SET status = 'completed' 
+                WHERE qr_code = %s
+            """, (qr_code,))
+            
+            # Upgrade user subscription
+            tier = SubscriptionTier(payment_record['tier'])
+            cursor.execute("""
+                INSERT INTO pro_subscriptions (user_id, subscription_status, subscription_tier, subscribed_at, expires_at)
+                VALUES (%s, 'pro', %s, NOW(), NOW() + INTERVAL '1 year')
+                ON CONFLICT (user_id) 
+                DO UPDATE SET 
+                    subscription_status = 'pro',
+                    subscription_tier = %s,
+                    subscribed_at = NOW(),
+                    expires_at = NOW() + INTERVAL '1 year',
+                    updated_at = NOW()
+            """, (user_id, tier.value, tier.value))
+            
+            conn.commit()
+            cursor.close()
+            
+            print(f"✅ QR payment verified and user upgraded: {user_id}")
+            
+            return {
+                "success": True,
+                "message": "Payment verified and subscription upgraded successfully"
+            }
+            
+    except Exception as e:
+        print(f"❌ Error verifying QR payment: {e}")
+        raise HTTPException(status_code=500, detail="Failed to verify payment")
+
+async def get_qr_payment_status(qr_code: str) -> Dict[str, Any]:
+    """Get payment status for a QR code"""
+    try:
+        conn = get_db_connection()
+        if not conn:
+            raise HTTPException(status_code=500, detail="Database connection failed")
+        
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT status, amount, tier, expires_at
+                FROM payment_qr_codes 
+                WHERE qr_code = %s
+            """, (qr_code,))
+            
+            payment_record = cursor.fetchone()
+            cursor.close()
+            
+            if not payment_record:
+                return {"status": "not_found", "amount": 0, "tier": ""}
+            
+            return {
+                "status": payment_record['status'],
+                "amount": payment_record['amount'],
+                "tier": payment_record['tier']
+            }
+            
+    except Exception as e:
+        print(f"❌ Error getting payment status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get payment status")
+
+# QR Payment API Endpoints
+@router.post("/payment/qr/create")
+async def create_qr_payment_endpoint(request: QRCodePaymentRequest):
+    """Create QR code payment for pro mode upgrade"""
+    try:
+        # Define pricing for different tiers
+        pricing = {
+            SubscriptionTier.PRO_MONTHLY: 99.0,
+            SubscriptionTier.PRO_YEARLY: 999.0,
+        }
+        
+        # Validate amount
+        expected_amount = pricing.get(request.tier)
+        if not expected_amount or request.amount != expected_amount:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid amount for {request.tier.value}. Expected: ₹{expected_amount}"
+            )
+        
+        # Create QR payment
+        qr_payment = await create_qr_payment(
+            user_id=request.user_id,
+            tier=request.tier,
+            amount=request.amount
+        )
+        
+        return qr_payment
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error creating QR payment: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create QR payment")
+
+@router.post("/payment/qr/verify")
+async def verify_qr_payment_endpoint(request: QRPaymentVerificationRequest):
+    """Verify QR code payment and upgrade subscription"""
+    try:
+        result = await verify_qr_payment(
+            qr_code=request.qr_code,
+            user_id=request.user_id
+        )
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error verifying QR payment: {e}")
+        raise HTTPException(status_code=500, detail="Failed to verify payment")
+
+@router.get("/payment/qr/status/{qr_code}")
+async def get_qr_payment_status_endpoint(qr_code: str):
+    """Get payment status for a QR code"""
+    try:
+        status = await get_qr_payment_status(qr_code)
+        return status
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error getting payment status: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get payment status")
 
