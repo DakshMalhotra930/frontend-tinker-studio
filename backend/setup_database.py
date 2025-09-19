@@ -111,7 +111,24 @@ def setup_database():
                 );
             """)
             
-            # 5. Create pro_features table
+            # 5. Create payment_qr_codes table
+            print("📝 Creating payment_qr_codes table...")
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS payment_qr_codes (
+                    id SERIAL PRIMARY KEY,
+                    qr_code VARCHAR(255) UNIQUE NOT NULL,
+                    amount DECIMAL(10,2) NOT NULL,
+                    tier VARCHAR(50) NOT NULL,
+                    user_id VARCHAR(255),
+                    status VARCHAR(50) DEFAULT 'pending',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP NOT NULL,
+                    payment_id VARCHAR(255),
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            # 6. Create pro_features table
             print("📝 Creating pro_features table...")
             cur.execute("""
                 CREATE TABLE IF NOT EXISTS pro_features (
