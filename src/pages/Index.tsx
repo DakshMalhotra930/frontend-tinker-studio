@@ -164,48 +164,12 @@ const Index = ({ user, onLogout }: IndexProps) => {
             )}
 
             {activeTab === 'deep-study' && (
-              <div className="bg-zinc-800 rounded-lg p-8">
-                <div className="text-center mb-8">
-                  <div className="w-20 h-20 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Brain className="w-10 h-10 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-white mb-2">AI Deep Study Mode</h2>
-                  <p className="text-zinc-400 mb-6">Get personalized tutoring with AI-powered explanations and problem solving</p>
-                  
-                  {/* Subject Selection */}
-                  <div className="max-w-md mx-auto mb-8">
-                    <select className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-600">
-                      <option>Choose a subject</option>
-                      <option>Physics</option>
-                      <option>Chemistry</option>
-                      <option>Mathematics</option>
-                    </select>
-                  </div>
-
-                  {/* Feature Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-zinc-700 rounded-lg p-6 text-center hover:bg-zinc-600 transition-colors">
-                      <MessageSquare className="w-8 h-8 text-purple-400 mx-auto mb-3" />
-                      <h3 className="font-semibold text-white mb-2">Ask Questions</h3>
-                      <p className="text-sm text-zinc-400">Get instant explanations</p>
-                    </div>
-                    <div className="bg-zinc-700 rounded-lg p-6 text-center hover:bg-zinc-600 transition-colors">
-                      <BookOpen className="w-8 h-8 text-purple-400 mx-auto mb-3" />
-                      <h3 className="font-semibold text-white mb-2">Solve Problems</h3>
-                      <p className="text-sm text-zinc-400">Step-by-step solutions</p>
-                    </div>
-                    <div className="bg-zinc-700 rounded-lg p-6 text-center hover:bg-zinc-600 transition-colors">
-                      <Star className="w-8 h-8 text-purple-400 mx-auto mb-3" />
-                      <h3 className="font-semibold text-white mb-2">Personalized</h3>
-                      <p className="text-sm text-zinc-400">Adapts to your level</p>
-                    </div>
-                  </div>
-
-                  {/* Start Button */}
-                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-8 py-3 rounded-lg text-lg font-semibold">
-                    Start AI Study Session
-                  </Button>
-                </div>
+              <div className="bg-zinc-800 rounded-lg">
+                <AgenticStudyMode
+                  topic={selectedTopic}
+                  chapter={selectedChapter}
+                  subject={selectedSubject}
+                />
               </div>
             )}
           </div>
@@ -221,20 +185,17 @@ const Index = ({ user, onLogout }: IndexProps) => {
             </div>
           )}
 
-          {/* Deep Study Mode Content */}
-          {activeTab === 'deep-study' && (
-            <div className="bg-zinc-800 rounded-lg">
-              <AgenticStudyMode
-                subject={selectedSubject?.name || 'Chemistry'}
-                topic={selectedTopic?.name || 'General Study'}
-              />
-            </div>
-          )}
         </div>
       </div>
 
       {/* Quick AI Help Sidebar */}
-      <AgenticSidebar />
+      <AgenticSidebar 
+        isOpen={false}
+        onClose={() => {}}
+        topic={selectedTopic}
+        chapter={selectedChapter}
+        subject={selectedSubject}
+      />
     </div>
   );
 };

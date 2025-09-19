@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,7 +24,9 @@ import {
 } from 'lucide-react';
 import { Subject, Chapter, Topic } from '@/data/syllabus';
 import { useDeepStudySession } from '@/hooks/useDeepStudySession';
+import { useCredits } from '@/hooks/useCredits';
 import { ImageUpload } from '@/components/ImageUpload';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
 
 interface AgenticStudyModeProps {
   topic: Topic | null;
@@ -36,6 +38,7 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
   const [inputMessage, setInputMessage] = useState('');
   const [problemInput, setProblemInput] = useState('');
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
 
   const {
     currentSession,
@@ -55,16 +58,71 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
     topic: topic?.name || null,
   });
 
+  const { consumeCredit, hasCredits, creditsRemaining, creditsLimit, isProUser } = useCredits();
+
+  // Auto-initialize session when component mounts or when topic/subject changes
+  useEffect(() => {
+    if (subject?.name || topic?.name) {
+      // Session will be auto-initialized by useDeepStudySession hook
+    }
+  }, [subject?.name, topic?.name]);
+
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
+    
+    // Check credits before sending message
+    if (!isProUser && !hasCredits) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
+    const creditConsumed = await consumeCredit('AI Chat', currentSession?.session_id);
+    if (!creditConsumed && !isProUser) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
     await sendMessage(inputMessage);
     setInputMessage('');
   };
 
   const handleSolveProblem = async () => {
     if (!problemInput.trim()) return;
+    
+    // Check credits before solving problem
+    if (!isProUser && !hasCredits) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
+    const creditConsumed = await consumeCredit('Problem Solver', currentSession?.session_id);
+    if (!creditConsumed && !isProUser) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
     await solveProblem(problemInput);
     setProblemInput('');
+  };
+
+  const handleCreateStudyPlan = async () => {
+    // Check credits before creating study plan
+    if (!isProUser && !hasCredits) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
+    const creditConsumed = await consumeCredit('Study Plan Generator', currentSession?.session_id);
+    if (!creditConsumed && !isProUser) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
+    await createStudyPlan();
+  };
+
+  const handleUpgrade = () => {
+    window.location.href = '/pricing';
   };
 
   const handleImageSelect = (file: File | null) => {
@@ -183,7 +241,7 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
               <div className="h-full flex flex-col">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-semibold">Your Study Plans</h2>
-                  <Button onClick={createStudyPlan} className="flex items-center space-x-2" disabled={!currentSession}>
+                  <Button onClick={handleCreateStudyPlan} className="flex items-center space-x-2" disabled={!currentSession}>
                     <Plus className="w-4 h-4" />
                     <span>Create Plan</span>
                   </Button>
@@ -326,6 +384,16 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
           </div>
         </Tabs>
       </div>
+
+      {/* Upgrade Prompt Modal */}
+      <UpgradePrompt
+        isOpen={showUpgradePrompt}
+        onClose={() => setShowUpgradePrompt(false)}
+        onUpgrade={handleUpgrade}
+        featureName="Deep Study Mode"
+        creditsRemaining={creditsRemaining}
+        creditsLimit={creditsLimit}
+      />
     </div>
   );
 }
