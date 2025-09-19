@@ -92,7 +92,7 @@ def deploy_functions():
                     is_pro BOOLEAN;
                 BEGIN
                     -- Get current credit status
-                    SELECT dc.credits_remaining, dc.credits_limit, 
+                    SELECT (dc.credits_limit - dc.credits_used), dc.credits_limit, 
                            COALESCE(ps.subscription_status = 'pro', false)
                     INTO current_credits, credit_limit, is_pro
                     FROM daily_credits dc
