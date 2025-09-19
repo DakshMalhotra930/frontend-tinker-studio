@@ -62,7 +62,7 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
     topic: topic?.name || null,
   });
 
-  const { consumeCredit, hasCredits, creditsRemaining, creditsLimit, isProUser } = useCredits();
+  const { consumeCredit, hasCredits, creditsRemaining, creditsLimit, isProUser, creditStatus } = useCredits();
 
   // Auto-initialize session when component mounts or when topic/subject changes
   useEffect(() => {
