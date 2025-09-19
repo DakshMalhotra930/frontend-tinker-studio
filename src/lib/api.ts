@@ -52,6 +52,7 @@ export interface StudyPlanResponse {
 
 export interface CreditStatus {
   user_id: string;
+  credits_used: number;
   credits_remaining: number;
   credits_limit: number;
   credits_date: string;

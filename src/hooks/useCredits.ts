@@ -16,6 +16,7 @@ interface UseCreditsReturn {
   error: string | null;
   refreshCredits: () => Promise<void>;
   consumeCredit: (featureName: string, sessionId?: string) => Promise<boolean>;
+  consumeCreditOptimistically: (featureName: string) => boolean;
   isProUser: boolean;
   hasCredits: boolean;
   creditsRemaining: number;
@@ -49,6 +50,31 @@ export const useCredits = (): UseCreditsReturn => {
     }
   }, []);
 
+  const consumeCreditOptimistically = useCallback((featureName: string): boolean => {
+    // If user is Pro, no need to consume credits
+    if (creditStatus?.is_pro_user) {
+      console.log('👑 Pro user - skipping credit consumption');
+      return true;
+    }
+
+    // Check if user has credits
+    if (!creditStatus || creditStatus.credits_remaining <= 0) {
+      console.log('❌ No credits remaining for optimistic consumption');
+      return false;
+    }
+
+    console.log('⚡ Optimistic credit consumption for:', featureName);
+    
+    // Immediately update local state
+    setCreditStatus(prev => prev ? {
+      ...prev,
+      credits_remaining: prev.credits_remaining - 1,
+      credits_used: prev.credits_used + 1
+    } : null);
+    
+    return true;
+  }, [creditStatus?.is_pro_user, creditStatus?.credits_remaining]);
+
   const consumeCredit = useCallback(async (featureName: string, sessionId?: string): Promise<boolean> => {
     try {
       const userId = apiUtils.getUserId();
@@ -75,27 +101,33 @@ export const useCredits = (): UseCreditsReturn => {
 
       if (result.success) {
         console.log('✅ Credit consumed successfully! New credits remaining:', result.credits_remaining);
-        // Update local state
+        // Update local state with server response
         setCreditStatus(prev => prev ? {
           ...prev,
-          credits_remaining: result.credits_remaining
+          credits_remaining: result.credits_remaining,
+          credits_used: (prev.credits_limit - result.credits_remaining)
         } : null);
-        
-        // Also refresh the credit status from server to ensure consistency
-        setTimeout(async () => {
-          console.log('🔄 Refreshing credit status from server...');
-          await loadCreditStatus();
-          console.log('🔄 Credit status refreshed:', creditStatus);
-        }, 100);
         
         return true;
       } else {
         console.log('❌ Credit consumption failed:', result);
+        // Rollback optimistic update
+        setCreditStatus(prev => prev ? {
+          ...prev,
+          credits_remaining: prev.credits_remaining + 1,
+          credits_used: prev.credits_used - 1
+        } : null);
       }
 
       return false;
     } catch (err) {
       console.error('Error consuming credit:', err);
+      // Rollback optimistic update on error
+      setCreditStatus(prev => prev ? {
+        ...prev,
+        credits_remaining: prev.credits_remaining + 1,
+        credits_used: prev.credits_used - 1
+      } : null);
       return false;
     }
   }, [creditStatus?.is_pro_user]);
@@ -115,6 +147,7 @@ export const useCredits = (): UseCreditsReturn => {
     error,
     refreshCredits,
     consumeCredit,
+    consumeCreditOptimistically,
     isProUser: creditStatus?.is_pro_user || false,
     hasCredits: (creditStatus?.credits_remaining || 0) > 0,
     creditsRemaining: creditStatus?.credits_remaining || 0,

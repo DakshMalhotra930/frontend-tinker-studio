@@ -62,7 +62,7 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
     topic: topic?.name || null,
   });
 
-  const { consumeCredit, hasCredits, creditsRemaining, creditsLimit, isProUser, creditStatus } = useCredits();
+  const { consumeCredit, consumeCreditOptimistically, hasCredits, creditsRemaining, creditsLimit, isProUser, creditStatus } = useCredits();
 
   // Auto-initialize session when component mounts or when topic/subject changes
   useEffect(() => {
@@ -80,9 +80,23 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
       return;
     }
 
-    // Credit consumption is now handled by the backend
-    await sendMessage(inputMessage);
-    setInputMessage('');
+    // Optimistically consume credit immediately for instant UI feedback
+    const creditConsumed = consumeCreditOptimistically('AI Chat');
+    if (!creditConsumed && !isProUser) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
+    try {
+      await sendMessage(inputMessage);
+      setInputMessage('');
+      
+      // Confirm credit consumption with backend
+      await consumeCredit('AI Chat', currentSession?.session_id);
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // Credit will be rolled back automatically by the consumeCredit function
+    }
   };
 
   const handleSolveProblem = async () => {
@@ -94,9 +108,23 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
       return;
     }
 
-    // Credit consumption is now handled by the backend
-    await solveProblem(problemInput);
-    setProblemInput('');
+    // Optimistically consume credit immediately for instant UI feedback
+    const creditConsumed = consumeCreditOptimistically('Problem Solver');
+    if (!creditConsumed && !isProUser) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
+    try {
+      await solveProblem(problemInput);
+      setProblemInput('');
+      
+      // Confirm credit consumption with backend
+      await consumeCredit('problem_generator', currentSession?.session_id);
+    } catch (error) {
+      console.error('Error solving problem:', error);
+      // Credit will be rolled back automatically by the consumeCredit function
+    }
   };
 
   const handleCreateStudyPlan = async () => {
@@ -106,8 +134,22 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
       return;
     }
 
-    // Credit consumption is now handled by the backend
-    await createStudyPlan();
+    // Optimistically consume credit immediately for instant UI feedback
+    const creditConsumed = consumeCreditOptimistically('Study Plan Generator');
+    if (!creditConsumed && !isProUser) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
+    try {
+      await createStudyPlan();
+      
+      // Confirm credit consumption with backend
+      await consumeCredit('study_plan_generator', currentSession?.session_id);
+    } catch (error) {
+      console.error('Error creating study plan:', error);
+      // Credit will be rolled back automatically by the consumeCredit function
+    }
   };
 
   const handleStudyPlanMessage = async () => {
@@ -119,11 +161,24 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
       return;
     }
 
-    // Credit consumption is now handled by the backend
+    // Optimistically consume credit immediately for instant UI feedback
+    const creditConsumed = consumeCreditOptimistically('Study Plan Generator');
+    if (!creditConsumed && !isProUser) {
+      setShowUpgradePrompt(true);
+      return;
+    }
 
-    // Send the message through the study plan chat system
-    await sendStudyPlanMessage(studyPlanInput);
-    setStudyPlanInput('');
+    try {
+      // Send the message through the study plan chat system
+      await sendStudyPlanMessage(studyPlanInput);
+      setStudyPlanInput('');
+      
+      // Confirm credit consumption with backend
+      await consumeCredit('study_plan_generator', currentSession?.session_id);
+    } catch (error) {
+      console.error('Error sending study plan message:', error);
+      // Credit will be rolled back automatically by the consumeCredit function
+    }
   };
 
   const handleUpgrade = () => {
