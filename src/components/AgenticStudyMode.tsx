@@ -37,6 +37,7 @@ interface AgenticStudyModeProps {
 export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModeProps) {
   const [inputMessage, setInputMessage] = useState('');
   const [problemInput, setProblemInput] = useState('');
+  const [studyPlanInput, setStudyPlanInput] = useState('');
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
 
@@ -119,6 +120,26 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
     }
 
     await createStudyPlan();
+  };
+
+  const handleStudyPlanMessage = async () => {
+    if (!studyPlanInput.trim()) return;
+    
+    // Check credits before sending study plan message
+    if (!isProUser && !hasCredits) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
+    const creditConsumed = await consumeCredit('Study Plan Generator', currentSession?.session_id);
+    if (!creditConsumed && !isProUser) {
+      setShowUpgradePrompt(true);
+      return;
+    }
+
+    // Send the message through the regular chat system
+    await sendMessage(studyPlanInput);
+    setStudyPlanInput('');
   };
 
   const handleUpgrade = () => {
@@ -237,17 +258,80 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
               </div>
             </TabsContent>
 
-            <TabsContent value="study-plans" className="h-full m-0 p-6">
-              <div className="h-full flex flex-col">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold">Your Study Plans</h2>
-                  <Button onClick={handleCreateStudyPlan} className="flex items-center space-x-2" disabled={!currentSession}>
-                    <Plus className="w-4 h-4" />
-                    <span>Create Plan</span>
-                  </Button>
-                </div>
+            <TabsContent value="study-plans" className="h-full flex flex-col m-0 p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold">Study Plan Chat</h2>
+                <Button onClick={handleCreateStudyPlan} className="flex items-center space-x-2" disabled={!currentSession}>
+                  <Plus className="w-4 h-4" />
+                  <span>Auto Generate Plan</span>
+                </Button>
+              </div>
 
-                <ScrollArea className="flex-1">
+              <ScrollArea className="flex-1 pr-4 mb-4">
+                <div className="space-y-4">
+                  {chatMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div
+                        className={`max-w-[80%] p-4 rounded-2xl ${
+                          message.isUser
+                            ? 'bg-primary text-primary-foreground ml-12'
+                            : 'bg-muted mr-12'
+                        }`}
+                      >
+                        {!message.isUser && (
+                          <div className="flex items-center space-x-2 mb-2">
+                            <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                            <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Study Plan AI</span>
+                          </div>
+                        )}
+                        <div className="prose prose-sm dark:prose-invert max-w-none">
+                          <MarkdownRenderer content={message.text} />
+                        </div>
+                        <p className="text-xs opacity-70 mt-2">
+                          {message.timestamp.toLocaleTimeString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {isTyping && (
+                    <div className="flex justify-start">
+                      <div className="bg-muted p-4 rounded-2xl mr-12">
+                        <div className="flex items-center space-x-2">
+                          <BookOpen className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                          <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Study Plan AI</span>
+                        </div>
+                        <div className="flex space-x-1 mt-2">
+                          <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+
+              <div className="flex space-x-2">
+                <Input
+                  value={studyPlanInput}
+                  onChange={(e) => setStudyPlanInput(e.target.value)}
+                  placeholder="Ask about study plans, exam preparation, or learning strategies..."
+                  onKeyPress={(e) => e.key === 'Enter' && handleStudyPlanMessage()}
+                  className="flex-1"
+                  disabled={!currentSession || isTyping}
+                />
+                <Button onClick={handleStudyPlanMessage} size="icon" className="shrink-0" disabled={!currentSession || isTyping}>
+                  <Send className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Existing Study Plans Display */}
+              {studyPlans.length > 0 && (
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold mb-4">Your Generated Study Plans</h3>
                   <div className="space-y-4">
                     {studyPlans.map((plan) => (
                       <Card key={plan.id} className="hover:shadow-md transition-shadow">
@@ -294,8 +378,8 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
                       </Card>
                     ))}
                   </div>
-                </ScrollArea>
-              </div>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="problem-solver" className="h-full m-0 p-6">
@@ -345,40 +429,6 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
                   </CardContent>
                 </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <CheckCircle className="w-5 h-5 text-primary" />
-                      <span>Quick Help</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <Button 
-                        variant="outline" 
-                        className="justify-start h-auto p-4"
-                        onClick={() => setProblemInput("Explain the concept of " + (topic?.name || "selected topic"))}
-                        disabled={!currentSession}
-                      >
-                        <div className="text-left">
-                          <div className="font-medium">Explain Concept</div>
-                          <div className="text-xs text-muted-foreground">Get detailed explanation</div>
-                        </div>
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="justify-start h-auto p-4"
-                        onClick={() => setProblemInput("Create practice problems for " + (topic?.name || "selected topic"))}
-                        disabled={!currentSession}
-                      >
-                        <div className="text-left">
-                          <div className="font-medium">Practice Problems</div>
-                          <div className="text-xs text-muted-foreground">Generate questions</div>
-                        </div>
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </TabsContent>
           </div>
