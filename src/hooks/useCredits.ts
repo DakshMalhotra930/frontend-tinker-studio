@@ -75,6 +75,12 @@ export const useCredits = (): UseCreditsReturn => {
           ...prev,
           credits_remaining: result.credits_remaining
         } : null);
+        
+        // Also refresh the credit status from server to ensure consistency
+        setTimeout(() => {
+          loadCreditStatus();
+        }, 100);
+        
         return true;
       } else {
         console.log('❌ Credit consumption failed:', result);
