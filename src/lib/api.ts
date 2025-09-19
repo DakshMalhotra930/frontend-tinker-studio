@@ -468,6 +468,20 @@ export const apiUtils = {
     return null;
   },
 
+  // Check if user is authenticated
+  isAuthenticated: (): boolean => {
+    try {
+      const userData = localStorage.getItem('praxis_user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        return !!(user && user.user_id);
+      }
+    } catch (error) {
+      console.error('Failed to check authentication status:', error);
+    }
+    return false;
+  },
+
   // Format error messages for display
   formatError: (error: unknown): string => {
     if (error instanceof APIError) {

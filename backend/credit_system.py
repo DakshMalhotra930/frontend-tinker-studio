@@ -539,6 +539,35 @@ async def admin_upgrade_to_pro(request: dict):
     finally:
         conn.close()
 
+@router.get("/admin/upgrade-to-pro/{user_id}")
+async def admin_upgrade_to_pro_get(user_id: str):
+    """Admin GET endpoint to directly upgrade user to pro (bypasses payment)"""
+    conn = get_db_connection()
+    if not conn:
+        raise HTTPException(status_code=503, detail="Database connection unavailable")
+    
+    try:
+        with conn.cursor() as cur:
+            # Directly insert/update pro subscription
+            cur.execute("""
+                INSERT INTO pro_subscriptions (user_id, subscription_status, subscription_tier, subscribed_at, expires_at)
+                VALUES (%s, 'pro', 'pro', NOW(), NOW() + INTERVAL '1 year')
+                ON CONFLICT (user_id) 
+                DO UPDATE SET 
+                    subscription_status = 'pro',
+                    subscription_tier = 'pro',
+                    subscribed_at = NOW(),
+                    expires_at = NOW() + INTERVAL '1 year',
+                    updated_at = NOW()
+            """, (user_id,))
+            
+            return {"success": True, "message": f"Successfully upgraded user {user_id} to Pro"}
+    except Exception as e:
+        print(f"Error upgrading user: {e}")
+        raise HTTPException(status_code=500, detail="Failed to upgrade user")
+    finally:
+        conn.close()
+
 @router.get("/features")
 async def get_pro_features():
     """Get list of Pro features and their requirements"""
