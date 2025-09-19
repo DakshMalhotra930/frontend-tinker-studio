@@ -359,14 +359,47 @@ export const paymentAPI = {
     amount: number;
     currency: string;
     user_id: string;
-  }): Promise<{ qr_code: string; payment_id: string }> => {
-    return apiRequest<{ qr_code: string; payment_id: string }>('/api/payment/create', {
+    tier: string;
+  }): Promise<{ 
+    qr_code: string; 
+    qr_image: string;
+    payment_id: string;
+    amount: number;
+    tier: string;
+    expires_at: string;
+  }> => {
+    return apiRequest<{ 
+      qr_code: string; 
+      qr_image: string;
+      payment_id: string;
+      amount: number;
+      tier: string;
+      expires_at: string;
+    }>('/api/payment/qr/create', {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  // Verify payment
+  // Verify QR payment
+  verifyQRPayment: async (data: {
+    qr_code: string;
+    user_id: string;
+  }): Promise<{ success: boolean; status: string }> => {
+    return apiRequest<{ success: boolean; status: string }>('/api/payment/qr/verify', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  // Get QR payment status
+  getQRPaymentStatus: async (qr_code: string): Promise<{ status: string; amount: number; tier: string }> => {
+    return apiRequest<{ status: string; amount: number; tier: string }>(`/api/payment/qr/status/${qr_code}`, {
+      method: 'GET',
+    });
+  },
+
+  // Verify payment (legacy)
   verifyPayment: async (payment_id: string): Promise<{ success: boolean; status: string }> => {
     return apiRequest<{ success: boolean; status: string }>(`/api/payment/verify`, {
       method: 'POST',

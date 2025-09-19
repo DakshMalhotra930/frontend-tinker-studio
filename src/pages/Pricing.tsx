@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
 import { Check, Crown, Zap, Star, ArrowRight } from 'lucide-react';
-import { PaymentModal } from '../components/PaymentModal';
+import QRPaymentModal from '../components/QRPaymentModal';
 import { CreditDisplay } from '../components/CreditDisplay';
 import { apiUtils } from '../lib/api';
 
@@ -28,7 +28,7 @@ export const Pricing: React.FC = () => {
   const [pricingInfo, setPricingInfo] = useState<PricingInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTier, setSelectedTier] = useState<'pro_monthly' | 'pro_yearly'>('pro_monthly');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showQRPaymentModal, setShowQRPaymentModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -97,11 +97,11 @@ export const Pricing: React.FC = () => {
       return;
     }
     setSelectedTier(tier);
-    setShowPaymentModal(true);
+    setShowQRPaymentModal(true);
   };
 
   const handlePaymentSuccess = () => {
-    setShowPaymentModal(false);
+    setShowQRPaymentModal(false);
     // Refresh the page or update user state
     window.location.reload();
   };
@@ -328,13 +328,14 @@ export const Pricing: React.FC = () => {
         </div>
       </div>
 
-      {/* Payment Modal */}
-      <PaymentModal
-        isOpen={showPaymentModal}
-        onClose={() => setShowPaymentModal(false)}
-          onSuccess={handlePaymentSuccess}
-          tier={selectedTier}
-        />
+      {/* QR Payment Modal */}
+      <QRPaymentModal
+        isOpen={showQRPaymentModal}
+        onClose={() => setShowQRPaymentModal(false)}
+        onSuccess={handlePaymentSuccess}
+        tier={selectedTier}
+        userId={apiUtils.getUserId() || ''}
+      />
     </div>
   );
 };

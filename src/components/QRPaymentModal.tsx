@@ -102,7 +102,7 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
 
     try {
       setIsVerifying(true);
-      const status = await paymentAPI.checkPaymentStatus(qrData.qr_code);
+      const status = await paymentAPI.getQRPaymentStatus(qrData.qr_code);
       setPaymentStatus(status.status);
 
       if (status.status === 'completed') {
@@ -118,25 +118,40 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
     }
   };
 
-  const copyUPILink = async () => {
-    if (qrData?.upi_link) {
-      try {
-        await navigator.clipboard.writeText(qrData.upi_link);
-        setCopied(true);
-        toast({
-          title: 'Copied!',
-          description: 'UPI link copied to clipboard'
-        });
-        setTimeout(() => setCopied(false), 2000);
-      } catch (error) {
-        toast({
-          title: 'Copy Failed',
-          description: 'Failed to copy UPI link',
-          variant: 'destructive'
-        });
+  const verifyPayment = async () => {
+    if (!qrData?.qr_code) return;
+
+    try {
+      setIsVerifying(true);
+      setStep('verifying');
+      
+      const result = await paymentAPI.verifyQRPayment({
+        qr_code: qrData.qr_code,
+        user_id: userId
+      });
+
+      if (result.success) {
+        setPaymentStatus('completed');
+        setStep('success');
+        onSuccess();
+      } else {
+        setPaymentStatus('failed');
+        setStep('error');
       }
+    } catch (error) {
+      console.error('Payment verification failed:', error);
+      setPaymentStatus('failed');
+      setStep('error');
+      toast({
+        title: 'Verification Failed',
+        description: 'Failed to verify payment. Please try again.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsVerifying(false);
     }
   };
+
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -230,7 +245,7 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
                 <div className="flex justify-center">
                   <div className="bg-white p-4 rounded-lg">
                     <img 
-                      src={`data:image/png;base64,${qrData.qr_code}`}
+                      src={`data:image/png;base64,${qrData.qr_image}`}
                       alt="UPI QR Code"
                       className="w-48 h-48"
                     />
@@ -253,32 +268,33 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
 
                 <Separator />
 
-                {/* UPI Link Section */}
+                {/* Payment Instructions */}
                 <div className="space-y-3">
-                  <Label className="text-sm font-medium">Or use UPI Link</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={qrData.upi_link}
-                      readOnly
-                      className="text-xs"
-                    />
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={copyUPILink}
-                      className="px-3"
-                    >
-                      {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                    </Button>
+                  <Label className="text-sm font-medium">Payment Instructions</Label>
+                  <div className="text-sm text-zinc-600 space-y-2">
+                    <p>1. Open any UPI app (Google Pay, PhonePe, Paytm, BHIM)</p>
+                    <p>2. Scan the QR code above</p>
+                    <p>3. Complete the payment of ₹{currentTier.price}</p>
+                    <p>4. Click "Verify Payment" below</p>
                   </div>
+                </div>
+
+                {/* Manual Verification Button */}
+                <div className="pt-2">
                   <Button
-                    size="sm"
-                    variant="outline"
+                    onClick={verifyPayment}
+                    disabled={isVerifying}
                     className="w-full"
-                    onClick={() => window.open(qrData.upi_link, '_blank')}
+                    variant="default"
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Open in UPI App
+                    {isVerifying ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Verifying...
+                      </>
+                    ) : (
+                      'Verify Payment'
+                    )}
                   </Button>
                 </div>
               </CardContent>
