@@ -42,22 +42,22 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false);
   const [error, setError] = useState('');
 
-  // Initialize session when subject or topic changes
+  // Initialize session when component mounts or when subject/topic changes
   useEffect(() => {
-    if (subject && topic) {
-      initializeSession();
-    }
+    initializeSession();
   }, [subject, topic]);
 
   const initializeSession = useCallback(async () => {
-    if (!subject || !topic) return;
+    // Initialize session even without specific subject/topic for general study
+    const sessionSubject = subject || 'General Study';
+    const sessionTopic = topic || 'AI Deep Study Mode';
 
     try {
       setError('');
       setIsLoading(true);
       const data = await sessionAPI.start({
-        subject,
-        topic,
+        subject: sessionSubject,
+        topic: sessionTopic,
         mode: 'explain',
         user_id: apiUtils.createUserId(),
       });
