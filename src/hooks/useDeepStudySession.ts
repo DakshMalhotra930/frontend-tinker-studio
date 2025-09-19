@@ -36,6 +36,7 @@ interface UseDeepStudySessionProps {
 export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps) {
   const [currentSession, setCurrentSession] = useState<StudySession | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [studyPlanMessages, setStudyPlanMessages] = useState<ChatMessage[]>([]);
   const [studyPlans, setStudyPlans] = useState<StudyPlan[]>([]);
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,6 +73,30 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
         timestamp: new Date(),
       };
       setChatMessages([welcomeMessage]);
+
+      // Add study plan specific welcome message
+      const studyPlanWelcomeMessage: ChatMessage = {
+        id: 'study-plan-welcome',
+        text: `Welcome to Study Plan Chat! I'm your dedicated study planning assistant for JEE preparation. I can help you:
+
+📚 **Create personalized study schedules** based on your exam timeline
+🎯 **Set realistic goals** and track your progress
+📖 **Organize subjects** and prioritize topics effectively
+⏰ **Plan daily/weekly study sessions** with proper time allocation
+📊 **Analyze your strengths and weaknesses** to focus on areas that need improvement
+🔄 **Adapt plans** as you progress and master different topics
+
+**How to get started:**
+- Tell me your exam date and current preparation level
+- Share which subjects you want to focus on
+- Let me know your daily study time availability
+- I'll create a customized study plan just for you!
+
+What's your exam timeline and current preparation status?`,
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setStudyPlanMessages([studyPlanWelcomeMessage]);
     } catch (err) {
       console.error('Failed to initialize session:', err);
       setError(apiUtils.formatError(err));
@@ -109,6 +134,43 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
       setChatMessages(prev => [...prev, aiResponse]);
     } catch (err) {
       console.error('Failed to send message:', err);
+      setError(apiUtils.formatError(err));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [currentSession]);
+
+  const sendStudyPlanMessage = useCallback(async (message: string) => {
+    if (!message.trim() || !currentSession) return;
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      text: message,
+      isUser: true,
+      timestamp: new Date(),
+    };
+
+    setStudyPlanMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
+    setError('');
+
+    try {
+      // Use the same chat API but with study plan context
+      const studyPlanMessage = `[STUDY PLAN REQUEST] ${message}`;
+      const data = await sessionAPI.chat({
+        session_id: currentSession.session_id,
+        message: studyPlanMessage,
+      });
+      
+      const aiResponse: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        text: data.response,
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setStudyPlanMessages(prev => [...prev, aiResponse]);
+    } catch (err) {
+      console.error('Failed to send study plan message:', err);
       setError(apiUtils.formatError(err));
     } finally {
       setIsLoading(false);
@@ -214,6 +276,7 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
     // State
     currentSession,
     chatMessages,
+    studyPlanMessages,
     studyPlans,
     quizQuestions,
     isLoading,
@@ -222,6 +285,7 @@ export function useDeepStudySession({ subject, topic }: UseDeepStudySessionProps
     
     // Actions
     sendMessage,
+    sendStudyPlanMessage,
     solveProblem,
     generateQuiz,
     createStudyPlan,

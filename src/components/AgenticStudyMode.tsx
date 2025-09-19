@@ -44,12 +44,14 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
   const {
     currentSession,
     chatMessages,
+    studyPlanMessages,
     studyPlans,
     quizQuestions,
     isLoading: isTyping,
     isGeneratingQuiz,
     error,
     sendMessage,
+    sendStudyPlanMessage,
     solveProblem,
     generateQuiz,
     createStudyPlan,
@@ -137,8 +139,8 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
       return;
     }
 
-    // Send the message through the regular chat system
-    await sendMessage(studyPlanInput);
+    // Send the message through the study plan chat system
+    await sendStudyPlanMessage(studyPlanInput);
     setStudyPlanInput('');
   };
 
@@ -261,15 +263,26 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
             <TabsContent value="study-plans" className="h-full flex flex-col m-0 p-6">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold">Study Plan Chat</h2>
-                <Button onClick={handleCreateStudyPlan} className="flex items-center space-x-2" disabled={!currentSession}>
-                  <Plus className="w-4 h-4" />
-                  <span>Auto Generate Plan</span>
-                </Button>
+                <div className="flex space-x-2">
+                  <Button 
+                    onClick={() => setStudyPlanInput("Create a quick study plan for JEE preparation focusing on my weak areas")}
+                    variant="outline" 
+                    className="flex items-center space-x-2"
+                    disabled={!currentSession}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Quick Study</span>
+                  </Button>
+                  <Button onClick={handleCreateStudyPlan} className="flex items-center space-x-2" disabled={!currentSession}>
+                    <Plus className="w-4 h-4" />
+                    <span>Auto Generate Plan</span>
+                  </Button>
+                </div>
               </div>
 
               <ScrollArea className="flex-1 pr-4 mb-4">
                 <div className="space-y-4">
-                  {chatMessages.map((message) => (
+                  {studyPlanMessages.map((message) => (
                     <div
                       key={message.id}
                       className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
@@ -314,7 +327,7 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
                 </div>
               </ScrollArea>
 
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 mb-3">
                 <Input
                   value={studyPlanInput}
                   onChange={(e) => setStudyPlanInput(e.target.value)}
@@ -325,6 +338,42 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
                 />
                 <Button onClick={handleStudyPlanMessage} size="icon" className="shrink-0" disabled={!currentSession || isTyping}>
                   <Send className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Quick Study Templates */}
+              <div className="flex flex-wrap gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setStudyPlanInput("I have 3 months for JEE preparation. Create a daily study schedule for me.")}
+                  disabled={!currentSession}
+                >
+                  📅 3-Month Plan
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setStudyPlanInput("I need a weekly study plan focusing on Physics and Chemistry. I can study 4 hours daily.")}
+                  disabled={!currentSession}
+                >
+                  📚 Weekly Focus
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setStudyPlanInput("Create a revision plan for the last month before JEE exam.")}
+                  disabled={!currentSession}
+                >
+                  🔄 Last Month Revision
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setStudyPlanInput("I'm weak in Mathematics. Create a plan to improve my math skills.")}
+                  disabled={!currentSession}
+                >
+                  🎯 Weak Area Focus
                 </Button>
               </div>
 
