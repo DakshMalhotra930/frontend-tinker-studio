@@ -425,6 +425,19 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
                       )}
                       <span>{isTyping ? 'Solving...' : 'Solve Problem'}</span>
                     </Button>
+
+                    {/* Info about where solution will appear */}
+                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <div className="flex items-start space-x-2">
+                        <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                        <div className="text-sm">
+                          <p className="text-blue-800 dark:text-blue-200 font-medium">Solution will appear in AI Chat</p>
+                          <p className="text-blue-600 dark:text-blue-300 mt-1">
+                            Your solved problem and step-by-step solution will be displayed in the AI Chat tab for easy reference and follow-up questions.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
 
