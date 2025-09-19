@@ -74,14 +74,21 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
     
+    console.log('🔍 Credit Status Check:', { isProUser, hasCredits, creditStatus });
+    
     // Check credits before sending message
     if (!isProUser && !hasCredits) {
+      console.log('❌ No credits available, showing upgrade prompt');
       setShowUpgradePrompt(true);
       return;
     }
 
+    console.log('💳 Attempting to consume credit for AI Chat...');
     const creditConsumed = await consumeCredit('AI Chat', currentSession?.session_id);
+    console.log('💳 Credit consumption result:', creditConsumed);
+    
     if (!creditConsumed && !isProUser) {
+      console.log('❌ Credit consumption failed, showing upgrade prompt');
       setShowUpgradePrompt(true);
       return;
     }
