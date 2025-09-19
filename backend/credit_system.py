@@ -640,39 +640,53 @@ def _generate_qr_code(data: str) -> str:
 async def create_qr_payment(user_id: str, tier: SubscriptionTier, amount: float) -> QRCodePaymentResponse:
     """Create QR code payment for pro mode upgrade"""
     try:
+        print(f"🔍 Creating QR payment for user: {user_id}, tier: {tier}, amount: {amount}")
         conn = get_db_connection()
         if not conn:
+            print("❌ Database connection failed")
             raise HTTPException(status_code=500, detail="Database connection failed")
+        print("✅ Database connection successful")
         
         with conn.cursor() as cursor:
-            # Create payment_qr_codes table if it doesn't exist
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS payment_qr_codes (
-                    id SERIAL PRIMARY KEY,
-                    qr_code VARCHAR(255) UNIQUE NOT NULL,
-                    amount DECIMAL(10,2) NOT NULL,
-                    tier VARCHAR(50) NOT NULL,
-                    user_id VARCHAR(255),
-                    status VARCHAR(50) DEFAULT 'pending',
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    expires_at TIMESTAMP NOT NULL,
-                    payment_id VARCHAR(255),
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-            
-            # Generate unique payment ID and QR code
-            payment_id = f"QR_{uuid.uuid4().hex[:12].upper()}"
-            qr_code = f"PAY_{payment_id}"
-            
-            # Calculate expiry time (30 minutes from now)
-            expires_at = datetime.now() + timedelta(minutes=30)
-            
-            # Insert payment record
-            cursor.execute("""
-                INSERT INTO payment_qr_codes (qr_code, amount, tier, user_id, status, expires_at, payment_id)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """, (qr_code, amount, tier.value, user_id, 'pending', expires_at, payment_id))
+            try:
+                print("📝 Creating payment_qr_codes table...")
+                # Create payment_qr_codes table if it doesn't exist
+                cursor.execute("""
+                    CREATE TABLE IF NOT EXISTS payment_qr_codes (
+                        id SERIAL PRIMARY KEY,
+                        qr_code VARCHAR(255) UNIQUE NOT NULL,
+                        amount DECIMAL(10,2) NOT NULL,
+                        tier VARCHAR(50) NOT NULL,
+                        user_id VARCHAR(255),
+                        status VARCHAR(50) DEFAULT 'pending',
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        expires_at TIMESTAMP NOT NULL,
+                        payment_id VARCHAR(255),
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                """)
+                print("✅ Table creation successful")
+                
+                # Generate unique payment ID and QR code
+                payment_id = f"QR_{uuid.uuid4().hex[:12].upper()}"
+                qr_code = f"PAY_{payment_id}"
+                print(f"🆔 Generated payment_id: {payment_id}, qr_code: {qr_code}")
+                
+                # Calculate expiry time (30 minutes from now)
+                expires_at = datetime.now() + timedelta(minutes=30)
+                print(f"⏰ Expires at: {expires_at}")
+                
+                # Insert payment record
+                print("💾 Inserting payment record...")
+                cursor.execute("""
+                    INSERT INTO payment_qr_codes (qr_code, amount, tier, user_id, status, expires_at, payment_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)
+                """, (qr_code, amount, tier.value, user_id, 'pending', expires_at, payment_id))
+                print("✅ Payment record inserted successfully")
+                
+            except Exception as db_error:
+                print(f"❌ Database error: {db_error}")
+                raise HTTPException(status_code=500, detail=f"Database error: {str(db_error)}")
             
             conn.commit()
             cursor.close()
