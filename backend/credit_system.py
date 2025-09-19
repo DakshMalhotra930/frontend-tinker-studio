@@ -645,6 +645,22 @@ async def create_qr_payment(user_id: str, tier: SubscriptionTier, amount: float)
             raise HTTPException(status_code=500, detail="Database connection failed")
         
         with conn.cursor() as cursor:
+            # Create payment_qr_codes table if it doesn't exist
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS payment_qr_codes (
+                    id SERIAL PRIMARY KEY,
+                    qr_code VARCHAR(255) UNIQUE NOT NULL,
+                    amount DECIMAL(10,2) NOT NULL,
+                    tier VARCHAR(50) NOT NULL,
+                    user_id VARCHAR(255),
+                    status VARCHAR(50) DEFAULT 'pending',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP NOT NULL,
+                    payment_id VARCHAR(255),
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
             # Generate unique payment ID and QR code
             payment_id = f"QR_{uuid.uuid4().hex[:12].upper()}"
             qr_code = f"PAY_{payment_id}"
