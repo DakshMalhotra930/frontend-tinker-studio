@@ -820,19 +820,26 @@ async def get_qr_payment_status(qr_code: str) -> Dict[str, Any]:
 async def create_qr_payment_endpoint(request: QRCodePaymentRequest):
     """Create QR code payment for pro mode upgrade"""
     try:
+        print(f"🔍 QR Payment Endpoint called with: user_id={request.user_id}, tier={request.tier}, amount={request.amount}")
+        
         # Define pricing for different tiers
         pricing = {
             SubscriptionTier.PRO_MONTHLY: 99.0,
             SubscriptionTier.PRO_YEARLY: 999.0,
         }
         
+        print(f"💰 Pricing validation: tier={request.tier}, expected_amount={pricing.get(request.tier)}")
+        
         # Validate amount
         expected_amount = pricing.get(request.tier)
         if not expected_amount or request.amount != expected_amount:
+            print(f"❌ Amount validation failed: expected={expected_amount}, got={request.amount}")
             raise HTTPException(
                 status_code=400, 
                 detail=f"Invalid amount for {request.tier.value}. Expected: ₹{expected_amount}"
             )
+        
+        print("✅ Amount validation passed, calling create_qr_payment...")
         
         # Create QR payment
         qr_payment = await create_qr_payment(
@@ -841,13 +848,17 @@ async def create_qr_payment_endpoint(request: QRCodePaymentRequest):
             amount=request.amount
         )
         
+        print("✅ QR payment created successfully")
         return qr_payment
         
-    except HTTPException:
+    except HTTPException as he:
+        print(f"❌ HTTP Exception: {he.detail}")
         raise
     except Exception as e:
-        print(f"❌ Error creating QR payment: {e}")
-        raise HTTPException(status_code=500, detail="Failed to create QR payment")
+        print(f"❌ Unexpected error creating QR payment: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to create QR payment: {str(e)}")
 
 @router.post("/payment/qr/verify")
 async def verify_qr_payment_endpoint(request: QRPaymentVerificationRequest):
