@@ -47,7 +47,7 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
 
   const tierInfo = {
     pro_monthly: { name: 'Pro Monthly', price: 99, period: 'month' },
-    pro_yearly: { name: 'Pro Yearly', price: 990, period: 'year' },
+    pro_yearly: { name: 'Pro Yearly', price: 999, period: 'year' },
   };
 
   const currentTier = tierInfo[tier];

@@ -662,7 +662,9 @@ async def create_qr_payment(user_id: str, tier: SubscriptionTier, amount: float)
             cursor.close()
             
             # Generate QR code image with UPI payment details
-            qr_data = f"upi://pay?pa=dakshmalhotra930@oksbi&pn=AI%20Tutor%20Pro&tr={payment_id}&am={int(amount)}&cu=INR&tn=Pro%20Mode%20Upgrade"
+            # Use your actual UPI ID and proper business name
+            tier_name = "Monthly" if tier == SubscriptionTier.PRO_MONTHLY else "Yearly"
+            qr_data = f"upi://pay?pa=dakshmalhotra930@gmail.com@paytm&pn=PraxisAI&tr={payment_id}&am={int(amount)}&cu=INR&tn=PraxisAI%20Pro%20{tier_name}%20Subscription"
             qr_image = _generate_qr_code(qr_data)
             
             print(f"✅ QR payment created: {payment_id} for user {user_id}")
@@ -716,19 +718,28 @@ async def verify_qr_payment(qr_code: str, user_id: str) -> Dict[str, Any]:
                 WHERE qr_code = %s
             """, (qr_code,))
             
-            # Upgrade user subscription
+            # Upgrade user subscription based on tier
             tier = SubscriptionTier(payment_record['tier'])
+            
+            # Calculate expiry date based on subscription tier
+            if tier == SubscriptionTier.PRO_MONTHLY:
+                expiry_interval = "1 month"
+            elif tier == SubscriptionTier.PRO_YEARLY:
+                expiry_interval = "1 year"
+            else:
+                expiry_interval = "1 year"  # Default fallback
+            
             cursor.execute("""
                 INSERT INTO pro_subscriptions (user_id, subscription_status, subscription_tier, subscribed_at, expires_at)
-                VALUES (%s, 'pro', %s, NOW(), NOW() + INTERVAL '1 year')
+                VALUES (%s, 'pro', %s, NOW(), NOW() + INTERVAL %s)
                 ON CONFLICT (user_id) 
                 DO UPDATE SET 
                     subscription_status = 'pro',
                     subscription_tier = %s,
                     subscribed_at = NOW(),
-                    expires_at = NOW() + INTERVAL '1 year',
+                    expires_at = NOW() + INTERVAL %s,
                     updated_at = NOW()
-            """, (user_id, tier.value, tier.value))
+            """, (user_id, tier.value, expiry_interval, tier.value, expiry_interval))
             
             conn.commit()
             cursor.close()
