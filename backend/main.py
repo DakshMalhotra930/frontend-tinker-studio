@@ -105,7 +105,16 @@ class AskQuestionRequest(BaseModel):
 
 app = FastAPI()
 
-# Deploy database functions on startup (non-blocking)
+# Setup database schema and functions on startup (non-blocking)
+try:
+    from setup_database import setup_database
+    print("🔄 Setting up database schema...")
+    setup_database()
+    print("✅ Database schema setup completed!")
+except Exception as e:
+    print(f"⚠️ Database schema setup failed: {e}")
+    print("⚠️ Backend will continue with fallback SQL queries...")
+
 try:
     deploy_database_functions()
 except Exception as e:
