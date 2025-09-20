@@ -226,6 +226,7 @@ class ProblemSolveRequest(BaseModel):
     problem: str = Field(..., description="Problem statement")
     step: Optional[int] = Field(1, description="Current step in solving process")
     hint_level: Optional[int] = Field(1, description="Level of hint detail (1-3)")
+    image_data: Optional[str] = Field(None, description="Optional base64 encoded image data")
 
 class StudyPlanRequest(BaseModel):
     """Request model for generating study plans"""
@@ -3176,12 +3177,15 @@ async def problem_solve(request: ProblemSolveRequest):
         - Is appropriate for JEE preparation level
         """
         
-        # Generate response
+        # Generate response with image support
+        use_vision = bool(request.image_data)
         response = await AIContentGenerator.generate_response(
             messages=[{"role": "user", "content": f"Help me solve: {request.problem}"}],
             system_prompt=system_prompt,
             max_tokens=2048,
-            temperature=0.6
+            temperature=0.6,
+            use_vision_model=use_vision,
+            image_data=request.image_data if request.image_data else None
         )
         
         # Add to session
