@@ -2623,7 +2623,7 @@ class SubscriptionManager:
             cursor.close()
             
             # Generate QR code image with your actual UPI details
-            qr_data = f"upi://pay?pa=dakshmalhotra930@gmail.com@paytm&pn=PraxisAI&tr={payment_id}&am=99&cu=INR&tn=Pro%20Mode%20Upgrade"
+            qr_data = f"upi://pay?pa=dakshmalhotra930@oksbi&pn=PraxisAI&tr={payment_id}&am=99&cu=INR&tn=Pro%20Mode%20Upgrade"
             qr_image = self._generate_qr_code(qr_data)
             
             print(f"✅ QR payment created: {payment_id} for user {user_id}")

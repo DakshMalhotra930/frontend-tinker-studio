@@ -709,7 +709,7 @@ async def create_qr_payment(user_id: str, tier: SubscriptionTier, amount: float)
             # Generate QR code image with UPI payment details
             # Use your actual UPI ID and proper business name
             tier_name = "Monthly" if tier == SubscriptionTier.PRO_MONTHLY else "Yearly"
-            qr_data = f"upi://pay?pa=dakshmalhotra930@gmail.com@paytm&pn=PraxisAI&tr={payment_id}&am={int(amount)}&cu=INR&tn=PraxisAI%20Pro%20{tier_name}%20Subscription"
+            qr_data = f"upi://pay?pa=dakshmalhotra930@oksbi&pn=PraxisAI&tr={payment_id}&am={int(amount)}&cu=INR&tn=PraxisAI%20Pro%20{tier_name}%20Subscription"
             
             print(f"🖼️ Generating QR code for: {qr_data}")
             qr_image = _generate_qr_code(qr_data)
