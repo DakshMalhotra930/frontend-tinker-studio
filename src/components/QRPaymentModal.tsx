@@ -101,7 +101,7 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
     if (!qrData?.qr_code) return;
 
     try {
-      setIsVerifying(true);
+      // Don't set isVerifying for automatic status checks
       const status = await paymentAPI.getQRPaymentStatus(qrData.qr_code);
       setPaymentStatus(status.status);
 
@@ -113,8 +113,6 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
       }
     } catch (error) {
       console.error('Failed to check payment status:', error);
-    } finally {
-      setIsVerifying(false);
     }
   };
 
@@ -125,10 +123,8 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
       setIsVerifying(true);
       setStep('verifying');
       
-      const result = await paymentAPI.verifyQRPayment({
-        qr_code: qrData.qr_code,
-        user_id: userId
-      });
+      // Use manual verification endpoint
+      const result = await paymentAPI.verifyManualPayment(qrData.qr_code, userId);
 
       if (result.success) {
         setPaymentStatus('completed');
@@ -137,6 +133,11 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
       } else {
         setPaymentStatus('failed');
         setStep('error');
+        toast({
+          title: 'Verification Failed',
+          description: result.message || 'Payment not found or already processed.',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Payment verification failed:', error);

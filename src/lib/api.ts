@@ -393,6 +393,25 @@ export const paymentAPI = {
     });
   },
 
+  // Manual verification for UPI payments
+  verifyManualPayment: async (qr_code: string, user_id: string): Promise<{
+    success: boolean;
+    message?: string;
+    status?: string;
+    tier?: string;
+    amount?: number;
+  }> => {
+    return apiRequest<{
+      success: boolean;
+      message?: string;
+      status?: string;
+      tier?: string;
+      amount?: number;
+    }>(`/api/payment/qr/verify-manual?qr_code=${encodeURIComponent(qr_code)}&user_id=${encodeURIComponent(user_id)}`, {
+      method: 'POST',
+    });
+  },
+
   // Get QR payment status
   getQRPaymentStatus: async (qr_code: string): Promise<{ status: string; amount: number; tier: string }> => {
     return apiRequest<{ status: string; amount: number; tier: string }>(`/api/payment/qr/status/${qr_code}`, {
