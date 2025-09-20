@@ -800,9 +800,6 @@ class AIContentGenerator:
             # Check if we need to use Gemini Vision
             if use_vision_model and image_data and gemini_model:
                 print(f"🔄 Using Gemini Pro Vision for image analysis")
-            elif use_vision_model and image_data and not gemini_model:
-                print("❌ Gemini Vision model not available - API key missing")
-                return "I'm sorry, but image analysis is currently unavailable. The Gemini Vision API key is not configured. Please contact the administrator to enable image processing capabilities, or try describing your problem in text instead."
                 
                 # Prepare the prompt for Gemini Vision
                 user_message = messages[-1]['content'] if messages else ""
@@ -841,6 +838,10 @@ Please analyze this image and provide a comprehensive JEE-level solution.
                     print(f"Error in Gemini Vision processing: {e}")
                     # Fallback to text-only processing
                     pass
+                    
+            elif use_vision_model and image_data and not gemini_model:
+                print("❌ Gemini Vision model not available - API key missing")
+                return "I'm sorry, but image analysis is currently unavailable. The Gemini Vision API key is not configured. Please contact the administrator to enable image processing capabilities, or try describing your problem in text instead."
             
             # Fallback to Together AI for text-only or if Gemini fails
             print(f"🔄 Using Together AI: {DEFAULT_MODEL}")
