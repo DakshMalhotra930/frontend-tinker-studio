@@ -611,9 +611,30 @@ async def get_pro_features():
         conn.close()
 
 # QR Payment Functions
-def _generate_qr_code(data: str) -> str:
+def _generate_qr_code(data: str, amount: int = None) -> str:
     """Generate QR code image and return as base64 string"""
     try:
+        # For ₹99 payments, use the custom 99.png image
+        if amount == 99:
+            print(f"🖼️ Using custom 99.png image for ₹99 payment")
+            try:
+                import base64
+                import os
+                
+                # Check if 99.png exists
+                qr_image_path = os.path.join(os.path.dirname(__file__), '99.png')
+                if os.path.exists(qr_image_path):
+                    with open(qr_image_path, 'rb') as f:
+                        qr_image_data = f.read()
+                        qr_base64 = base64.b64encode(qr_image_data).decode()
+                    print(f"✅ Custom 99.png loaded successfully, length: {len(qr_base64)}")
+                    return qr_base64
+                else:
+                    print(f"⚠️ Custom 99.png not found at {qr_image_path}, falling back to generated QR")
+            except Exception as e:
+                print(f"⚠️ Failed to load custom 99.png: {e}, falling back to generated QR")
+        
+        # Generate QR code dynamically for other amounts
         print(f"🔍 Attempting to import qrcode...")
         import qrcode
         print(f"✅ qrcode imported successfully")
@@ -712,7 +733,7 @@ async def create_qr_payment(user_id: str, tier: SubscriptionTier, amount: float)
             qr_data = f"upi://pay?pa=dakshmalhotra930@oksbi&pn=PraxisAI&tr={payment_id}&am={int(amount)}&cu=INR&tn=PraxisAI%20Pro%20{tier_name}%20Subscription"
             
             print(f"🖼️ Generating QR code for: {qr_data}")
-            qr_image = _generate_qr_code(qr_data)
+            qr_image = _generate_qr_code(qr_data, int(amount))
             
             if not qr_image:
                 print("⚠️ QR code generation failed, using fallback")

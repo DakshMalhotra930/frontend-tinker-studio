@@ -2575,9 +2575,29 @@ class SubscriptionManager:
     
     # ===== QR CODE PAYMENT METHODS =====
     
-    def _generate_qr_code(self, data: str) -> str:
+    def _generate_qr_code(self, data: str, amount: int = None) -> str:
         """Generate QR code image and return as base64 string"""
         try:
+            # For ₹99 payments, use the custom 99.png image
+            if amount == 99:
+                print(f"🖼️ Using custom 99.png image for ₹99 payment")
+                try:
+                    import os
+                    
+                    # Check if 99.png exists
+                    qr_image_path = os.path.join(os.path.dirname(__file__), '99.png')
+                    if os.path.exists(qr_image_path):
+                        with open(qr_image_path, 'rb') as f:
+                            qr_image_data = f.read()
+                            img_str = base64.b64encode(qr_image_data).decode()
+                        print(f"✅ Custom 99.png loaded successfully, length: {len(img_str)}")
+                        return img_str
+                    else:
+                        print(f"⚠️ Custom 99.png not found at {qr_image_path}, falling back to generated QR")
+                except Exception as e:
+                    print(f"⚠️ Failed to load custom 99.png: {e}, falling back to generated QR")
+            
+            # Generate QR code dynamically for other amounts
             qr = qrcode.QRCode(
                 version=1,
                 error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -2624,7 +2644,7 @@ class SubscriptionManager:
             
             # Generate QR code image with your actual UPI details
             qr_data = f"upi://pay?pa=dakshmalhotra930@oksbi&pn=PraxisAI&tr={payment_id}&am=99&cu=INR&tn=Pro%20Mode%20Upgrade"
-            qr_image = self._generate_qr_code(qr_data)
+            qr_image = self._generate_qr_code(qr_data, 99)
             
             print(f"✅ QR payment created: {payment_id} for user {user_id}")
             
