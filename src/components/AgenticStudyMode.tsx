@@ -116,8 +116,25 @@ export function AgenticStudyMode({ topic, chapter, subject }: AgenticStudyModePr
     }
 
     try {
-      await solveProblem(problemInput);
+      // Convert image to base64 if uploaded
+      let imageData: string | undefined;
+      if (uploadedImage) {
+        imageData = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            // Remove the data:image/...;base64, prefix
+            const base64Data = result.split(',')[1];
+            resolve(base64Data);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(uploadedImage);
+        });
+      }
+
+      await solveProblem(problemInput, imageData);
       setProblemInput('');
+      setUploadedImage(null); // Clear the uploaded image
       
       // Confirm credit consumption with backend
       await consumeCredit('problem_generator', currentSession?.session_id);

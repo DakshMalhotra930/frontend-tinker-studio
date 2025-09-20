@@ -177,6 +177,7 @@ export const problemAPI = {
     problem: string;
     step?: number;
     hint_level?: number;
+    image_data?: string;
   }): Promise<ProblemSolveResponse> => {
     return apiRequest<ProblemSolveResponse>('/agentic/session/solve', {
       method: 'POST',

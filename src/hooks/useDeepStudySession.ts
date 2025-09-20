@@ -177,12 +177,12 @@ What's your exam timeline and current preparation status?`,
     }
   }, [currentSession]);
 
-  const solveProblem = useCallback(async (problem: string) => {
+  const solveProblem = useCallback(async (problem: string, imageData?: string) => {
     if (!problem.trim() || !currentSession) return;
 
     const problemMessage: ChatMessage = {
       id: Date.now().toString(),
-      text: `Please help me solve this problem: ${problem}`,
+      text: imageData ? `Please help me solve this problem (with image): ${problem}` : `Please help me solve this problem: ${problem}`,
       isUser: true,
       timestamp: new Date(),
     };
@@ -197,6 +197,7 @@ What's your exam timeline and current preparation status?`,
         problem,
         step: 1,
         hint_level: 3, // Full solution
+        image_data: imageData,
       });
       
       const solutionMessage: ChatMessage = {
