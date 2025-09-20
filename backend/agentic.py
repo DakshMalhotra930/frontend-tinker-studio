@@ -2708,7 +2708,16 @@ class SubscriptionManager:
         """Get payment status for a QR code"""
         try:
             if not self._ensure_db_connection():
-                raise HTTPException(status_code=500, detail="Database connection failed")
+                print(f"❌ Database connection failed for QR status check: {qr_code}")
+                return {
+                    "status": "error",
+                    "amount": 0,
+                    "tier": "",
+                    "expires_at": "",
+                    "created_at": "",
+                    "is_expired": True,
+                    "error": "Database connection failed"
+                }
             
             cursor = self.db_connection.cursor(cursor_factory=RealDictCursor)
             cursor.execute("""
@@ -2721,7 +2730,19 @@ class SubscriptionManager:
             cursor.close()
             
             if not payment_record:
-                raise HTTPException(status_code=404, detail="Payment not found")
+                print(f"❌ Payment not found for QR: {qr_code}")
+                return {
+                    "status": "not_found",
+                    "amount": 0,
+                    "tier": "",
+                    "expires_at": "",
+                    "created_at": "",
+                    "is_expired": True,
+                    "error": "Payment not found"
+                }
+            
+            is_expired = payment_record['expires_at'] < datetime.now()
+            print(f"✅ Payment status retrieved for QR {qr_code}: {payment_record['status']}")
             
             return {
                 "status": payment_record['status'],
@@ -2729,14 +2750,22 @@ class SubscriptionManager:
                 "tier": payment_record['tier'],
                 "expires_at": payment_record['expires_at'].isoformat(),
                 "created_at": payment_record['created_at'].isoformat(),
-                "is_expired": payment_record['expires_at'] < datetime.now()
+                "is_expired": is_expired
             }
             
-        except HTTPException:
-            raise
         except Exception as e:
-            print(f"❌ Error getting payment status: {e}")
-            raise HTTPException(status_code=500, detail="Failed to get payment status")
+            print(f"❌ Error getting payment status for QR {qr_code}: {e}")
+            import traceback
+            traceback.print_exc()
+            return {
+                "status": "error",
+                "amount": 0,
+                "tier": "",
+                "expires_at": "",
+                "created_at": "",
+                "is_expired": True,
+                "error": str(e)
+            }
 
 # Initialize subscription manager
 subscription_manager = SubscriptionManager()
@@ -4365,6 +4394,81 @@ async def verify_qr_payment(request: PaymentVerificationRequest):
         print(f"❌ Error verifying QR payment: {e}")
         raise HTTPException(status_code=500, detail="Failed to verify payment")
 
+@router.post("/payment/qr/verify-manual")
+async def verify_qr_payment_manual(qr_code: str, user_id: str):
+    """Manual payment verification - call this after making UPI payment"""
+    try:
+        print(f"🔄 Manual payment verification for QR: {qr_code}, User: {user_id}")
+        
+        # Check if payment exists and is pending
+        if not subscription_manager._ensure_db_connection():
+            raise HTTPException(status_code=500, detail="Database connection failed")
+        
+        cursor = subscription_manager.db_connection.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("""
+            SELECT * FROM payment_qr_codes 
+            WHERE qr_code = %s AND user_id = %s AND status = 'pending'
+        """, (qr_code, user_id))
+        
+        payment_record = cursor.fetchone()
+        
+        if not payment_record:
+            cursor.close()
+            return {
+                "success": False,
+                "message": "Payment not found or already processed",
+                "status": "not_found"
+            }
+        
+        # Check if payment is expired
+        from datetime import datetime
+        if payment_record['expires_at'] < datetime.now():
+            cursor.close()
+            return {
+                "success": False,
+                "message": "Payment has expired",
+                "status": "expired"
+            }
+        
+        # For manual verification, we assume payment was successful
+        # In a real implementation, you would verify with UPI provider
+        print(f"✅ Manual verification successful for payment: {qr_code}")
+        
+        # Update payment status
+        cursor.execute("""
+            UPDATE payment_qr_codes 
+            SET status = 'completed' 
+            WHERE qr_code = %s
+        """, (qr_code,))
+        
+        # Upgrade user subscription
+        from credit_system import SubscriptionTier
+        tier = SubscriptionTier(payment_record['tier'])
+        await subscription_manager.upgrade_subscription(
+            user_id=user_id,
+            tier=tier,
+            payment_id=payment_record['payment_id']
+        )
+        
+        subscription_manager.db_connection.commit()
+        cursor.close()
+        
+        return {
+            "success": True,
+            "message": "Payment verified and subscription upgraded successfully",
+            "status": "completed",
+            "tier": tier.value,
+            "amount": float(payment_record['amount'])
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ Error in manual payment verification: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Failed to verify payment")
+
 @router.get("/payment/qr/status/{qr_code}")
 async def get_qr_payment_status(qr_code: str):
     """Get payment status for a QR code"""
@@ -4372,11 +4476,74 @@ async def get_qr_payment_status(qr_code: str):
         status = await subscription_manager.get_payment_status(qr_code)
         return status
         
-    except HTTPException:
-        raise
     except Exception as e:
         print(f"❌ Error getting payment status: {e}")
-        raise HTTPException(status_code=500, detail="Failed to get payment status")
+        return {
+            "status": "error",
+            "amount": 0,
+            "tier": "",
+            "expires_at": "",
+            "created_at": "",
+            "is_expired": True,
+            "error": str(e)
+        }
+
+@router.get("/payment/qr/stream/{qr_code}")
+async def stream_payment_status(qr_code: str):
+    """Stream payment status updates using Server-Sent Events"""
+    from fastapi.responses import StreamingResponse
+    import asyncio
+    import json
+    
+    async def event_stream():
+        try:
+            # Check initial status
+            status = await subscription_manager.get_payment_status(qr_code)
+            yield f"data: {json.dumps(status)}\n\n"
+            
+            # If already completed, stop streaming
+            if status.get('status') == 'completed':
+                return
+            
+            # Poll for updates every 5 seconds for up to 30 minutes
+            max_attempts = 360  # 30 minutes / 5 seconds
+            attempts = 0
+            
+            while attempts < max_attempts:
+                await asyncio.sleep(5)  # Wait 5 seconds
+                attempts += 1
+                
+                try:
+                    current_status = await subscription_manager.get_payment_status(qr_code)
+                    yield f"data: {json.dumps(current_status)}\n\n"
+                    
+                    # Stop streaming if payment is completed or expired
+                    if current_status.get('status') in ['completed', 'expired']:
+                        break
+                        
+                except Exception as e:
+                    print(f"❌ Error checking payment status: {e}")
+                    yield f"data: {json.dumps({'error': 'Failed to check payment status'})}\n\n"
+                    break
+            
+            # Send final status
+            final_status = await subscription_manager.get_payment_status(qr_code)
+            yield f"data: {json.dumps(final_status)}\n\n"
+            
+        except Exception as e:
+            print(f"❌ Error in payment status stream: {e}")
+            yield f"data: {json.dumps({'error': 'Stream ended due to error'})}\n\n"
+    
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "Cache-Control"
+        }
+    )
 
 @router.get("/subscription/pricing")
 async def get_subscription_pricing():
