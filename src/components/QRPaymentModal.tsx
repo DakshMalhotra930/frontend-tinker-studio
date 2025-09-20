@@ -243,22 +243,56 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <QrCode className="h-5 w-5" />
-                  Scan QR Code
+                  {qrData.payment_method === 'razorpay' ? 'Payment Link' : 'Scan QR Code'}
                 </CardTitle>
                 <CardDescription>
-                  Scan with any UPI app to complete payment
+                  {qrData.payment_method === 'razorpay' 
+                    ? 'Click the payment link to complete payment securely'
+                    : 'Scan with any UPI app to complete payment'
+                  }
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex justify-center">
-                  <div className="bg-white p-4 rounded-lg">
-                    <img 
-                      src={`data:image/png;base64,${qrData.qr_image}`}
-                      alt="UPI QR Code"
-                      className="w-48 h-48"
-                    />
+                {qrData.payment_method === 'razorpay' ? (
+                  /* Razorpay Payment Link */
+                  <div className="space-y-4">
+                    <div className="text-center">
+                      <Button
+                        onClick={() => window.open(qrData.payment_url, '_blank')}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded-lg font-medium"
+                        size="lg"
+                      >
+                        <CreditCard className="h-5 w-5 mr-2" />
+                        Pay ₹{qrData.amount} via Razorpay
+                      </Button>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm text-zinc-400 mb-2">
+                        Or scan this QR code to open payment link:
+                      </p>
+                      <div className="flex justify-center">
+                        <div className="bg-white p-4 rounded-lg">
+                          <img 
+                            src={`data:image/png;base64,${qrData.qr_image}`}
+                            alt="Payment QR Code"
+                            className="w-32 h-32"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  /* UPI QR Code */
+                  <div className="flex justify-center">
+                    <div className="bg-white p-4 rounded-lg">
+                      <img 
+                        src={`data:image/png;base64,${qrData.qr_image}`}
+                        alt="UPI QR Code"
+                        className="w-48 h-48"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 <div className="text-center space-y-2">
                   <div className="flex items-center justify-center gap-2">
@@ -280,31 +314,44 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
                 <div className="space-y-3">
                   <Label className="text-sm font-medium">Payment Instructions</Label>
                   <div className="text-sm text-zinc-600 space-y-2">
-                    <p>1. Open any UPI app (Google Pay, PhonePe, Paytm, BHIM)</p>
-                    <p>2. Scan the QR code above</p>
-                    <p>3. Complete the payment of ₹{currentTier.price}</p>
-                    <p>4. Click "Verify Payment" below</p>
+                    {qrData.payment_method === 'razorpay' ? (
+                      <>
+                        <p>1. Click "Pay ₹{currentTier.price} via Razorpay" button above</p>
+                        <p>2. Complete payment using UPI, Card, or Net Banking</p>
+                        <p>3. You'll be automatically redirected back</p>
+                        <p>4. Your Pro access will be activated instantly</p>
+                      </>
+                    ) : (
+                      <>
+                        <p>1. Open any UPI app (Google Pay, PhonePe, Paytm, BHIM)</p>
+                        <p>2. Scan the QR code above</p>
+                        <p>3. Complete the payment of ₹{currentTier.price}</p>
+                        <p>4. Click "Verify Payment" below</p>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                {/* Manual Verification Button */}
-                <div className="pt-2">
-                  <Button
-                    onClick={verifyPayment}
-                    disabled={isVerifying}
-                    className="w-full"
-                    variant="default"
-                  >
-                    {isVerifying ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Verifying...
-                      </>
-                    ) : (
-                      'Verify Payment'
-                    )}
-                  </Button>
-                </div>
+                {/* Manual Verification Button - Only show for UPI */}
+                {qrData.payment_method !== 'razorpay' && (
+                  <div className="pt-2">
+                    <Button
+                      onClick={verifyPayment}
+                      disabled={isVerifying}
+                      className="w-full"
+                      variant="default"
+                    >
+                      {isVerifying ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Verifying...
+                        </>
+                      ) : (
+                        'Verify Payment'
+                      )}
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}

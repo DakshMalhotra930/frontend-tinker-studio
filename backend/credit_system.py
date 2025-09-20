@@ -130,6 +130,8 @@ class QRCodePaymentResponse(BaseModel):
     tier: str
     expires_at: datetime
     payment_id: str
+    payment_method: str = "upi"  # "razorpay" or "upi"
+    payment_url: Optional[str] = None  # Razorpay payment URL if applicable
 
 class QRPaymentVerificationRequest(BaseModel):
     """Request model for QR payment verification"""
@@ -610,6 +612,109 @@ async def get_pro_features():
     finally:
         conn.close()
 
+# Razorpay Integration
+import razorpay
+from typing import Dict, Any
+
+class RazorpayIntegration:
+    """Razorpay payment integration"""
+    
+    def __init__(self):
+        self.key_id = os.getenv('RAZORPAY_KEY_ID')
+        self.key_secret = os.getenv('RAZORPAY_KEY_SECRET')
+        self.client = None
+        
+        if self.key_id and self.key_secret:
+            self.client = razorpay.Client(auth=(self.key_id, self.key_secret))
+            print(f"✅ Razorpay client initialized with key: {self.key_id[:8]}...")
+        else:
+            print(f"⚠️ Razorpay keys not found. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET")
+    
+    def create_payment_link(self, amount: int, payment_id: str, user_id: str, tier: str) -> Dict[str, Any]:
+        """Create Razorpay payment link"""
+        try:
+            if not self.client:
+                return {
+                    "success": False,
+                    "error": "Razorpay client not initialized",
+                    "fallback_qr": True
+                }
+            
+            # Create payment link
+            payment_link = self.client.payment_link.create({
+                "amount": amount * 100,  # Convert to paisa
+                "currency": "INR",
+                "description": f"PraxisAI Pro {tier} Subscription",
+                "customer": {
+                    "name": f"User {user_id}",
+                    "contact": "",
+                    "email": ""
+                },
+                "notify": {
+                    "sms": False,
+                    "email": False
+                },
+                "reminder_enable": True,
+                "callback_url": f"https://praxis-ai.fly.dev/payment/callback",
+                "callback_method": "get"
+            })
+            
+            print(f"✅ Razorpay payment link created: {payment_link['id']}")
+            
+            return {
+                "success": True,
+                "payment_link_id": payment_link['id'],
+                "payment_url": payment_link['short_url'],
+                "amount": amount,
+                "currency": "INR"
+            }
+            
+        except Exception as e:
+            print(f"❌ Error creating Razorpay payment link: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "fallback_qr": True
+            }
+    
+    def verify_payment(self, payment_id: str) -> Dict[str, Any]:
+        """Verify payment with Razorpay"""
+        try:
+            if not self.client:
+                return {
+                    "verified": False,
+                    "status": "error",
+                    "message": "Razorpay client not initialized"
+                }
+            
+            payment = self.client.payment.fetch(payment_id)
+            
+            if payment['status'] == 'captured':
+                return {
+                    "verified": True,
+                    "status": "completed",
+                    "amount": payment['amount'] / 100,  # Convert from paisa
+                    "currency": payment['currency'],
+                    "transaction_id": payment['id']
+                }
+            else:
+                return {
+                    "verified": False,
+                    "status": payment['status'],
+                    "message": f"Payment status: {payment['status']}"
+                }
+                
+        except Exception as e:
+            print(f"❌ Error verifying Razorpay payment: {e}")
+            return {
+                "verified": False,
+                "status": "error",
+                "message": str(e)
+            }
+
+# Initialize Razorpay
+razorpay_client = RazorpayIntegration()
+
 # Payment Provider Integration
 class PaymentProvider:
     """Base class for payment provider integrations"""
@@ -617,12 +722,14 @@ class PaymentProvider:
     @staticmethod
     def verify_payment(transaction_id: str, amount: float) -> dict:
         """Verify payment with payment provider"""
-        # This would integrate with actual payment providers like Razorpay, PayU, etc.
-        # For now, return a mock response
+        # Use Razorpay for verification
+        if razorpay_client.client:
+            return razorpay_client.verify_payment(transaction_id)
+        
         return {
             "verified": False,
             "status": "pending",
-            "message": "Payment verification not implemented"
+            "message": "Payment verification not available"
         }
 
 # QR Payment Functions
@@ -742,13 +849,30 @@ async def create_qr_payment(user_id: str, tier: SubscriptionTier, amount: float)
             conn.commit()
             cursor.close()
             
-            # Generate QR code image with UPI payment details
-            # Use your actual UPI ID and proper business name
+            # Try Razorpay payment link first, fallback to UPI QR
             tier_name = "Monthly" if tier == SubscriptionTier.PRO_MONTHLY else "Yearly"
-            qr_data = f"upi://pay?pa=dakshmalhotra930@oksbi&pn=PraxisAI&tr={payment_id}&am={int(amount)}&cu=INR&tn=PraxisAI%20Pro%20{tier_name}%20Subscription"
             
-            print(f"🖼️ Generating QR code for: {qr_data}")
-            qr_image = _generate_qr_code(qr_data, int(amount))
+            # Create Razorpay payment link
+            razorpay_result = razorpay_client.create_payment_link(
+                amount=int(amount),
+                payment_id=payment_id,
+                user_id=user_id,
+                tier=tier_name
+            )
+            
+            if razorpay_result["success"]:
+                print(f"✅ Razorpay payment link created: {razorpay_result['payment_url']}")
+                # Use Razorpay payment link
+                qr_data = razorpay_result['payment_url']
+                qr_image = _generate_qr_code(qr_data, int(amount))
+                payment_method = "razorpay"
+            else:
+                print(f"⚠️ Razorpay failed, falling back to UPI QR: {razorpay_result.get('error', 'Unknown error')}")
+                # Fallback to UPI QR
+                qr_data = f"upi://pay?pa=dakshmalhotra930@oksbi&pn=PraxisAI&tr={payment_id}&am={int(amount)}&cu=INR&tn=PraxisAI%20Pro%20{tier_name}%20Subscription"
+                print(f"🖼️ Generating UPI QR code for: {qr_data}")
+                qr_image = _generate_qr_code(qr_data, int(amount))
+                payment_method = "upi"
             
             if not qr_image:
                 print("⚠️ QR code generation failed, using fallback")
@@ -773,7 +897,9 @@ async def create_qr_payment(user_id: str, tier: SubscriptionTier, amount: float)
                 amount=amount,
                 tier=tier.value,
                 expires_at=expires_at,
-                payment_id=payment_id
+                payment_id=payment_id,
+                payment_method=payment_method,
+                payment_url=razorpay_result.get('payment_url') if razorpay_result.get('success') else None
             )
             
     except Exception as e:
@@ -1039,26 +1165,41 @@ async def _handle_razorpay_webhook(payload: dict) -> dict:
     try:
         print(f"🔍 Processing Razorpay webhook: {payload}")
         
+        # Razorpay webhook payload structure
+        event = payload.get("event")
+        payment_entity = payload.get("payload", {}).get("payment", {}).get("entity", {})
+        
         # Extract payment details
-        payment_id = payload.get("payload", {}).get("payment", {}).get("entity", {}).get("id")
-        amount = payload.get("payload", {}).get("payment", {}).get("entity", {}).get("amount")
-        status = payload.get("payload", {}).get("payment", {}).get("entity", {}).get("status")
+        payment_id = payment_entity.get("id")
+        amount = payment_entity.get("amount")
+        status = payment_entity.get("status")
+        currency = payment_entity.get("currency")
+        
+        print(f"📊 Razorpay webhook details: Event={event}, Payment ID={payment_id}, Amount={amount}, Status={status}")
         
         if not payment_id or not amount:
+            print("❌ Missing payment details in Razorpay webhook")
             return {"status": "error", "message": "Missing payment details"}
         
         # Convert amount from paisa to rupees
         amount_rupees = float(amount) / 100
         
-        if status == "captured":
+        # Handle different Razorpay events
+        if event == "payment.captured" and status == "captured":
+            print(f"✅ Razorpay payment captured: {payment_id}, Amount: ₹{amount_rupees}")
             # Payment successful, update user subscription
             return await _process_successful_payment(payment_id, amount_rupees, "razorpay")
+        elif event == "payment.failed":
+            print(f"❌ Razorpay payment failed: {payment_id}")
+            return {"status": "ignored", "message": "Payment failed"}
         else:
-            print(f"⚠️ Payment not successful, status: {status}")
-            return {"status": "ignored", "message": f"Payment status: {status}"}
+            print(f"⚠️ Razorpay event not handled: {event}, status: {status}")
+            return {"status": "ignored", "message": f"Event: {event}, Status: {status}"}
             
     except Exception as e:
         print(f"❌ Error handling Razorpay webhook: {e}")
+        import traceback
+        traceback.print_exc()
         return {"status": "error", "message": str(e)}
 
 async def _handle_payu_webhook(payload: dict) -> dict:
@@ -1401,21 +1542,29 @@ async def _verify_payment_with_providers(payment_id: str, amount: float) -> dict
     try:
         print(f"🔍 Verifying payment with providers: {payment_id}, Amount: {amount}")
         
-        # This would integrate with actual payment provider APIs
-        # For now, we'll return a mock response indicating no verification yet
+        # Try Razorpay verification first
+        if razorpay_client.client:
+            print(f"🔄 Checking Razorpay for payment: {payment_id}")
+            razorpay_result = razorpay_client.verify_payment(payment_id)
+            
+            if razorpay_result["verified"]:
+                print(f"✅ Razorpay verification successful: {payment_id}")
+                return {
+                    "verified": True,
+                    "provider": "razorpay",
+                    "transaction_id": razorpay_result["transaction_id"],
+                    "amount": razorpay_result["amount"],
+                    "message": "Payment verified via Razorpay"
+                }
+            else:
+                print(f"⚠️ Razorpay verification failed: {razorpay_result.get('message', 'Unknown error')}")
         
-        # In a real implementation, you would:
-        # 1. Check Razorpay API for payment status
-        # 2. Check PayU API for payment status  
-        # 3. Check UPI NPCI API for payment status
-        # 4. Return the first successful verification
-        
-        # Mock response - in production, replace with actual API calls
+        # If Razorpay verification fails, return pending status
         return {
             "verified": False,
             "provider": None,
             "transaction_id": None,
-            "message": "Payment verification not yet implemented - requires payment provider API integration"
+            "message": "Payment not yet confirmed by payment provider"
         }
         
     except Exception as e:
