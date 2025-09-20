@@ -614,27 +614,42 @@ async def get_pro_features():
 def _generate_qr_code(data: str) -> str:
     """Generate QR code image and return as base64 string"""
     try:
+        print(f"🔍 Attempting to import qrcode...")
+        import qrcode
+        print(f"✅ qrcode imported successfully")
+        
+        print(f"🔍 Creating QR code object...")
         qr = qrcode.QRCode(
             version=1,
             error_correction=qrcode.constants.ERROR_CORRECT_L,
             box_size=10,
             border=5
         )
+        
+        print(f"🔍 Adding data to QR code...")
         qr.add_data(data)
         qr.make(fit=True)
         
+        print(f"🔍 Creating QR code image...")
         # Create QR code image
         qr_img = qr.make_image(fill_color="black", back_color="white")
         
+        print(f"🔍 Converting to base64...")
         # Convert to base64
         import io
         buffer = io.BytesIO()
         qr_img.save(buffer, format='PNG')
         qr_base64 = base64.b64encode(buffer.getvalue()).decode()
         
+        print(f"✅ QR code generated successfully, length: {len(qr_base64)}")
         return qr_base64
+    except ImportError as e:
+        print(f"❌ qrcode import failed: {e}")
+        return ""
     except Exception as e:
         print(f"❌ Error generating QR code: {e}")
+        import traceback
+        traceback.print_exc()
         return ""
 
 async def create_qr_payment(user_id: str, tier: SubscriptionTier, amount: float) -> QRCodePaymentResponse:
@@ -695,7 +710,24 @@ async def create_qr_payment(user_id: str, tier: SubscriptionTier, amount: float)
             # Use your actual UPI ID and proper business name
             tier_name = "Monthly" if tier == SubscriptionTier.PRO_MONTHLY else "Yearly"
             qr_data = f"upi://pay?pa=dakshmalhotra930@gmail.com@paytm&pn=PraxisAI&tr={payment_id}&am={int(amount)}&cu=INR&tn=PraxisAI%20Pro%20{tier_name}%20Subscription"
+            
+            print(f"🖼️ Generating QR code for: {qr_data}")
             qr_image = _generate_qr_code(qr_data)
+            
+            if not qr_image:
+                print("⚠️ QR code generation failed, using fallback")
+                # Create a simple text-based QR code as fallback
+                qr_image = "data:image/svg+xml;base64," + base64.b64encode(f"""
+                <svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="200" height="200" fill="white"/>
+                    <text x="100" y="100" text-anchor="middle" font-family="monospace" font-size="12">
+                        QR Code Unavailable
+                    </text>
+                    <text x="100" y="120" text-anchor="middle" font-family="monospace" font-size="10">
+                        Use UPI Link Instead
+                    </text>
+                </svg>
+                """.encode()).decode()
             
             print(f"✅ QR payment created: {payment_id} for user {user_id}")
             

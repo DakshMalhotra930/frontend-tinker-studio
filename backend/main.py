@@ -449,7 +449,31 @@ async def ask_question(request: AskQuestionRequest):
             
             # Handle image problems with Gemini Vision
             if request.image_data:
-                print("🖼️ Image data detected - using Gemini Pro Vision")
+                print("🖼️ Image data detected - checking vision capabilities")
+                
+                # Check if Gemini vision is available
+                try:
+                    from agentic import gemini_model
+                    if not gemini_model:
+                        print("❌ Gemini Vision not available - API key missing")
+                        return JSONResponse(content={
+                            "answer": "I'm sorry, but image analysis is currently unavailable. The Gemini Vision API key is not configured on the server. Please contact the administrator to enable image processing capabilities, or try describing your problem in text instead.",
+                            "source_chapter": "System Error",
+                            "source_level": "Configuration",
+                            "image_processed": False,
+                            "error": "vision_unavailable"
+                        })
+                except ImportError:
+                    print("❌ Could not import Gemini model")
+                    return JSONResponse(content={
+                        "answer": "I'm sorry, but image analysis is currently unavailable. The vision processing module could not be loaded. Please contact the administrator to enable image processing capabilities, or try describing your problem in text instead.",
+                        "source_chapter": "System Error", 
+                        "source_level": "Configuration",
+                        "image_processed": False,
+                        "error": "vision_module_unavailable"
+                    })
+                
+                print("✅ Gemini Vision available - processing image")
                 
                 # Use Gemini Vision for direct image analysis
                 enhanced_question = f"""
@@ -723,6 +747,34 @@ Please provide a comprehensive solution that addresses both the question and the
         
         # Now call the problem solver endpoint with both text and image data
         try:
+            # Check if Gemini vision is available before processing
+            try:
+                from agentic import gemini_model
+                if not gemini_model:
+                    print("❌ Gemini Vision not available - returning error message")
+                    return JSONResponse(content={
+                        "answer": "I'm sorry, but image analysis is currently unavailable. The Gemini Vision API key is not configured on the server. Please contact the administrator to enable image processing capabilities, or try describing your problem in text instead.",
+                        "source_chapter": "System Error",
+                        "source_level": "Configuration", 
+                        "image_processed": False,
+                        "error": "vision_unavailable",
+                        "image_metadata": {
+                            'filename': image.filename,
+                            'size': len(image_content),
+                            'format': getattr(pil_image, 'format', 'unknown'),
+                            'dimensions': f"{getattr(pil_image, 'size', [0, 0])[0]}x{getattr(pil_image, 'size', [0, 0])[1]}"
+                        }
+                    })
+            except ImportError:
+                print("❌ Could not import Gemini model")
+                return JSONResponse(content={
+                    "answer": "I'm sorry, but image analysis is currently unavailable. The vision processing module could not be loaded. Please contact the administrator to enable image processing capabilities, or try describing your problem in text instead.",
+                    "source_chapter": "System Error",
+                    "source_level": "Configuration",
+                    "image_processed": False,
+                    "error": "vision_module_unavailable"
+                })
+            
             # Use Gemini Vision for direct image analysis
             print(f"🔄 Using Gemini 1.5 Flash for direct image processing")
             
@@ -783,6 +835,28 @@ async def image_solve_base64(request: AskQuestionRequest):
         raise HTTPException(status_code=400, detail="Image data is required for this endpoint")
     
     try:
+        # Check if Gemini vision is available before processing
+        try:
+            from agentic import gemini_model
+            if not gemini_model:
+                print("❌ Gemini Vision not available - returning error message")
+                return JSONResponse(content={
+                    "answer": "I'm sorry, but image analysis is currently unavailable. The Gemini Vision API key is not configured on the server. Please contact the administrator to enable image processing capabilities, or try describing your problem in text instead.",
+                    "source_chapter": "System Error",
+                    "source_level": "Configuration",
+                    "image_processed": False,
+                    "error": "vision_unavailable"
+                })
+        except ImportError:
+            print("❌ Could not import Gemini model")
+            return JSONResponse(content={
+                "answer": "I'm sorry, but image analysis is currently unavailable. The vision processing module could not be loaded. Please contact the administrator to enable image processing capabilities, or try describing your problem in text instead.",
+                "source_chapter": "System Error",
+                "source_level": "Configuration", 
+                "image_processed": False,
+                "error": "vision_module_unavailable"
+            })
+        
         # Use the original base64 string directly - no fixing or decoding needed
         print(f"🔄 Using original base64 string: {len(request.image_data)} characters")
         
