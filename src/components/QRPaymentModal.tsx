@@ -123,12 +123,19 @@ const QRPaymentModal: React.FC<QRPaymentModalProps> = ({
       setIsVerifying(true);
       setStep('verifying');
       
-      // Use manual verification endpoint
-      const result = await paymentAPI.verifyManualPayment(qrData.qr_code, userId);
+      // Use hybrid verification - tries automatic first, then manual
+      const result = await paymentAPI.verifyPaymentHybrid(qrData.qr_code, userId);
 
       if (result.success) {
         setPaymentStatus('completed');
         setStep('success');
+        
+        const methodText = result.method === 'automatic' ? 'automatically verified' : 'manually verified';
+        toast({
+          title: 'Payment Verified!',
+          description: `Your payment was ${methodText} and Pro access has been activated successfully.`,
+        });
+        
         onSuccess();
       } else {
         setPaymentStatus('failed');

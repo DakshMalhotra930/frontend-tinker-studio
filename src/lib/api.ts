@@ -412,6 +412,89 @@ export const paymentAPI = {
     });
   },
 
+  // Automatic verification using payment provider APIs
+  verifyAutomaticPayment: async (qr_code: string, user_id: string): Promise<{
+    success: boolean;
+    message?: string;
+    status?: string;
+    tier?: string;
+    amount?: number;
+    provider?: string;
+    retry_after?: number;
+  }> => {
+    return apiRequest<{
+      success: boolean;
+      message?: string;
+      status?: string;
+      tier?: string;
+      amount?: number;
+      provider?: string;
+      retry_after?: number;
+    }>(`/api/payment/qr/verify-automatic?qr_code=${encodeURIComponent(qr_code)}&user_id=${encodeURIComponent(user_id)}`, {
+      method: 'POST',
+    });
+  },
+
+  // Hybrid verification - tries automatic first, then manual
+  verifyPaymentHybrid: async (qr_code: string, user_id: string): Promise<{
+    success: boolean;
+    message?: string;
+    status?: string;
+    tier?: string;
+    amount?: number;
+    provider?: string;
+    method?: 'automatic' | 'manual';
+  }> => {
+    try {
+      // Try automatic verification first
+      console.log('🔄 Trying automatic payment verification...');
+      const autoResult = await apiRequest<{
+        success: boolean;
+        message?: string;
+        status?: string;
+        tier?: string;
+        amount?: number;
+        provider?: string;
+        retry_after?: number;
+      }>(`/api/payment/qr/verify-automatic?qr_code=${encodeURIComponent(qr_code)}&user_id=${encodeURIComponent(user_id)}`, {
+        method: 'POST',
+      });
+
+      if (autoResult.success) {
+        return {
+          ...autoResult,
+          method: 'automatic'
+        };
+      }
+
+      // If automatic verification failed or payment not found, try manual verification
+      console.log('🔄 Automatic verification failed, trying manual verification...');
+      const manualResult = await apiRequest<{
+        success: boolean;
+        message?: string;
+        status?: string;
+        tier?: string;
+        amount?: number;
+      }>(`/api/payment/qr/verify-manual?qr_code=${encodeURIComponent(qr_code)}&user_id=${encodeURIComponent(user_id)}`, {
+        method: 'POST',
+      });
+
+      return {
+        ...manualResult,
+        method: 'manual'
+      };
+
+    } catch (error) {
+      console.error('❌ Hybrid payment verification failed:', error);
+      return {
+        success: false,
+        message: 'Payment verification failed',
+        status: 'error',
+        method: 'automatic'
+      };
+    }
+  },
+
   // Get QR payment status
   getQRPaymentStatus: async (qr_code: string): Promise<{ status: string; amount: number; tier: string }> => {
     return apiRequest<{ status: string; amount: number; tier: string }>(`/api/payment/qr/status/${qr_code}`, {

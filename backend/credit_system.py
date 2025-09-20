@@ -14,7 +14,7 @@ from typing import Optional, Dict, Any, List
 from dataclasses import dataclass
 from enum import Enum
 
-from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, BackgroundTasks, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 import psycopg2
@@ -610,6 +610,21 @@ async def get_pro_features():
     finally:
         conn.close()
 
+# Payment Provider Integration
+class PaymentProvider:
+    """Base class for payment provider integrations"""
+    
+    @staticmethod
+    def verify_payment(transaction_id: str, amount: float) -> dict:
+        """Verify payment with payment provider"""
+        # This would integrate with actual payment providers like Razorpay, PayU, etc.
+        # For now, return a mock response
+        return {
+            "verified": False,
+            "status": "pending",
+            "message": "Payment verification not implemented"
+        }
+
 # QR Payment Functions
 def _generate_qr_code(data: str, amount: int = None) -> str:
     """Generate QR code image and return as base64 string"""
@@ -984,6 +999,195 @@ async def get_qr_payment_status_endpoint(qr_code: str):
             "error": str(e)
         }
 
+@router.post("/payment/webhook/{provider}")
+async def payment_webhook(provider: str, request: Request):
+    """Webhook endpoint for payment provider notifications"""
+    try:
+        print(f"🔔 Received webhook from provider: {provider}")
+        
+        # Get the raw request body
+        body = await request.body()
+        print(f"📦 Webhook payload: {body.decode()}")
+        
+        # Parse JSON payload
+        try:
+            import json
+            payload = json.loads(body.decode())
+        except:
+            print("⚠️ Failed to parse JSON payload")
+            return {"status": "error", "message": "Invalid JSON payload"}
+        
+        # Extract payment information based on provider
+        if provider.lower() == "razorpay":
+            return await _handle_razorpay_webhook(payload)
+        elif provider.lower() == "payu":
+            return await _handle_payu_webhook(payload)
+        elif provider.lower() == "upi":
+            return await _handle_upi_webhook(payload)
+        else:
+            print(f"⚠️ Unknown payment provider: {provider}")
+            return {"status": "error", "message": "Unknown payment provider"}
+            
+    except Exception as e:
+        print(f"❌ Error processing webhook: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"status": "error", "message": str(e)}
+
+async def _handle_razorpay_webhook(payload: dict) -> dict:
+    """Handle Razorpay webhook notifications"""
+    try:
+        print(f"🔍 Processing Razorpay webhook: {payload}")
+        
+        # Extract payment details
+        payment_id = payload.get("payload", {}).get("payment", {}).get("entity", {}).get("id")
+        amount = payload.get("payload", {}).get("payment", {}).get("entity", {}).get("amount")
+        status = payload.get("payload", {}).get("payment", {}).get("entity", {}).get("status")
+        
+        if not payment_id or not amount:
+            return {"status": "error", "message": "Missing payment details"}
+        
+        # Convert amount from paisa to rupees
+        amount_rupees = float(amount) / 100
+        
+        if status == "captured":
+            # Payment successful, update user subscription
+            return await _process_successful_payment(payment_id, amount_rupees, "razorpay")
+        else:
+            print(f"⚠️ Payment not successful, status: {status}")
+            return {"status": "ignored", "message": f"Payment status: {status}"}
+            
+    except Exception as e:
+        print(f"❌ Error handling Razorpay webhook: {e}")
+        return {"status": "error", "message": str(e)}
+
+async def _handle_payu_webhook(payload: dict) -> dict:
+    """Handle PayU webhook notifications"""
+    try:
+        print(f"🔍 Processing PayU webhook: {payload}")
+        
+        # Extract payment details
+        transaction_id = payload.get("transactionId")
+        amount = payload.get("amount")
+        status = payload.get("status")
+        
+        if not transaction_id or not amount:
+            return {"status": "error", "message": "Missing payment details"}
+        
+        if status == "success":
+            # Payment successful, update user subscription
+            return await _process_successful_payment(transaction_id, float(amount), "payu")
+        else:
+            print(f"⚠️ Payment not successful, status: {status}")
+            return {"status": "ignored", "message": f"Payment status: {status}"}
+            
+    except Exception as e:
+        print(f"❌ Error handling PayU webhook: {e}")
+        return {"status": "error", "message": str(e)}
+
+async def _handle_upi_webhook(payload: dict) -> dict:
+    """Handle UPI webhook notifications"""
+    try:
+        print(f"🔍 Processing UPI webhook: {payload}")
+        
+        # Extract payment details
+        transaction_id = payload.get("transactionId") or payload.get("txnId")
+        amount = payload.get("amount")
+        status = payload.get("status") or payload.get("txnStatus")
+        
+        if not transaction_id or not amount:
+            return {"status": "error", "message": "Missing payment details"}
+        
+        if status in ["success", "completed", "SUCCESS"]:
+            # Payment successful, update user subscription
+            return await _process_successful_payment(transaction_id, float(amount), "upi")
+        else:
+            print(f"⚠️ Payment not successful, status: {status}")
+            return {"status": "ignored", "message": f"Payment status: {status}"}
+            
+    except Exception as e:
+        print(f"❌ Error handling UPI webhook: {e}")
+        return {"status": "error", "message": str(e)}
+
+async def _process_successful_payment(transaction_id: str, amount: float, provider: str) -> dict:
+    """Process successful payment and upgrade user subscription"""
+    try:
+        print(f"✅ Processing successful payment: {transaction_id}, Amount: {amount}, Provider: {provider}")
+        
+        # Find the payment record in database
+        conn = get_db_connection()
+        if not conn:
+            return {"status": "error", "message": "Database connection failed"}
+        
+        with conn.cursor() as cursor:
+            # Find payment record by transaction ID or amount
+            cursor.execute("""
+                SELECT * FROM payment_qr_codes 
+                WHERE (payment_id = %s OR amount = %s) AND status = 'pending'
+                ORDER BY created_at DESC LIMIT 1
+            """, (transaction_id, amount))
+            
+            payment_record = cursor.fetchone()
+            
+            if not payment_record:
+                print(f"⚠️ No matching payment record found for transaction: {transaction_id}")
+                return {"status": "ignored", "message": "No matching payment record"}
+            
+            user_id = payment_record['user_id']
+            qr_code = payment_record['qr_code']
+            tier = payment_record['tier']
+            
+            print(f"🔍 Found payment record for user: {user_id}, tier: {tier}")
+            
+            # Update payment status to completed
+            cursor.execute("""
+                UPDATE payment_qr_codes 
+                SET status = 'completed', payment_provider = %s, transaction_id = %s, updated_at = CURRENT_TIMESTAMP
+                WHERE qr_code = %s
+            """, (provider, transaction_id, qr_code))
+            
+            # Upgrade user subscription
+            from datetime import datetime, timedelta
+            
+            # Calculate expiry date based on subscription tier
+            if tier == "pro_monthly":
+                expires_at = datetime.now() + timedelta(days=30)
+            elif tier == "pro_yearly":
+                expires_at = datetime.now() + timedelta(days=365)
+            else:
+                expires_at = datetime.now() + timedelta(days=30)  # Default to monthly
+            
+            # Update user subscription
+            cursor.execute("""
+                INSERT INTO user_subscriptions (user_id, subscription_tier, status, expires_at, payment_id)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (user_id) 
+                DO UPDATE SET 
+                    subscription_tier = EXCLUDED.subscription_tier,
+                    status = EXCLUDED.status,
+                    expires_at = EXCLUDED.expires_at,
+                    payment_id = EXCLUDED.payment_id,
+                    updated_at = CURRENT_TIMESTAMP
+            """, (user_id, tier, 'active', expires_at, payment_record['payment_id']))
+            
+            conn.commit()
+            
+            print(f"✅ User {user_id} successfully upgraded to {tier}")
+            
+            return {
+                "status": "success",
+                "message": "Payment processed and user upgraded successfully",
+                "user_id": user_id,
+                "tier": tier,
+                "amount": amount
+            }
+            
+    except Exception as e:
+        print(f"❌ Error processing successful payment: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"status": "error", "message": str(e)}
+
 @router.post("/payment/qr/verify-manual")
 async def verify_qr_payment_manual(qr_code: str, user_id: str):
     """Manual payment verification - call this after making UPI payment"""
@@ -1026,12 +1230,15 @@ async def verify_qr_payment_manual(qr_code: str, user_id: str):
             # For manual verification, we assume payment was successful
             print(f"✅ Manual verification successful for payment: {qr_code}")
             
-            # Update payment status
+            # Update payment status with manual verification info
             cursor.execute("""
                 UPDATE payment_qr_codes 
-                SET status = 'completed' 
+                SET status = 'completed', 
+                    payment_provider = 'manual',
+                    transaction_id = %s,
+                    updated_at = CURRENT_TIMESTAMP
                 WHERE qr_code = %s
-            """, (qr_code,))
+            """, (f"manual_{qr_code}_{int(datetime.now().timestamp())}", qr_code))
             
             # Upgrade user subscription
             tier = SubscriptionTier(payment_record['tier'])
@@ -1075,6 +1282,149 @@ async def verify_qr_payment_manual(qr_code: str, user_id: str):
             "success": False,
             "message": f"Failed to verify payment: {str(e)}",
             "status": "error"
+        }
+
+@router.post("/payment/qr/verify-automatic")
+async def verify_qr_payment_automatic(qr_code: str, user_id: str):
+    """Automatic payment verification using payment provider APIs"""
+    try:
+        print(f"🤖 Automatic payment verification for QR: {qr_code}, User: {user_id}")
+        
+        # Check if payment exists and is pending
+        conn = get_db_connection()
+        if not conn:
+            return {
+                "success": False,
+                "message": "Database connection failed",
+                "status": "error"
+            }
+        
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT * FROM payment_qr_codes 
+                WHERE qr_code = %s AND user_id = %s AND status = 'pending'
+            """, (qr_code, user_id))
+            
+            payment_record = cursor.fetchone()
+            
+            if not payment_record:
+                return {
+                    "success": False,
+                    "message": "Payment not found or already processed",
+                    "status": "not_found"
+                }
+            
+            # Check if payment is expired
+            from datetime import datetime
+            if payment_record['expires_at'] < datetime.now():
+                return {
+                    "success": False,
+                    "message": "Payment has expired",
+                    "status": "expired"
+                }
+            
+            # Try to verify payment with payment providers
+            payment_id = payment_record['payment_id']
+            amount = payment_record['amount']
+            
+            # This would integrate with actual payment provider APIs
+            # For now, we'll simulate checking multiple providers
+            verification_result = await _verify_payment_with_providers(payment_id, amount)
+            
+            if verification_result['verified']:
+                print(f"✅ Automatic verification successful for payment: {qr_code}")
+                
+                # Update payment status
+                cursor.execute("""
+                    UPDATE payment_qr_codes 
+                    SET status = 'completed',
+                        payment_provider = %s,
+                        transaction_id = %s,
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE qr_code = %s
+                """, (verification_result['provider'], verification_result['transaction_id'], qr_code))
+                
+                # Upgrade user subscription
+                tier = SubscriptionTier(payment_record['tier'])
+                
+                # Calculate expiry date based on subscription tier
+                if tier == SubscriptionTier.PRO_MONTHLY:
+                    expiry_interval = "1 month"
+                elif tier == SubscriptionTier.PRO_YEARLY:
+                    expiry_interval = "1 year"
+                else:
+                    expiry_interval = "1 month"  # Default to monthly
+                
+                # Update user subscription
+                cursor.execute("""
+                    INSERT INTO user_subscriptions (user_id, subscription_tier, status, expires_at, payment_id)
+                    VALUES (%s, %s, %s, CURRENT_TIMESTAMP + INTERVAL %s, %s)
+                    ON CONFLICT (user_id) 
+                    DO UPDATE SET 
+                        subscription_tier = EXCLUDED.subscription_tier,
+                        status = EXCLUDED.status,
+                        expires_at = EXCLUDED.expires_at,
+                        payment_id = EXCLUDED.payment_id,
+                        updated_at = CURRENT_TIMESTAMP
+                """, (user_id, tier.value, 'active', expiry_interval, payment_record['payment_id']))
+                
+                conn.commit()
+                
+                return {
+                    "success": True,
+                    "message": "Payment automatically verified and subscription upgraded",
+                    "status": "completed",
+                    "tier": tier.value,
+                    "amount": float(payment_record['amount']),
+                    "provider": verification_result['provider']
+                }
+            else:
+                return {
+                    "success": False,
+                    "message": "Payment not yet confirmed by payment provider",
+                    "status": "pending",
+                    "retry_after": 30  # Retry after 30 seconds
+                }
+        
+    except Exception as e:
+        print(f"❌ Error in automatic payment verification: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "message": f"Failed to verify payment: {str(e)}",
+            "status": "error"
+        }
+
+async def _verify_payment_with_providers(payment_id: str, amount: float) -> dict:
+    """Verify payment with multiple payment providers"""
+    try:
+        print(f"🔍 Verifying payment with providers: {payment_id}, Amount: {amount}")
+        
+        # This would integrate with actual payment provider APIs
+        # For now, we'll return a mock response indicating no verification yet
+        
+        # In a real implementation, you would:
+        # 1. Check Razorpay API for payment status
+        # 2. Check PayU API for payment status  
+        # 3. Check UPI NPCI API for payment status
+        # 4. Return the first successful verification
+        
+        # Mock response - in production, replace with actual API calls
+        return {
+            "verified": False,
+            "provider": None,
+            "transaction_id": None,
+            "message": "Payment verification not yet implemented - requires payment provider API integration"
+        }
+        
+    except Exception as e:
+        print(f"❌ Error verifying payment with providers: {e}")
+        return {
+            "verified": False,
+            "provider": None,
+            "transaction_id": None,
+            "message": str(e)
         }
 
 @router.get("/payment/qr/stream/{qr_code}")
