@@ -1,0 +1,65 @@
+[33mcommit 3d5e4e28fcd52457715674f968405fa65832aceb[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: bhanu553 <thisisspace432@gmail.com>
+Date:   Fri Sep 19 18:09:07 2025 +0530
+
+    Fix credit consumption issue - remove double consumption and development bypass
+    
+    - Remove development bypass from check_and_consume_credit function
+    - Add credit consumption to /session/chat endpoint for AI Chat
+    - Add credit consumption to /session/solve endpoint for Problem Solver
+    - Remove duplicate credit consumption from frontend components
+    - Fix race condition where frontend and backend both consumed credits
+    - Use correct feature names (pro_ai_chat, problem_solver)
+    - Credits now properly consumed once per action without resetting
+
+[1mdiff --git a/backend/agentic.py b/backend/agentic.py[m
+[1mindex 08412c4..e20e89b 100644[m
+[1m--- a/backend/agentic.py[m
+[1m+++ b/backend/agentic.py[m
+[36m@@ -55,8 +55,6 @@[m [masync def check_and_consume_credit(user_id: str, feature_name: str, session_id:[m
+     Check if user can consume a credit for a Pro feature[m
+     Returns: (can_use, message, credits_remaining)[m
+     """[m
+[31m-    # Temporarily bypass credit check for development - always allow access[m
+[31m-    return True, "Development mode - unlimited access", 999[m
+     [m
+     try:[m
+         conn = get_db_connection()[m
+[36m@@ -2961,6 +2959,18 @@[m [masync def chat_message(request: ChatMessageRequest):[m
+         # Update activity[m
+         session_manager.update_session_activity(request.session_id)[m
+         [m
+[32m+[m[32m        # Check and consume credit for AI Chat[m
+[32m+[m[32m        user_id = session.user_id[m
+[32m+[m[32m        can_use, message, credits_remaining = await check_and_consume_credit([m
+[32m+[m[32m            user_id, "pro_ai_chat", request.session_id[m
+[32m+[m[32m        )[m
+[32m+[m[41m        [m
+[32m+[m[32m        if not can_use:[m
+[32m+[m[32m            print(f"❌ Credit check failed: {message}")[m
+[32m+[m[32m            raise HTTPException(status_code=402, detail=message)[m
+[32m+[m[41m        [m
+[32m+[m[32m        print(f"✅ Credit consumed successfully. Credits remaining: {credits_remaining}")[m
+[32m+[m[41m        [m
+         # 🖼️ IMAGE ROUTING LOGIC: Check if this is an image problem and route accordingly[m
+         if request.image_data:[m
+             print("🖼️ Image detected in Deep Study Mode - using Gemini 1.5 Flash")[m
+[36m@@ -3128,6 +3138,18 @@[m [masync def problem_solve(request: ProblemSolveRequest):[m
+         # Update activity[m
+         session_manager.update_session_activity(request.session_id)[m
+         [m
+[32m+[m[32m        # Check and consume credit for Problem Solver[m
+[32m+[m[32m        user_id = session.user_id[m
+[32m+[m[32m        can_use, message, credits_remaining = await check_and_consume_credit([m
+[32m+[m[32m            user_id, "problem_solver", request.session_id[m
+[32m+[m[32m        )[m
+[32m+[m[41m        [m
+[32m+[m[32m        if not can_use:[m
+[32m+[m[32m            print(f"❌ Credit check failed: {message}")[m
+[32m+[m[32m            raise HTTPException(status_code=402, detail=message)[m
+[32m+[m[41m        [m
+[32m+[m[32m        print(f"✅ Credit consumed successfully. Credits remaining: {credits_remaining}")[m
+[32m+[m[41m        [m
+         # Create problem-solving prompt[m
+         hint_levels = {[m
+             1: "Provide a gentle hint to guide the student",[m
